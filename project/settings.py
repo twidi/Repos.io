@@ -1,5 +1,5 @@
 import os.path
-DIRNAME = os.path.dirname(__file__)
+PROJECT_PATH = os.path.dirname(__file__)
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -101,12 +101,23 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.request',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.contrib.messages.context_processors.messages',
+    'social_auth.context_processors.social_auth_by_type_backends',
+)
+
 ROOT_URLCONF = 'project.urls'
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+    os.path.join(PROJECT_PATH, 'templates'),
 )
 
 INSTALLED_APPS = (
@@ -152,12 +163,20 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 SOCIAL_AUTH_ENABLED_BACKENDS = ('github',)
+SOCIAL_AUTH_EXTRA_DATA = True
+GITHUB_EXTRA_DATA = [
+    ('html_url', 'home'),
+    ('login', 'original_login'),
+]
 
+LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/'
+LOGIN_ERROR_URL = '/'
 
 # metasettings
 try:
     import metasettings
-    METASETTINGS_DIR    = os.path.join(DIRNAME, 'settings')
+    METASETTINGS_DIR    = os.path.join(PROJECT_PATH, 'settings')
     try:
         from settings_rules import method, rules
     except ImportError, e:

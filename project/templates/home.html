@@ -1,0 +1,50 @@
+{% if user.is_authenticated %}
+
+    <p>Welcome <em>{{ user.username }} </em>!</p>
+
+    {% with auth=social_auth %}
+        {% if auth.associated %}
+
+            <p>Your account is linked to : </p>
+
+            <ul>
+                {% for account in auth.associated.oauth %}
+                    <li><em>{{ account.extra_data.original_login }}</em>@<em>{{ account.provider }}</em></li>
+                {% endfor %}
+            </ul>
+
+            <p>you can associate your account with another provider (if you want to assciate many github accounts, you must disconnect from github and reconnect with the other account you want to associate) :</p>
+
+        {% else %}
+
+            <p>Your account is not linked to any provider, please associate with at least one below :</p>
+
+        {% endif %}
+
+        <ul>
+
+            {% for provider in auth.backends.oauth %}
+                <li><a href="{% url socialauth_associate_begin provider %}">{{ provider }}</a></li>
+            {% endfor %}
+
+        </ul>
+
+    {% endwith %}
+
+
+{% else %}
+    <p>Welcome !</p>
+
+    <p>You need to be authenticated. You can do it via a provider listed below :</p>
+
+    {% with auth=social_auth %}
+
+        <ul>
+            {% for provider in auth.backends.oauth %}
+                <li><a href="{% url socialauth_begin provider %}">{{ provider }}</a></li>
+            {% endfor %}
+        </ul>
+
+    {% endwith %}
+
+{% endif %}
