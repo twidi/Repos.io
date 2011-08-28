@@ -1,0 +1,16 @@
+"""
+You must create your own settings_rules.py (ignored by git).
+This file is an sample.
+"""
+
+# can be HOSTNAME / FQDN / ENV / VAR
+method = 'HOSTNAME'
+
+# settings in local/ are not imported into the repository
+# You can see an sample in settings/local/sample.py.sample
+# dev and prod are basic settings for these configurations
+rules = (
+    # hostname       # settings to load (in the "settings" directory)
+    (r'^twidi-home', ('dev', 'local/twidi-home')),
+    (r'^twidi-prod', ('prod', 'local/twidi-prod')),
+)

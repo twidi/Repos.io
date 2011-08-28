@@ -1,0 +1,11 @@
+# define here your specific settings. You CAN use settings previously imported in the chain (aka in "dev.py" or the original "settings.py"
+
+# here are the settings you MUST define
+GITHUB_APP_ID     = ''
+GITHUB_API_SECRET = ''
+
+# hint : you can just add DATABASES['default'].update({'ENGINE': 'django.db.backends.sqlite3', 'NAME': 'my.sqlite'})
+DATABASES = {
+    'default': {
+    }
+}
