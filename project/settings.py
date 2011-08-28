@@ -146,18 +146,30 @@ LOGGING = {
     }
 }
 
+# social_autho
+AUTHENTICATION_BACKENDS = (
+    'social_auth.backends.contrib.github.GithubBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
+SOCIAL_AUTH_ENABLED_BACKENDS = ('github',)
+
+
 # metasettings
-import metasettings
-METASETTINGS_DIR    = os.path.join(DIRNAME, 'settings')
 try:
-    from settings_rules import method, rules
-except ImportError:
-    import sys
-    sys.stderr.write("Error: You should define your own settings, see settings_rules.py.sample\n")
-    sys.exit(1)
-
-else:
-    METASETTINGS_PATTERNS = rules
-    METASETTINGS_METHOD = getattr(metasettings, method)
-
-metasettings.init(globals())
+    import metasettings
+    METASETTINGS_DIR    = os.path.join(DIRNAME, 'settings')
+    try:
+        from settings_rules import method, rules
+    except ImportError, e:
+        raise e
+    else:
+        METASETTINGS_PATTERNS = rules
+        METASETTINGS_METHOD = getattr(metasettings, method)
+        metasettings.init(globals())
+except:
+    try:
+        from local_settings import *
+    except ImportError:
+        import sys
+        sys.stderr.write("Error: You should define your own settings, see settings_rules.py.sample (or just add a local_settings.py)\n")
+        sys.exit(1)
