@@ -1,0 +1,13 @@
+django==1.3
+
+# django tools
+djang-extensions
+
+# python tools
+debug
+
+# django apps
+-e git+git://github.com/twidi/django-favorites.git#egg=django-favorites
+
+# registration/providers
+django-social-auth
