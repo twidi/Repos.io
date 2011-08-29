@@ -11,7 +11,7 @@
             <li>{{ language.grouper|default:'Undefined' }} :</li>
                 <ul>
 
-                    {% with language.list|dictsort:"language" as rep_sorted %}
+                    {% with language.list|dictsort:"name" as rep_sorted %}
                         {% for rep in rep_sorted %}
 
                             <li>
