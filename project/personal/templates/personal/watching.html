@@ -1,0 +1,36 @@
+{% extends "personal/base.html" %}
+{% block personal_content %}
+
+    {% if repositories %}
+
+        <p>Here are your {{ repositories|length }} watched repositories, sorted by language and by name :</p>
+
+        <ul>
+            {% regroup repositories|dictsort:"language" by language as language_list %}
+            {% for language in language_list %}
+            <li>{{ language.grouper|default:'Undefined' }} :</li>
+                <ul>
+
+                    {% with language.list|dictsort:"language" as rep_sorted %}
+                        {% for rep in rep_sorted %}
+
+                            <li>
+                                <a href="{{ rep.url }}">{{ rep.owner }}/<strong style='font-size:larger'>{{ rep.name }}</strong></a>
+                                (updated on {{ rep.pushed_at }})
+                                <blockquote>{{ rep.description }}</blockquote>
+                            </li>
+
+                        {% endfor %}
+                    {% endwith %}
+
+                </ul>
+            {% endfor %}
+        </ul>
+
+    {% else %}
+
+        <p>You're not watching any repository ! (or it may be not possible to fetch them)</p>
+
+    {% endif %}
+
+{% endblock personal_content %}

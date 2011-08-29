@@ -9,4 +9,5 @@ urlpatterns = patterns('',
     url(r'^$', direct_to_template, {'template': 'home.html'}, name='home'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'accounts/', include('accounts.urls')),
+    url(r'^(?P<login>\w+)@(?P<provider>\w+)/', include('personal.urls')),
 )

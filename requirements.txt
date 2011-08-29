@@ -6,6 +6,9 @@ django-extensions
 # python tools
 debug
 
+# github !
+github2
+
 # django apps
 -e git+git://github.com/twidi/django-favorites.git#egg=django-favorites
 

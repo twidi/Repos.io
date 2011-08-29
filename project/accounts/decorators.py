@@ -1,5 +1,6 @@
 from django.http import HttpResponseRedirect
 
+#http://djangosnippets.org/snippets/1849/
 def anonymous_required( view_function, redirect_to = None ):
     return AnonymousRequired( view_function, redirect_to )
 
