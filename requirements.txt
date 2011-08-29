@@ -7,11 +7,12 @@ django-extensions
 debug
 
 # github !
-github2
+#github2 (missing repository info with parent : https://github.com/ask/python-github2/pull/60 )
+-e git+git://github.com/twidi/python-github2.git#egg=python-github2
 
 # django apps
 -e git+git://github.com/twidi/django-favorites.git#egg=django-favorites
 
 # registration/providers
-#django-social-auth (a bug in the github implementation : https://github.com/omab/django-social-auth/pull/135
+#django-social-auth (a bug in the github implementation : https://github.com/omab/django-social-auth/pull/135 )
 -e git+git://github.com/twidi/django-social-auth.git#egg=django-social-auth
