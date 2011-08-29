@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    {% if request.session.social_errors %}
+        {{ social_errors }}
+    {% endif %}
+
+    <p>Please login with one of the providers listed below :</p>
+
+    {% with auth=social_auth %}
+
+        <ul>
+            {% for provider in auth.backends.oauth %}
+                <li><a href="{% url socialauth_begin provider %}">{{ provider }}</a></li>
+            {% endfor %}
+            <li>(more to come)</li>
+        </ul>
+
+    {% endwith %}
+
+    {% include "accounts/include_about.html" %}
+
+{% endblock content %}

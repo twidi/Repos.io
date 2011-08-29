@@ -127,11 +127,14 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Uncomment the next line to enable the admin:
     'django.contrib.admin',
-    # Uncomment the next line to enable admin documentation:
-    # 'django.contrib.admindocs',
+
+    # apps
+    'django_extensions',
     'social_auth',
+
+    # ours
+    'accounts',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -167,11 +170,14 @@ SOCIAL_AUTH_EXTRA_DATA = True
 GITHUB_EXTRA_DATA = [
     ('html_url', 'home'),
     ('login', 'original_login'),
+    ('avatar_url', 'avatar_url'),
 ]
+SOCIAL_AUTH_ASSOCIATE_BY_MAIL = True
+SOCIAL_AUTH_ERROR_KEY = 'social_errors'
 
-LOGIN_REDIRECT_URL = '/'
-LOGIN_URL = '/'
-LOGIN_ERROR_URL = '/'
+LOGIN_REDIRECT_URL = '/accounts/manage/'
+LOGIN_URL = '/accounts/login/'
+LOGIN_ERROR_URL = '/accounts/login/'
 
 # metasettings
 try:
