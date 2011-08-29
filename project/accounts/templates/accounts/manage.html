@@ -1,0 +1,41 @@
+{% extends "accounts/base.html" %}
+
+{% block accounts_content %}
+
+    {% if request.session.social_errors %}
+        {{ social_errors }}
+    {% endif %}
+
+    {% with auth=social_auth %}
+        {% if auth.associated %}
+
+            <p>Your account is linked to : </p>
+
+            <ul>
+                {% for account in auth.associated.oauth %}
+                    <li><em>{{ account.extra_data.original_login }}</em>@<em>{{ account.provider }}</em></li>
+                {% endfor %}
+            </ul>
+
+            <p>You can associate your account with another provider (if you want to assciate many github accounts, you must disconnect from github and reconnect with the other account you want to associate) :</p>
+
+        {% else %}
+
+            <p>Your account is not linked to any provider, please associate with at least one below :</p>
+
+        {% endif %}
+
+        <ul>
+
+            {% for provider in auth.backends.oauth %}
+                <li><a href="{% url socialauth_associate_begin provider %}">{{ provider }}</a></li>
+            {% endfor %}
+            <li>(more to come)</li>
+
+        </ul>
+
+    {% endwith %}
+
+    {% include "accounts/include_about.html" %}
+
+{% endblock accounts_content %}

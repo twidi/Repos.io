@@ -1,0 +1,3 @@
+<p><a href="/">Home</a> | {% if user.is_authenticated %}Logged in as {{ user.username }} | <a href="{% url accounts_logout %}?next=/">Logout</a>.{% else %}<a href="{% url accounts_login %}">Login/Register</a>{% endif %}
+<hr />
+{% block content %}{% endblock %}

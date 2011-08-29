@@ -8,4 +8,6 @@ pip-log.txt
 /lib
 /src
 *.vim
+*.sqlite
+settings_rules.py
 

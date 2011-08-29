@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+
+    {% if user.is_authenticated %}
+        <p>Welcome <em>{{ user.username }} </em>!</p>
+
+        {% if not social_auth.associated.oauth %}
+            <p>You have no account associated, <a href="{% url accounts_manage %}">click here to start associating your account</a>.</p>
+        {% else %}
+            <p><a href="{% url accounts_manage %}">Click here to manage your account</a>.</p>
+        {% endif %}
+
+    {% else %}
+
+        <p>Welcome !</p>
+        <p><a href="{% url accounts_login %}">You need to be authenticated to use our site. Click here to do so.</a></p>
+
+    {% endif %}
+
+{% endblock content %}
