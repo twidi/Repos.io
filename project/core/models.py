@@ -178,7 +178,7 @@ class Repository(SyncableModel):
 
 
     class Meta:
-        unique_together = (('backend', 'slug'),)
+        unique_together = (('backend', 'official_owner', 'slug'),)
 
     def get_new_status(self):
         """
