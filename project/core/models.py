@@ -2,44 +2,80 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from model_utils import Choices
-from model_utils.models import TimeStampedModel, StatusModel
+from model_utils.models import TimeStampedModel
+from model_utils.fields import StatusField
 
 from backends import BACKENDS, get_backend
 from exceptions import SaveForbiddenInBackend
+from managers import AccountManager, RepositoryManager
 
 BACKENDS_CHOICES = Choices(*BACKENDS.keys())
 
-class AccountManager(models.Manager):
+class SyncableModel(TimeStampedModel):
     """
-    Manager for the Account model
+    A base model usable for al objects syncable within a provider.
+    TimeStampedModel add `created` and `modified` fields, auto updated
+    when needed.
     """
 
-    def get_for_slug(self, backend, slug):
-        """
-        Try to return an existing account object for this backend/slug
-        If not found, return None
-        """
-        try:
-            return self.get(backend=backend, slug=slug)
-        except:
-            return None
+    STATUS = Choices(
+        ('creating', 'Creating'),   # just created
+        ('to_update', 'To Update'), # need to be updated
+        ('updating', 'Updating'),   # update running from the backend
+        ('ok', 'Ok'),               # everything ok ok
+    )
 
-class Account(TimeStampedModel, StatusModel):
+    # The backend from where this object come from
+    backend = models.CharField(max_length=30, choices=BACKENDS_CHOICES)
+
+    # A status field, using STATUS
+    status = StatusField(max_length=10)
+
+    class Meta:
+        abstract = True
+
+    def __init__(self, *args, **kwargs):
+        """
+        Init some internal values
+        """
+        super(SyncableModel, self).__init__(*args, **kwargs)
+        self.status = self.STATUS.creating
+        self._block_save = False
+
+    def get_backend(self):
+        """
+        Return (and create and cache if needed) the backend object
+        """
+        if not hasattr(self, '_backend'):
+            self._backend = get_backend(self.backend)
+        return self._backend
+        self.save()
+
+    def get_new_status(self):
+        """
+        Return the status to be saved
+        """
+        raise NotImplementedError('Implement in subclasses')
+
+    def save(self, *args, **kwargs):
+        """
+        Save is forbidden while in the backend...
+        Also update the status before saving
+        """
+        if self._block_save:
+            raise SaveForbiddenInBackend('You cannot save this object in the backend')
+
+        self.status = self.get_new_status()
+        super(SyncableModel, self).save(*args, **kwargs)
+
+
+class Account(SyncableModel):
     """
     Represent an account from a backend
     """
-    STATUS = Choices(
-        ('creating', 'Creating'), # just created
-        ('updating', 'Updating'), # updating from the backend
-        ('orphan', 'Orphan'),     # updated, but without associated user
-        ('ok', 'Ok'),             # everything is ok
-    )
 
+    # Basic informations
 
-    # If there is a user linked to this account
-    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
-    # The backend from with this account come from
-    backend = models.CharField(max_length=30, choices=BACKENDS_CHOICES)
     # The slug for this account (text identifier for the provider : login, username...)
     slug = models.SlugField(max_length=255)
     # The fullname
@@ -50,6 +86,9 @@ class Account(TimeStampedModel, StatusModel):
     homepage = models.URLField(max_length=255, blank=True, null=True)
     # Since when this account exists on the provider
     since = models.DateField(blank=True, null=True)
+
+    # If there is a user linked to this account
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
 
     # The last access_token for authenticated requests
     access_token = models.TextField(blank=True, null=True)
@@ -69,50 +108,29 @@ class Account(TimeStampedModel, StatusModel):
         unique_together = (('backend', 'slug'),)
 
 
-    def __init__(self, *args, **kwargs):
+    def get_new_status(self):
         """
-        Init some internal values
+        Return the status to be saved
         """
-        super(Account, self).__init__(*args, **kwargs)
-        self._block_save = False
+        if not self.user_id:
+            return self.STATUS.to_update
+        return self.STATUS.ok
 
     def fetch_from_backend(self):
         """
         Fetch data from the provider
         """
-        backend = get_backend(self.backend)
-
         self._block_save = True
-        backend.user_fetch(self)
+        self.get_backend().user_fetch(self)
         self._block_save = False
 
         self.save()
 
-    def save(self, *args, **kwargs):
-        """
-        Save is forbidden while in the backend...
-        """
-        if self._block_save:
-            raise SaveForbiddenInBackend('You cannot save this object in the backend')
-        super(Account, self).save(*args, **kwargs)
 
-
-
-class RepositoryManager(models.Manager):
-    pass
-
-class Repository(TimeStampedModel, StatusModel):
+class Repository(SyncableModel):
     """
     Represent a repository from a backend
     """
-    STATUS = Choices(
-        ('creating', 'Creating'), # just created
-        ('updating', 'Updating'), # updating from the backend
-        ('ok', 'Ok'),             # everything ok ok
-    )
-
-    # The backend from with this repository come from
-    backend = models.CharField(max_length=30, choices=BACKENDS_CHOICES)
 
     # Basic informations
 
@@ -162,43 +180,35 @@ class Repository(TimeStampedModel, StatusModel):
     class Meta:
         unique_together = (('backend', 'slug'),)
 
-
-    def __init__(self, *args, **kwargs):
+    def get_new_status(self):
         """
-        Init some internal values
+        Return the status to be saved
         """
-        super(Repository, self).__init__(*args, **kwargs)
-        self._block_save = False
-
-    def get_backend(self):
-        if not hasattr(self, '_backend'):
-            self._backend = get_backend(self.backend)
-        return self._backend
+        if not self.owner_id:
+            return self.STATUS.to_update
+        if self.is_fork and not self.parent_fork_id:
+            return self.STATUS.to_update
+        return self.STATUS.ok
 
     def get_project(self):
         """
         Return the project name (sort of identifier)
         """
-        if self.project:
-            return self.project
-        return self.get_backend().repository_project(self)
+        return self.project or self.get_backend().repository_project(self)
 
     def fetch_from_backend(self):
         """
         Fetch data from the provider
         """
-        backend = get_backend(self.backend)
-
         self._block_save = True
-        backend.repository_fetch(self)
+        self.get_backend().repository_fetch(self)
         self._block_save = False
 
         self.save()
 
     def save(self, *args, **kwargs):
         """
-        Save is forbidden while in the backend...
+        Update the project field
         """
-        if self._block_save:
-            raise SaveForbiddenInBackend('You cannot save this object in the backend')
+        self.project = self.get_project()
         super(Repository, self).save(*args, **kwargs)

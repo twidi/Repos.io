@@ -94,7 +94,6 @@ class GithubBackend(BaseBackend):
         repository.url = grepo.url
         repository.description = grepo.description
         repository.homepage = grepo.homepage
-        repository.project = project
         repository.official_owner = grepo.owner
         repository.official_forks_count = grepo.forks
         repository.official_fork_of = grepo.parent
