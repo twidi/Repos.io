@@ -134,6 +134,7 @@ INSTALLED_APPS = (
     'social_auth',
 
     # ours
+    'core',
     'accounts',
     'personal',
 )
@@ -179,6 +180,9 @@ SOCIAL_AUTH_ERROR_KEY = 'social_errors'
 LOGIN_REDIRECT_URL = '/accounts/manage/'
 LOGIN_URL = '/accounts/login/'
 LOGIN_ERROR_URL = '/accounts/login/'
+
+# enabled site backends
+CORE_ENABLED_BACKENDS = ('github', )
 
 # metasettings
 try:
