@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -5,11 +7,13 @@ from model_utils import Choices
 from model_utils.models import TimeStampedModel
 from model_utils.fields import StatusField
 
-from backends import BACKENDS, get_backend
-from exceptions import SaveForbiddenInBackend
-from managers import AccountManager, RepositoryManager
+from core.backends import BACKENDS, get_backend
+from core.exceptions import SaveForbiddenInBackend
+from core.managers import AccountManager, RepositoryManager
 
 BACKENDS_CHOICES = Choices(*BACKENDS.keys())
+
+MIN_FETCH_DELTA = timedelta(minutes=30)
 
 class SyncableModel(TimeStampedModel):
     """
@@ -19,10 +23,11 @@ class SyncableModel(TimeStampedModel):
     """
 
     STATUS = Choices(
-        ('creating', 'Creating'),   # just created
-        ('to_update', 'To Update'), # need to be updated
-        ('updating', 'Updating'),   # update running from the backend
-        ('ok', 'Ok'),               # everything ok ok
+        ('creating', 'Creating'),              # just created
+        ('to_update', 'To Update'),            # need to be updated
+        ('need_related', 'Related to update'), # related need to be updated
+        ('updating', 'Updating'),              # update running from the backend
+        ('ok', 'Ok'),                          # everything ok ok
     )
 
     # The backend from where this object come from
@@ -31,15 +36,23 @@ class SyncableModel(TimeStampedModel):
     # A status field, using STATUS
     status = StatusField(max_length=10)
 
+    # Fetch operations
+    fetch_related_operations = ()
+
     class Meta:
         abstract = True
+
+
+    def __unicode__(self):
+        return u'%s' % self.slug
 
     def __init__(self, *args, **kwargs):
         """
         Init some internal values
         """
         super(SyncableModel, self).__init__(*args, **kwargs)
-        self.status = self.STATUS.creating
+        if not self.status:
+            self.status = self.STATUS.creating
         self._block_save = False
 
     def get_backend(self):
@@ -63,15 +76,61 @@ class SyncableModel(TimeStampedModel):
         Also update the status before saving
         """
         if self._block_save:
-            raise SaveForbiddenInBackend('You cannot save this object in the backend')
+            raise SaveForbiddenInBackend()
 
         self.status = self.get_new_status()
         super(SyncableModel, self).save(*args, **kwargs)
+
+    def fetch_needed(self):
+        """
+        Check if a fetch is needed for this object.
+        It's True if it's a new object, if the status is "to_update" or
+        if it's ok and fetched long time ago
+        """
+        if not self.id:
+            return True
+        if self.status in (self.STATUS.to_update,):
+            return True
+        if self.status == 'ok' and self.modified < datetime.now() - MIN_FETCH_DELTA:
+            return True
+        return False
+
+    def fetch_related_needed(self):
+        """
+        Check if we need to update some related objects
+        """
+        return bool(self.id) and self.status == self.STATUS.need_related
+
+    def fetch_related(self, limit=1):
+        """
+        If the object has some related content that need to be fetched, do
+        it, but limit the fetch to the given limit (default 1)
+        Returns the number of operations done
+        """
+        done = 0
+        for operation_name in self.fetch_related_operations:
+            operation = getattr(self, 'fetch_%s' % operation_name)
+            if operation():
+                done += 1
+            if limit and done >= limit:
+                return
+        return done
+
+    def update_related(self, limit=None):
+        """
+        Update one or many (default all) related objects
+        """
+        if not self.fetch_related_needed():
+            return
+        if self.fetch_related(limit):
+            self.save()
 
 
 class Account(SyncableModel):
     """
     Represent an account from a backend
+    How load an account, the good way :
+        Account.objects.get_or_new(backend, slug)
     """
 
     # Basic informations
@@ -88,7 +147,7 @@ class Account(SyncableModel):
     since = models.DateField(blank=True, null=True)
 
     # If there is a user linked to this account
-    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
+    user = models.ForeignKey(User, related_name='accounts', blank=True, null=True, on_delete=models.SET_NULL)
 
     # The last access_token for authenticated requests
     access_token = models.TextField(blank=True, null=True)
@@ -98,11 +157,16 @@ class Account(SyncableModel):
     # From the backed
     official_followers_count = models.PositiveIntegerField(blank=True, null=True)
     official_following_count = models.PositiveIntegerField(blank=True, null=True)
+    # Saved following_count
+    following_count = models.PositiveIntegerField(blank=True, null=True)
     # List of Account object who follow this one
     followers = models.ManyToManyField('self', related_name='following')
 
     # The default manager
     objects = AccountManager()
+
+    # Fetch operations
+    fetch_related_operations = ('following',)
 
     class Meta:
         unique_together = (('backend', 'slug'),)
@@ -114,6 +178,8 @@ class Account(SyncableModel):
         """
         if not self.user_id:
             return self.STATUS.to_update
+        if self.following_count is None:
+            return self.STATUS.need_related
         return self.STATUS.ok
 
     def fetch_from_backend(self):
@@ -126,10 +192,34 @@ class Account(SyncableModel):
 
         self.save()
 
+    def fetch_related_needed(self):
+        """
+        Do net fetch related if we have no user
+        """
+        if not self.user_id:
+            return False
+        return super(Account, self).fetch_related_needed()
+
+    def fetch_following(self):
+        """
+        Fetch the repositories followed by this account
+        """
+        if not self.user_id:
+            return False
+
+        return False
+        #old_following = self.following.all()
+        #new_following = self.get_backend().user_following(self)
+        ##self.following_count = XX
+
+        #return True
+
 
 class Repository(SyncableModel):
     """
     Represent a repository from a backend
+    How load a repository, the good way :
+        Repository.objects.get_or_new(backend, project_name)
     """
 
     # Basic informations
@@ -176,18 +266,30 @@ class Repository(SyncableModel):
     # The default manager
     objects = RepositoryManager()
 
+    # Fetch operations
+    fetch_related_operations = ('owner', 'parent_fork', )
+
 
     class Meta:
         unique_together = (('backend', 'official_owner', 'slug'),)
+
+
+    def __unicode__(self):
+        return u'%s' % self.get_project()
 
     def get_new_status(self):
         """
         Return the status to be saved
         """
+        # need the parents fork's name ?
+        if self.is_fork and not self.official_fork_of:
+            return self.STATUS.to_update
+        # need the owner ?
         if not self.owner_id:
-            return self.STATUS.to_update
+            return self.STATUS.need_related
+        # need the parent fork ?
         if self.is_fork and not self.parent_fork_id:
-            return self.STATUS.to_update
+            return self.STATUS.need_related
         return self.STATUS.ok
 
     def get_project(self):
@@ -210,5 +312,59 @@ class Repository(SyncableModel):
         """
         Update the project field
         """
-        self.project = self.get_project()
+        if not self.project:
+            self.project = self.get_project()
         super(Repository, self).save(*args, **kwargs)
+
+    def fetch_owner(self):
+        """
+        Create or update the repository's owner
+        """
+        save_needed = False
+        fetched = False
+
+        if not self.owner_id and not self.owner:
+            save_needed = True
+            owner = Account.objects.get_or_new(self.backend, self.official_owner)
+        else:
+            owner = self.owner
+
+        if owner.fetch_needed():
+            owner.fetch_from_backend()
+            fetched = True
+
+        if save_needed:
+            if not self.owner_id:
+                self.owner = owner
+            self.save()
+
+        return fetched
+
+    def fetch_parent_fork(self):
+        """
+        Create of update the parent fork, only if needed and if we have the
+        parent fork's name
+        """
+        if not (self.is_fork and self.official_fork_of):
+            return False
+
+        save_needed = False
+        fetched = False
+
+        if not self.parent_fork_id:
+            save_needed = True
+            parent_fork = Repository.objects.get_or_new(self.backend,
+                project=self.official_fork_of)
+        else:
+            parent_fork = self.parent_fork
+
+        if parent_fork.fetch_needed():
+            parent_fork.fetch_from_backend()
+            fetched = True
+
+        if save_needed:
+            if not self.parent_fork_id:
+                self.parent_fork = parent_fork
+            self.save()
+
+        return fetched

@@ -6,6 +6,9 @@ from core.backends import BaseBackend
 
 class GithubBackend(BaseBackend):
 
+    name = 'github'
+    needed_repository_identifiers = ('slug', 'official_owner',)
+
     def __init__(self, *args, **kwargs):
         """
         Create an empty dict to cache Github instances
@@ -69,7 +72,7 @@ class GithubBackend(BaseBackend):
 
     def repository_project(self, repository):
         """
-        Return a project name the provider can user
+        Return a project name the provider can use
         """
         if repository.owner_id:
             owner = repository.owner.slug
@@ -77,6 +80,13 @@ class GithubBackend(BaseBackend):
             owner = repository.official_owner
         return self.github().project_for_user_repo(owner, repository.slug)
 
+    def parse_project(self, project):
+        """
+        Try to get at least a slug, and if the backend can, a user
+        by using the given project name
+        """
+        owner,  name = project.split('/')
+        return dict(slug = name, official_owner = owner)
 
     def repository_fetch(self, repository, access_token=None):
         """

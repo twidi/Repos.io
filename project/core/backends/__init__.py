@@ -4,7 +4,12 @@ from os.path import basename
 from django.conf import settings
 from django.utils.importlib import import_module
 
+from core.exceptions import InvalidIdentifiersForProject
+
 class BaseBackend(object):
+
+    name = None
+    needed_repository_identifiers = ('slug',)
 
     def user_fetch(self, account):
         """
@@ -14,7 +19,14 @@ class BaseBackend(object):
 
     def repository_project(self, repository):
         """
-        Return a project name the provider can user
+        Return a project name the provider can use
+        """
+        raise NotImplementedError('Implement in subclass')
+
+    def parse_project(self, project):
+        """
+        Try to get at least a slug, and if the backend can, a user
+        by using the given project name
         """
         raise NotImplementedError('Implement in subclass')
 
@@ -23,6 +35,14 @@ class BaseBackend(object):
         Fetch the repository from the provider and update the object
         """
         raise NotImplementedError('Implement in subclass')
+
+    def assert_valid_repository_identifiers(self, **kwargs):
+        """
+        Test kwargs to check if we have all needed parameters to identify a project
+        """
+        for identifier in self.needed_repository_identifiers:
+            if not kwargs.get(identifier, False):
+                raise InvalidIdentifiersForProject(self)
 
     @classmethod
     def enabled(cls):
