@@ -145,6 +145,8 @@ class Account(SyncableModel):
     homepage = models.URLField(max_length=255, blank=True, null=True)
     # Since when this account exists on the provider
     since = models.DateField(blank=True, null=True)
+    # Is this account private ?
+    private = models.NullBooleanField(blank=True, null=True)
 
     # If there is a user linked to this account
     user = models.ForeignKey(User, related_name='accounts', blank=True, null=True, on_delete=models.SET_NULL)
@@ -238,6 +240,8 @@ class Repository(SyncableModel):
     homepage = models.URLField(max_length=255, blank=True, null=True)
     # The canonical project name (example twidi/myproject)
     project = models.TextField()
+    # Is this repository private ?
+    private = models.NullBooleanField(blank=True, null=True)
 
     # Owner
 

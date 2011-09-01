@@ -66,6 +66,7 @@ class GithubBackend(BaseBackend):
 
         account.since = guser.created_at
         account.homepage = guser.blog
+        account.private = False
 
         account.official_followers_count = guser.followers_count
         account.official_following_count = guser.following_count
@@ -109,5 +110,6 @@ class GithubBackend(BaseBackend):
         repository.official_fork_of = grepo.parent
         repository.official_followers_count = grepo.watchers
         repository.is_fork = grepo.fork
+        repository.private = grepo.private
 
 BACKENDS = { 'github': GithubBackend, }
