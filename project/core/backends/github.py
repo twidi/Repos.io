@@ -97,7 +97,7 @@ class GithubBackend(BaseBackend):
 
         # get repository data fromgithub
         project = repository.get_project()
-        grepo = github.repos.info(project)
+        grepo = github.repos.show(project)
 
         # associate github user and account
         repository.name = grepo.name
