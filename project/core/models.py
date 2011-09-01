@@ -159,16 +159,22 @@ class Account(SyncableModel):
     # From the backed
     official_followers_count = models.PositiveIntegerField(blank=True, null=True)
     official_following_count = models.PositiveIntegerField(blank=True, null=True)
-    # Saved following_count
+    # Saved counts
+    followers_count = models.PositiveIntegerField(blank=True, null=True)
     following_count = models.PositiveIntegerField(blank=True, null=True)
-    # List of Account object who follow this one
-    followers = models.ManyToManyField('self', related_name='following')
+    # List of followed Account object
+    following = models.ManyToManyField('self', related_name='followers')
+
+    # List of owned/watched repositories
+    repositories = models.ManyToManyField('Repository', related_name='accounts')
+    # Saved count
+    repositories_count = models.PositiveIntegerField(blank=True, null=True)
 
     # The default manager
     objects = AccountManager()
 
     # Fetch operations
-    fetch_related_operations = ('following',)
+    fetch_related_operations = ('following', 'followers', 'repositories',)
 
     class Meta:
         unique_together = (('backend', 'slug'),)
@@ -180,7 +186,7 @@ class Account(SyncableModel):
         """
         if not self.user_id:
             return self.STATUS.to_update
-        if self.following_count is None:
+        if None in (self.following_count, self.followers_count, self.repositories_count):
             return self.STATUS.need_related
         return self.STATUS.ok
 
@@ -204,17 +210,24 @@ class Account(SyncableModel):
 
     def fetch_following(self):
         """
-        Fetch the repositories followed by this account
+        Fetch the accounts followed by this account
         """
         if not self.user_id:
             return False
 
-        return False
-        #old_following = self.following.all()
-        #new_following = self.get_backend().user_following(self)
-        ##self.following_count = XX
+    def fetch_followers(self):
+        """
+        Fetch the accounts following this account
+        """
+        if not self.user_id:
+            return False
 
-        #return True
+    def fetch_repositories(self):
+        """
+        Fetch the repositories owned/watched by this account
+        """
+        if not self.user_id:
+            return False
 
 
 class Repository(SyncableModel):
@@ -248,7 +261,7 @@ class Repository(SyncableModel):
     # The owner's "slug" of this project, from the backend
     official_owner = models.CharField(max_length=255, blank=True, null=True)
     # The Account object whom own this Repository
-    owner = models.ForeignKey(Account, related_name='repositories', blank=True, null=True, on_delete=models.SET_NULL)
+    owner = models.ForeignKey(Account, related_name='own_repositories', blank=True, null=True, on_delete=models.SET_NULL)
 
     # Forks & followers informations
 
@@ -263,9 +276,6 @@ class Repository(SyncableModel):
     is_fork = models.NullBooleanField(blank=True, null=True)
     # The Repository object from which this repo is the fork
     parent_fork = models.ForeignKey('self', related_name='forks', blank=True, null=True, on_delete=models.SET_NULL)
-
-    # The list of followers
-    followers = models.ManyToManyField(Account, related_name='following')
 
     # The default manager
     objects = RepositoryManager()
@@ -341,6 +351,7 @@ class Repository(SyncableModel):
             if not self.owner_id:
                 self.owner = owner
             self.save()
+            self.accounts.add(self.owner)
 
         return fetched
 
