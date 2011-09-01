@@ -30,10 +30,25 @@ I love this idea, can i help you ?
 
 Yes of course, the source code of this project is on our `GitHub repository`_, you can fork it and send us pull requests, add/resolve issues...
 
+The site is coded using django (1.3), django-social-auth (for authentication) and python-github2 (for access to the github api)
+
 Is that all ?
 -------------
 
 For now, yes. We just started this project...
+
+Some notes, for later
+---------------------
+Providers :
+ - github (api: ok (python-github2), auth: oauth2)
+ - bitbucket (api: ok, auth: oauth?)
+ - pypi (api: ok, auth: not needed)
+ - google code (?)
+
+Some possible functionnalities :
+ - tree view of forks
+ - rss feeds (with filters !)
+
 
 
 
