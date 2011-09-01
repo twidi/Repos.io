@@ -163,7 +163,7 @@ class Account(SyncableModel):
     followers_count = models.PositiveIntegerField(blank=True, null=True)
     following_count = models.PositiveIntegerField(blank=True, null=True)
     # List of followed Account object
-    following = models.ManyToManyField('self', related_name='followers')
+    following = models.ManyToManyField('self', related_name='followers', symmetrical=False)
 
     # List of owned/watched repositories
     repositories = models.ManyToManyField('Repository', related_name='accounts')
@@ -215,12 +215,186 @@ class Account(SyncableModel):
         if not self.user_id:
             return False
 
+        # get all previous following
+        old_following = dict((a.slug, a) for a in self.following.all())
+
+        # get and save new followings
+        following_list = self.get_backend().user_following(self)
+        new_following = {}
+        for gaccount in following_list:
+            account = self.add_following(gaccount, False)
+            if account:
+                new_following[account.slug] = account
+
+        # remove old following
+        removed = set(old_following.keys()).difference(set(new_following.keys()))
+        for slug in removed:
+            self.remove_following(old_following[slug], update_self_count=False)
+
+        self.update_following_count(save=True)
+
+        return True
+
+    def add_following(self, account, update_self_count):
+        """
+        Try to add the account described by `account` as followed by
+        the current account.
+        `account` can be an Account object, or a dict. In this case, it
+        must contain a `slug` field.
+        All other fields in `account` will only be used to fill
+        the new Account fields if we must create it.
+        """
+        # we have a dict : get the account
+        if isinstance(account, dict):
+            if not account.get('slug', False):
+                return None
+            account = Account.objects.get_or_new(
+                self.backend, account['slug'], defaults=account)
+
+        # we have something else but an account : exit
+        elif not isinstance(account, Account):
+            return None
+
+        # save the account if it's a new one
+        is_new = not bool(account.id)
+        if is_new:
+            account.followers_count = 1
+            account.save()
+
+        # add the following
+        self.following.add(account)
+
+        # update the count if we can
+        if update_self_count:
+            self.update_following_count(save=True)
+
+        # update the followers count for the other account
+        if not is_new:
+            account.update_followers_count(save=True)
+
+        return account
+
+    def remove_following(self, account, update_self_count):
+        """
+        Remove the given account from the ones followed by
+        the current account
+        """
+        # we have something else but an account : exit
+        if not isinstance(account, Account):
+            return
+
+        # remove the following
+        self.following.remove(account)
+
+        # update the count if we can
+        if update_self_count:
+            self.update_following_count(save=True)
+
+        # update the followers count for the other account
+        account.update_followers_count(save=True)
+
+        return account
+
+    def update_following_count(self, save):
+        """
+        Update the saved following count
+        """
+        self.following_count = self.following.count()
+        if save:
+            self.save()
+
     def fetch_followers(self):
         """
         Fetch the accounts following this account
         """
         if not self.user_id:
             return False
+
+        # get all previous followers
+        old_followers = dict((a.slug, a) for a in self.followers.all())
+
+        # get and save new followings
+        followers_list = self.get_backend().user_followers(self)
+        new_followers = {}
+        for gaccount in followers_list:
+            account = self.add_follower(gaccount, False)
+            if account:
+                new_followers[account.slug] = account
+
+        # remove old followers
+        removed = set(old_followers.keys()).difference(set(new_followers.keys()))
+        for slug in removed:
+            self.remove_follower(old_followers[slug], update_self_count=False)
+
+        self.update_followers_count(save=True)
+
+        return True
+
+    def add_follower(self, account, update_self_count):
+        """
+        Try to add the account described by `account` as follower of
+        the current account.
+        `account` can be an Account object, or a dict. In this case, it
+        must contain a `slug` field.
+        All other fields in `account` will only be used to fill
+        the new Account fields if we must create it.
+        """
+        # we have a dict : get the account
+        if isinstance(account, dict):
+            if not account.get('slug', False):
+                return None
+            account = Account.objects.get_or_new(
+                self.backend, account['slug'], defaults=account)
+
+        # we have something else but an account : exit
+        elif not isinstance(account, Account):
+            return None
+
+        # save the account if it's a new one
+        is_new = not bool(account.id)
+        if is_new:
+            account.following_count = 1
+            account.save()
+
+        # add the follower
+        self.followers.add(account)
+
+        # update the count if we can
+        if update_self_count:
+            self.update_followers_count(save=True)
+
+        # update the following count for the other account
+        if not is_new:
+            account.update_following_count(save=True)
+
+        return account
+
+    def remove_account(self, account, update_self_count):
+        """
+        Remove the given account from the ones following
+        the current account
+        """
+        # we have something else but an account : exit
+        if not isinstance(account, Account):
+            return
+
+        # remove the follower
+        self.followers.remove(account)
+
+        # update the count if we can
+        if update_self_count:
+            self.update_follower_count(save=True)
+
+        # update the following count for the other account
+        account.update_following_count(save=True)
+
+    def update_followers_count(self, save):
+        """
+        Update the saved followers count
+        """
+        self.followers_count = self.followers.count()
+        if save:
+            self.save()
 
     def fetch_repositories(self):
         """
@@ -229,6 +403,19 @@ class Account(SyncableModel):
         if not self.user_id:
             return False
 
+    def add_repository(self, repository, update_self_count):
+        pass
+
+    def remove_repository(self, repository, update_self_count):
+        pass
+
+    def update_repositories_count(self, save):
+        """
+        Update the saved repositories count
+        """
+        self.repositories_count = self.repositories.count()
+        if save:
+            self.save()
 
 class Repository(SyncableModel):
     """

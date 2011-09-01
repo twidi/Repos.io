@@ -68,8 +68,48 @@ class GithubBackend(BaseBackend):
         account.homepage = guser.blog
         account.private = False
 
-        account.official_followers_count = guser.followers_count
-        account.official_following_count = guser.following_count
+        account.official_followers_count = guser.followers_count or 0
+        account.official_following_count = guser.following_count or 0
+
+    def user_following(self, account, access_token=None):
+        """
+        Fetch the accounts followed by the given one
+        """
+        # get/create the github instance
+        github = self.github(access_token)
+
+        # get user data from github
+        gusers = github.users.following(account.slug)
+
+        result = []
+
+        # make a dict for each
+        for guser in gusers:
+            result.append(dict(
+                slug = guser,
+            ))
+
+        return result
+
+    def user_followers(self, account, access_token=None):
+        """
+        Fetch the accounts following the given one
+        """
+        # get/create the github instance
+        github = self.github(access_token)
+
+        # get user data from github
+        gusers = github.users.followers(account.slug)
+
+        result = []
+
+        # make a dict for each
+        for guser in gusers:
+            result.append(dict(
+                slug = guser,
+            ))
+
+        return result
 
     def repository_project(self, repository):
         """

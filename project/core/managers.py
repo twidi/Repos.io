@@ -24,14 +24,19 @@ class AccountManager(models.Manager):
 
         return account
 
-    def get_or_new(self, backend, slug):
+    def get_or_new(self, backend, slug, defaults=None):
         """
         Try to get a existing accout, else create one (without saving it in
         database)
+        If defaults is given, it's content will be used to create the new Account
         """
         account = self.get_for_slug(backend, slug)
         if not account:
-            account = self.model(backend=backend, slug=slug)
+            if not defaults:
+                defaults = {}
+            defaults['backend'] = backend
+            defaults['slug'] = slug
+            account = self.model(**defaults)
         return account
 
     def get_for_slug(self, backend, slug):

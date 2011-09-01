@@ -17,7 +17,19 @@ class BaseBackend(object):
         """
         raise NotImplementedError('Implement in subclass')
 
-    def repository_project(self, repository):
+    def user_following(self, account, access_token=None):
+        """
+        Fetch the accounts followed by the given one
+        """
+        raise NotImplementedError('Implement in subclass')
+
+    def user_followers(self, account, access_token=None):
+        """
+        Fetch the accounts following the given one
+        """
+        raise NotImplementedError('Implement in subclass')
+
+    def repository_project(self, repository, access_token=None):
         """
         Return a project name the provider can use
         """
