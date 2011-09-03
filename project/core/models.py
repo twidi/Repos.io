@@ -170,8 +170,8 @@ class Account(SyncableModel):
     # Saved counts
     followers_count = models.PositiveIntegerField(blank=True, null=True)
     following_count = models.PositiveIntegerField(blank=True, null=True)
-    followers_count_modified = models.DateTimeField(blank=True, null=True)
-    following_count_modified = models.DateTimeField(blank=True, null=True)
+    followers_modified = models.DateTimeField(blank=True, null=True)
+    following_modified = models.DateTimeField(blank=True, null=True)
     # List of followed Account object
     following = models.ManyToManyField('self', related_name='followers', symmetrical=False)
 
@@ -179,7 +179,7 @@ class Account(SyncableModel):
     repositories = models.ManyToManyField('Repository', related_name='followers')
     # Saved count
     repositories_count = models.PositiveIntegerField(blank=True, null=True)
-    repositories_count_modified = models.DateTimeField(blank=True, null=True)
+    repositories_modified = models.DateTimeField(blank=True, null=True)
 
     # The default manager
     objects = AccountManager()
@@ -200,7 +200,7 @@ class Account(SyncableModel):
             return self.STATUS.need_related
         # a related list need to be updated ?
         for operation in ('following', 'followers', 'repositories'):
-            field = '%s_count_modified' % operation
+            field = '%s_modified' % operation
             date = getattr(self, field)
             if not date or date < datetime.now() - MIN_FETCH_RELATED_DELTA:
                 return self.STATUS.need_related
@@ -237,7 +237,7 @@ class Account(SyncableModel):
         for slug in removed:
             self.remove_following(old_following[slug], update_self_count=False)
 
-        self.following_count_modified = datetime.now()
+        self.following_modified = datetime.now()
         self.update_following_count(save=True)
 
         return True
@@ -330,7 +330,7 @@ class Account(SyncableModel):
         for slug in removed:
             self.remove_follower(old_followers[slug], update_self_count=False)
 
-        self.followers_count_modified = datetime.now()
+        self.followers_modified = datetime.now()
         self.update_followers_count(save=True)
 
         return True
@@ -421,7 +421,7 @@ class Account(SyncableModel):
         for project in removed:
             self.remove_repository(old_repositories[project], update_self_count=False)
 
-        self.repositories_count_modified = datetime.now()
+        self.repositories_modified = datetime.now()
         self.update_repositories_count(save=True)
 
         return True
@@ -533,11 +533,12 @@ class Repository(SyncableModel):
     official_forks_count = models.PositiveIntegerField(blank=True, null=True)
     # Project name of the repository from which this repo is the fork (from the backend)
     official_fork_of = models.TextField(blank=True, null=True)
+
     # Followers count (from the backend)
     official_followers_count = models.PositiveIntegerField(blank=True, null=True)
     # Saved count
     followers_count = models.PositiveIntegerField(blank=True, null=True)
-    followers_count_modified = models.DateTimeField(blank=True, null=True)
+    followers_modified = models.DateTimeField(blank=True, null=True)
 
     # Set to True if this Repository is a fork of another
     is_fork = models.NullBooleanField(blank=True, null=True)
@@ -548,7 +549,7 @@ class Repository(SyncableModel):
     contributors = models.ManyToManyField('Account', related_name='contributing')
     # Saved count
     contributors_count = models.PositiveIntegerField(blank=True, null=True)
-    contributors_count_modified = models.DateTimeField(blank=True, null=True)
+    contributors_modified = models.DateTimeField(blank=True, null=True)
 
     # The default manager
     objects = RepositoryManager()
@@ -584,7 +585,7 @@ class Repository(SyncableModel):
             return self.STATUS.need_related
         # a related list need to be updated ?
         for operation in ('followers', 'contributors'):
-            field = '%s_count_modified' % operation
+            field = '%s_modified' % operation
             date = getattr(self, field)
             if not date or date < datetime.now() - MIN_FETCH_RELATED_DELTA:
                 return self.STATUS.need_related
@@ -695,7 +696,7 @@ class Repository(SyncableModel):
         for slug in removed:
             self.remove_follower(old_followers[slug], update_self_count=False)
 
-        self.followers_count_modified = datetime.now()
+        self.followers_modified = datetime.now()
         self.update_followers_count(save=True)
 
         return True
@@ -786,7 +787,7 @@ class Repository(SyncableModel):
         for slug in removed:
             self.remove_contributor(old_contributors[slug], update_self_count=False)
 
-        self.contributors_count_modified = datetime.now()
+        self.contributors_modified = datetime.now()
         self.update_contributors_count(save=True)
 
         return True
