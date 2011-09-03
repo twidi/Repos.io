@@ -37,6 +37,9 @@ class SyncableModel(TimeStampedModel):
     # A status field, using STATUS
     status = StatusField(max_length=10)
 
+    # Date of last own full fetch
+    last_fetch = models.DateTimeField(blank=True, null=True)
+
     # Fetch operations
     fetch_related_operations = ()
 
@@ -99,7 +102,7 @@ class SyncableModel(TimeStampedModel):
             return True
         if self.status in (self.STATUS.to_update,):
             return True
-        if self.status == 'ok' and self.modified < datetime.now() - MIN_FETCH_DELTA:
+        if self.status == 'ok' and self.last_fetch < datetime.now() - MIN_FETCH_DELTA:
             return True
         return False
 
@@ -210,6 +213,7 @@ class Account(SyncableModel):
         self._block_save = True
         self.get_backend().user_fetch(self)
         self._block_save = False
+        self.last_fetch = datetime.now()
 
         self.save()
 
@@ -593,6 +597,7 @@ class Repository(SyncableModel):
         self._block_save = True
         self.get_backend().repository_fetch(self)
         self._block_save = False
+        self.last_fetch = datetime.now()
 
         self.save()
 
