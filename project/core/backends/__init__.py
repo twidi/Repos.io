@@ -11,6 +11,14 @@ class BaseBackend(object):
     name = None
     needed_repository_identifiers = ('slug',)
 
+    def user_map(self, user):
+        """
+        Map the given user, which is an object (or dict, or...)
+        got from the backend, to a dict usable for creating/updating
+        an Account core object
+        """
+        raise NotImplementedError('Implement in subclass')
+
     def user_fetch(self, account):
         """
         Fetch the account from the provider and update the account
@@ -29,6 +37,12 @@ class BaseBackend(object):
         """
         raise NotImplementedError('Implement in subclass')
 
+    def user_repositories(self, account, access_token=None):
+        """
+        Fetch the repositories owned/watched by the given accont
+        """
+        raise NotImplementedError('Implement in subclass')
+
     def repository_project(self, repository, access_token=None):
         """
         Return a project name the provider can use
@@ -42,9 +56,23 @@ class BaseBackend(object):
         """
         raise NotImplementedError('Implement in subclass')
 
+    def repository_map(self, repository):
+        """
+        Map the given repository, which is an object (or dict, or...)
+        got from the backend, to a dict usable for creating/updating
+        a Repository core object
+        """
+        raise NotImplementedError('Implement in subclass')
+
     def repository_fetch(self, repository, access_token=None):
         """
         Fetch the repository from the provider and update the object
+        """
+        raise NotImplementedError('Implement in subclass')
+
+    def repository_followers(self, repository, access_token=None):
+        """
+        Fetch the accounts following the given repository
         """
         raise NotImplementedError('Implement in subclass')
 

@@ -1,4 +1,5 @@
 from github2.client import Github
+from github2.users import User
 
 from django.conf import settings
 
@@ -56,20 +57,40 @@ class GithubBackend(BaseBackend):
         guser = github.users.show(account.slug)
 
         # associate github user and account
+        rmap = self.user_map(guser)
+        for key, value in rmap.items():
+            setattr(account, key, value)
 
-        account.name = guser.name
+    def user_map(self, user):
+        """
+        Map the given user, which is an object (or dict)
+        got from the backend, to a dict usable for creating/updating
+        an Account core object
+        # in this backend, we attend User objects only
+        """
+        simple_mapping = dict(
+            slug = 'login',
+            name = 'name',
+            since = 'created_at',
+            homepage = 'blog',
+            avatar = 'avatar_url',
+        )
 
-        if getattr(guser, 'avatar_url', None):
-            account.avatar = guser.avatar_url
-        elif getattr(guser, 'gravatar_id', None):
-            account.avatar = 'http://www.gravatar.com/avatar/%s' % guser.gravatar_id
+        result = {}
 
-        account.since = guser.created_at
-        account.homepage = guser.blog
-        account.private = False
+        for internal_key, backend_key in simple_mapping.items():
+            value = getattr(user, backend_key, None)
+            if value is not None:
+                result[internal_key] = value
 
-        account.official_followers_count = guser.followers_count or 0
-        account.official_following_count = guser.following_count or 0
+        result['official_followers_count'] = getattr(user, 'followers_count', 0) or 0
+        result['official_following_count'] = getattr(user, 'following_count', 0) or 0
+
+        if 'avatar' not in result and getattr(user, 'gravatar_id', None):
+                result['avatar'] = 'http://www.gravatar.com/avatar/%s' % user.gravatar_id
+
+        return result
+
 
     def user_following(self, account, access_token=None):
         """
@@ -78,16 +99,13 @@ class GithubBackend(BaseBackend):
         # get/create the github instance
         github = self.github(access_token)
 
-        # get user data from github
+        # get users data from github
         gusers = github.users.following(account.slug)
 
         result = []
 
-        # make a dict for each
         for guser in gusers:
-            result.append(dict(
-                slug = guser,
-            ))
+            result.append(self.user_map(User(login=guser)))
 
         return result
 
@@ -98,16 +116,32 @@ class GithubBackend(BaseBackend):
         # get/create the github instance
         github = self.github(access_token)
 
-        # get user data from github
+        # get users data from github
         gusers = github.users.followers(account.slug)
 
         result = []
 
         # make a dict for each
         for guser in gusers:
-            result.append(dict(
-                slug = guser,
-            ))
+            result.append(self.user_map(User(login=guser)))
+
+        return result
+
+    def user_repositories(self, account, access_token=None):
+        """
+        Fetch the repositories owned/watched by the given accont
+        """
+        # get/create the github instance
+        github = self.github(access_token)
+
+        # get repositories data from github
+        grepos = github.repos.watching(account.slug)
+
+        result = []
+
+        # make a dict for each
+        for grepo in grepos:
+            result.append(self.repository_map(grepo))
 
         return result
 
@@ -140,16 +174,59 @@ class GithubBackend(BaseBackend):
         project = repository.get_project()
         grepo = github.repos.show(project)
 
-        # associate github user and account
-        repository.name = grepo.name
-        repository.url = grepo.url
-        repository.description = grepo.description
-        repository.homepage = grepo.homepage
-        repository.official_owner = grepo.owner
-        repository.official_forks_count = grepo.forks
-        repository.official_fork_of = grepo.parent
-        repository.official_followers_count = grepo.watchers
-        repository.is_fork = grepo.fork
-        repository.private = grepo.private
+        # associate github repo to core one
+        rmap = self.repository_map(grepo)
+        for key, value in rmap.items():
+            setattr(repository, key, value)
+
+    def repository_map(self, repository):
+        """
+        Map the given repository, which is an object (or dict)
+        got from the backend, to a dict usable for creating/updating
+        a Repository core object
+        # in this backend, we attend Repository objects only
+        """
+
+        simple_mapping = dict(
+            slug = 'name',
+            name = 'name',
+            url = 'url',
+            description = 'description',
+            homepage = 'homepage',
+            official_owner = 'owner',
+            official_forks_count = 'forks',
+            official_fork_of = 'parent',
+            official_followers_count = 'watchers',
+            is_fork = 'fork',
+            private = 'private',
+        )
+
+        result = {}
+
+
+        for internal_key, backend_key in simple_mapping.items():
+            value = getattr(repository, backend_key, None)
+            if value is not None:
+                result[internal_key] = value
+
+        return result
+
+    def repository_followers(self, repository, access_token=None):
+        """
+        Fetch the accounts following the given repository
+        """
+        # get/create the github instance
+        github = self.github(access_token)
+
+        # get users data from github
+        gusers = github.repos.watchers(repository.project)
+
+        result = []
+
+        # make a dict for each
+        for guser in gusers:
+            result.append(self.user_map(User(login=guser)))
+
+        return result
 
 BACKENDS = { 'github': GithubBackend, }

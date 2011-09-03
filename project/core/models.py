@@ -14,6 +14,7 @@ from core.managers import AccountManager, RepositoryManager
 BACKENDS_CHOICES = Choices(*BACKENDS.keys())
 
 MIN_FETCH_DELTA = timedelta(minutes=30)
+MIN_FETCH_RELATED_DELTA = timedelta(minutes=30)
 
 class SyncableModel(TimeStampedModel):
     """
@@ -70,6 +71,13 @@ class SyncableModel(TimeStampedModel):
         """
         raise NotImplementedError('Implement in subclasses')
 
+    def update_status(self):
+        """
+        Simply get and save the current status (can be updated because of datetime delta)
+        """
+        self.status = self.get_new_status()
+        self.save()
+
     def save(self, *args, **kwargs):
         """
         Save is forbidden while in the backend...
@@ -99,31 +107,28 @@ class SyncableModel(TimeStampedModel):
         """
         Check if we need to update some related objects
         """
-        return bool(self.id) and self.status == self.STATUS.need_related
+        if not self.id:
+            return False
+        return self.get_new_status() in (self.STATUS.to_update, self.STATUS.need_related)
 
-    def fetch_related(self, limit=1):
+    def fetch_related(self, limit=None):
         """
         If the object has some related content that need to be fetched, do
         it, but limit the fetch to the given limit (default 1)
         Returns the number of operations done
         """
+        if not self.fetch_related_needed():
+            return 0
         done = 0
         for operation_name in self.fetch_related_operations:
             operation = getattr(self, 'fetch_%s' % operation_name)
             if operation():
                 done += 1
             if limit and done >= limit:
-                return
-        return done
-
-    def update_related(self, limit=None):
-        """
-        Update one or many (default all) related objects
-        """
-        if not self.fetch_related_needed():
-            return
-        if self.fetch_related(limit):
+                break
+        if done:
             self.save()
+        return done
 
 
 class Account(SyncableModel):
@@ -162,13 +167,16 @@ class Account(SyncableModel):
     # Saved counts
     followers_count = models.PositiveIntegerField(blank=True, null=True)
     following_count = models.PositiveIntegerField(blank=True, null=True)
+    followers_count_modified = models.DateTimeField(blank=True, null=True)
+    following_count_modified = models.DateTimeField(blank=True, null=True)
     # List of followed Account object
     following = models.ManyToManyField('self', related_name='followers', symmetrical=False)
 
     # List of owned/watched repositories
-    repositories = models.ManyToManyField('Repository', related_name='accounts')
+    repositories = models.ManyToManyField('Repository', related_name='followers')
     # Saved count
     repositories_count = models.PositiveIntegerField(blank=True, null=True)
+    repositories_count_modified = models.DateTimeField(blank=True, null=True)
 
     # The default manager
     objects = AccountManager()
@@ -184,13 +192,18 @@ class Account(SyncableModel):
         """
         Return the status to be saved
         """
-        if not self.user_id:
-            return self.STATUS.to_update
+        # a related list need to be fetched ?
         if None in (self.following_count, self.followers_count, self.repositories_count):
             return self.STATUS.need_related
+        # a related list need to be updated ?
+        for operation in ('following', 'followers', 'repositories'):
+            field = '%s_count_modified' % operation
+            date = getattr(self, field)
+            if not date or date < datetime.now() - MIN_FETCH_RELATED_DELTA:
+                return self.STATUS.need_related
         return self.STATUS.ok
 
-    def fetch_from_backend(self):
+    def fetch(self):
         """
         Fetch data from the provider
         """
@@ -200,21 +213,10 @@ class Account(SyncableModel):
 
         self.save()
 
-    def fetch_related_needed(self):
-        """
-        Do net fetch related if we have no user
-        """
-        if not self.user_id:
-            return False
-        return super(Account, self).fetch_related_needed()
-
     def fetch_following(self):
         """
         Fetch the accounts followed by this account
         """
-        if not self.user_id:
-            return False
-
         # get all previous following
         old_following = dict((a.slug, a) for a in self.following.all())
 
@@ -231,6 +233,7 @@ class Account(SyncableModel):
         for slug in removed:
             self.remove_following(old_following[slug], update_self_count=False)
 
+        self.following_count_modified = datetime.now()
         self.update_following_count(save=True)
 
         return True
@@ -249,7 +252,7 @@ class Account(SyncableModel):
             if not account.get('slug', False):
                 return None
             account = Account.objects.get_or_new(
-                self.backend, account['slug'], defaults=account)
+                self.backend, account.pop('slug'), **account)
 
         # we have something else but an account : exit
         elif not isinstance(account, Account):
@@ -307,9 +310,6 @@ class Account(SyncableModel):
         """
         Fetch the accounts following this account
         """
-        if not self.user_id:
-            return False
-
         # get all previous followers
         old_followers = dict((a.slug, a) for a in self.followers.all())
 
@@ -326,6 +326,7 @@ class Account(SyncableModel):
         for slug in removed:
             self.remove_follower(old_followers[slug], update_self_count=False)
 
+        self.followers_count_modified = datetime.now()
         self.update_followers_count(save=True)
 
         return True
@@ -344,7 +345,7 @@ class Account(SyncableModel):
             if not account.get('slug', False):
                 return None
             account = Account.objects.get_or_new(
-                self.backend, account['slug'], defaults=account)
+                self.backend, account.pop('slug'), **account)
 
         # we have something else but an account : exit
         elif not isinstance(account, Account):
@@ -369,7 +370,7 @@ class Account(SyncableModel):
 
         return account
 
-    def remove_account(self, account, update_self_count):
+    def remove_follower(self, account, update_self_count):
         """
         Remove the given account from the ones following
         the current account
@@ -383,7 +384,7 @@ class Account(SyncableModel):
 
         # update the count if we can
         if update_self_count:
-            self.update_follower_count(save=True)
+            self.update_followers_count(save=True)
 
         # update the following count for the other account
         account.update_following_count(save=True)
@@ -400,14 +401,86 @@ class Account(SyncableModel):
         """
         Fetch the repositories owned/watched by this account
         """
-        if not self.user_id:
-            return False
+        # get all previous repositories
+        old_repositories = dict((r.project, r) for r in self.repositories.all())
+
+        # get and save new repositories
+        repositories_list = self.get_backend().user_repositories(self)
+        new_repositories = {}
+        for grepo in repositories_list:
+            repository = self.add_repository(grepo, False)
+            if repository:
+                new_repositories[repository.project] = repository
+
+        # remove old repositories
+        removed = set(old_repositories.keys()).difference(set(new_repositories.keys()))
+        for project in removed:
+            self.remove_repository(old_repositories[project], update_self_count=False)
+
+        self.repositories_count_modified = datetime.now()
+        self.update_repositories_count(save=True)
+
+        return True
 
     def add_repository(self, repository, update_self_count):
-        pass
+        """
+        Try to add the repository described by `repository` as one
+        owner/watched by the current account.
+        `repository` can be an Repository object, or a dict. In this case, it
+        must contain enouhg identifiers (see `needed_repository_identifiers`)
+        All other fields in `repository` will only be used to fill
+        the new Repository fields if we must create it.
+        """
+        # we have a dict : get the repository
+        if isinstance(repository, dict):
+            try:
+                self.get_backend().assert_valid_repository_identifiers(**repository)
+            except:
+                return None
+            else:
+                repository = Repository.objects.get_or_new(
+                    self.backend, repository.pop('project', None), **repository)
+
+        # we have something else but a repository : exit
+        elif not isinstance(repository, Repository):
+            return None
+
+        # save the repository if it's a new one
+        is_new = not bool(repository.id)
+        if is_new:
+            repository.followers_count = 1
+            repository.save()
+
+        # add the repository
+        self.repositories.add(repository)
+
+        # update the count if we can
+        if update_self_count:
+            self.update_repositories_count(save=True)
+
+        # update the followers count for the repository
+        if not is_new:
+            repository.update_followers_count(save=True)
+
+        return repository
 
     def remove_repository(self, repository, update_self_count):
-        pass
+        """
+        Remove the given account from the ones the user own/watch
+        """
+        # we have something else but a repository : exit
+        if not isinstance(repository, Repository):
+            return
+
+        # remove the repository
+        self.repositories.remove(repository)
+
+        # update the count if we can
+        if update_self_count:
+            self.update_repositories_count(save=True)
+
+        # update the followers count for the repository
+        repository.update_followers_count(save=True)
 
     def update_repositories_count(self, save):
         """
@@ -458,6 +531,9 @@ class Repository(SyncableModel):
     official_fork_of = models.TextField(blank=True, null=True)
     # Followers count (from the backend)
     official_followers_count = models.PositiveIntegerField(blank=True, null=True)
+    # Saved count
+    followers_count = models.PositiveIntegerField(blank=True, null=True)
+    followers_count_modified = models.DateTimeField(blank=True, null=True)
 
     # Set to True if this Repository is a fork of another
     is_fork = models.NullBooleanField(blank=True, null=True)
@@ -468,7 +544,7 @@ class Repository(SyncableModel):
     objects = RepositoryManager()
 
     # Fetch operations
-    fetch_related_operations = ('owner', 'parent_fork', )
+    fetch_related_operations = ('owner', 'parent_fork', 'followers')
 
 
     class Meta:
@@ -485,12 +561,23 @@ class Repository(SyncableModel):
         # need the parents fork's name ?
         if self.is_fork and not self.official_fork_of:
             return self.STATUS.to_update
-        # need the owner ?
-        if not self.owner_id:
+        # need the owner (or to remove it) ?
+        if self.official_owner and not self.owner_id:
             return self.STATUS.need_related
+        if not self.official_owner and self.owner_id:
+            return self.STAUTS.need_related
         # need the parent fork ?
         if self.is_fork and not self.parent_fork_id:
             return self.STATUS.need_related
+        # a related list need to be fetched ?
+        if None in (self.followers_count,):
+            return self.STATUS.need_related
+        # a related list need to be updated ?
+        for operation in ('followers',):
+            field = '%s_count_modified' % operation
+            date = getattr(self, field)
+            if not date or date < datetime.now() - MIN_FETCH_RELATED_DELTA:
+                return self.STATUS.need_related
         return self.STATUS.ok
 
     def get_project(self):
@@ -499,7 +586,7 @@ class Repository(SyncableModel):
         """
         return self.project or self.get_backend().repository_project(self)
 
-    def fetch_from_backend(self):
+    def fetch(self):
         """
         Fetch data from the provider
         """
@@ -521,6 +608,9 @@ class Repository(SyncableModel):
         """
         Create or update the repository's owner
         """
+        if not self.official_owner:
+            return False
+
         save_needed = False
         fetched = False
 
@@ -531,14 +621,14 @@ class Repository(SyncableModel):
             owner = self.owner
 
         if owner.fetch_needed():
-            owner.fetch_from_backend()
+            owner.fetch()
             fetched = True
 
         if save_needed:
             if not self.owner_id:
                 self.owner = owner
             self.save()
-            self.accounts.add(self.owner)
+            self.followers.add(self.owner)
 
         return fetched
 
@@ -548,6 +638,9 @@ class Repository(SyncableModel):
         parent fork's name
         """
         if not (self.is_fork and self.official_fork_of):
+            if self.parent_fork_id:
+                self.parent_fork = None
+                self.save()
             return False
 
         save_needed = False
@@ -561,7 +654,7 @@ class Repository(SyncableModel):
             parent_fork = self.parent_fork
 
         if parent_fork.fetch_needed():
-            parent_fork.fetch_from_backend()
+            parent_fork.fetch()
             fetched = True
 
         if save_needed:
@@ -570,3 +663,94 @@ class Repository(SyncableModel):
             self.save()
 
         return fetched
+
+    def fetch_followers(self):
+        """
+        Fetch the accounts following this repository
+        """
+        # get all previous followers
+        old_followers = dict((a.slug, a) for a in self.followers.all())
+
+        # get and save new followings
+        followers_list = self.get_backend().repository_followers(self)
+        new_followers = {}
+        for gaccount in followers_list:
+            account = self.add_follower(gaccount, False)
+            if account:
+                new_followers[account.slug] = account
+
+        # remove old followers
+        removed = set(old_followers.keys()).difference(set(new_followers.keys()))
+        for slug in removed:
+            self.remove_follower(old_followers[slug], update_self_count=False)
+
+        self.followers_count_modified = datetime.now()
+        self.update_followers_count(save=True)
+
+        return True
+
+    def add_follower(self, account, update_self_count):
+        """
+        Try to add the account described by `account` as follower of
+        the current repository.
+        `account` can be an Account object, or a dict. In this case, it
+        must contain a `slug` field.
+        All other fields in `account` will only be used to fill
+        the new Account fields if we must create it.
+        """
+        # we have a dict : get the account
+        if isinstance(account, dict):
+            if not account.get('slug', False):
+                return None
+            account = Account.objects.get_or_new(
+                self.backend, account.pop('slug'), **account)
+
+        # we have something else but an account : exit
+        elif not isinstance(account, Account):
+            return None
+
+        # save the account if it's a new one
+        is_new = not bool(account.id)
+        if is_new:
+            account.repositories_count = 1
+            account.save()
+
+        # add the follower
+        self.followers.add(account)
+
+        # update the count if we can
+        if update_self_count:
+            self.update_followers_count(save=True)
+
+        # update the repositories count for the account
+        if not is_new:
+            account.update_repositories_count(save=True)
+
+        return account
+
+    def remove_follower(self, account, update_self_count):
+        """
+        Remove the given account from the ones following
+        the Repository
+        """
+        # we have something else but an account : exit
+        if not isinstance(account, Account):
+            return
+
+        # remove the follower
+        self.followers.remove(account)
+
+        # update the count if we can
+        if update_self_count:
+            self.update_followers_count(save=True)
+
+        # update the following count for the other account
+        account.update_repositories_count(save=True)
+
+    def update_followers_count(self, save):
+        """
+        Update the saved followers
+        """
+        self.followers_count = self.followers.count()
+        if save:
+            self.save()
