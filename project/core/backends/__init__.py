@@ -76,6 +76,14 @@ class BaseBackend(object):
         """
         raise NotImplementedError('Implement in subclass')
 
+    def repository_contributors(self, repository, access_token=None):
+        """
+        Fetch the accounts contributing the given repository
+        For each account (dict) returned, the number of contributions is stored
+        in ['__extra__']['contributions']
+        """
+        raise NotImplementedError('Implement in subclass')
+
     def assert_valid_repository_identifiers(self, **kwargs):
         """
         Test kwargs to check if we have all needed parameters to identify a project

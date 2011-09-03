@@ -544,11 +544,17 @@ class Repository(SyncableModel):
     # The Repository object from which this repo is the fork
     parent_fork = models.ForeignKey('self', related_name='forks', blank=True, null=True, on_delete=models.SET_NULL)
 
+    # List of owned/watched contributors
+    contributors = models.ManyToManyField('Account', related_name='contributing')
+    # Saved count
+    contributors_count = models.PositiveIntegerField(blank=True, null=True)
+    contributors_count_modified = models.DateTimeField(blank=True, null=True)
+
     # The default manager
     objects = RepositoryManager()
 
     # Fetch operations
-    fetch_related_operations = ('owner', 'parent_fork', 'followers')
+    fetch_related_operations = ('owner', 'parent_fork', 'followers', 'contributors')
 
 
     class Meta:
@@ -577,7 +583,7 @@ class Repository(SyncableModel):
         if None in (self.followers_count,):
             return self.STATUS.need_related
         # a related list need to be updated ?
-        for operation in ('followers',):
+        for operation in ('followers', 'contributors'):
             field = '%s_count_modified' % operation
             date = getattr(self, field)
             if not date or date < datetime.now() - MIN_FETCH_RELATED_DELTA:
@@ -757,5 +763,88 @@ class Repository(SyncableModel):
         Update the saved followers
         """
         self.followers_count = self.followers.count()
+        if save:
+            self.save()
+
+    def fetch_contributors(self):
+        """
+        Fetch the accounts following this repository
+        """
+        # get all previous contributors
+        old_contributors = dict((a.slug, a) for a in self.contributors.all())
+
+        # get and save new followings
+        contributors_list = self.get_backend().repository_contributors(self)
+        new_contributors = {}
+        for gaccount in contributors_list:
+            account = self.add_contributor(gaccount, False)
+            if account:
+                new_contributors[account.slug] = account
+
+        # remove old contributors
+        removed = set(old_contributors.keys()).difference(set(new_contributors.keys()))
+        for slug in removed:
+            self.remove_contributor(old_contributors[slug], update_self_count=False)
+
+        self.contributors_count_modified = datetime.now()
+        self.update_contributors_count(save=True)
+
+        return True
+
+    def add_contributor(self, account, update_self_count):
+        """
+        Try to add the account described by `account` as contributor of
+        the current repository.
+        `account` can be an Account object, or a dict. In this case, it
+        must contain a `slug` field.
+        All other fields in `account` will only be used to fill
+        the new Account fields if we must create it.
+        """
+        # we have a dict : get the account
+        if isinstance(account, dict):
+            if not account.get('slug', False):
+                return None
+            account = Account.objects.get_or_new(
+                self.backend, account.pop('slug'), **account)
+
+        # we have something else but an account : exit
+        elif not isinstance(account, Account):
+            return None
+
+        # save the account if it's a new one
+        is_new = not bool(account.id)
+        if is_new:
+            account.save()
+
+        # add the contributor
+        self.contributors.add(account)
+
+        # update the count if we can
+        if update_self_count:
+            self.update_contributors_count(save=True)
+
+        return account
+
+    def remove_contributor(self, account, update_self_count):
+        """
+        Remove the given account from the ones contributing to
+        the Repository
+        """
+        # we have something else but an account : exit
+        if not isinstance(account, Account):
+            return
+
+        # remove the contributor
+        self.contributors.remove(account)
+
+        # update the count if we can
+        if update_self_count:
+            self.update_contributors_count(save=True)
+
+    def update_contributors_count(self, save):
+        """
+        Update the saved contributors
+        """
+        self.contributors_count = self.contributors.count()
         if save:
             self.save()

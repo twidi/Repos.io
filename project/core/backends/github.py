@@ -229,4 +229,28 @@ class GithubBackend(BaseBackend):
 
         return result
 
+    def repository_contributors(self, repository, access_token=None):
+        """
+        Fetch the accounts contributing the given repository
+        For each account (dict) returned, the number of contributions is stored
+        in ['__extra__']['contributions']
+        """
+        # get/create the github instance
+        github = self.github(access_token)
+
+        # get users data from github
+        gusers = github.repos.list_contributors(repository.project)
+
+        result = []
+
+        # make a dict for each
+        for guser in gusers:
+            if guser != 'invalid-email-address':
+                account_dict = self.user_map(guser)
+                # TODO : nb of contributions not used yet but later...
+                account_dict.setdefault('__extra__', {})['contributions'] = guser.contributions
+                result.append(account_dict)
+
+        return result
+
 BACKENDS = { 'github': GithubBackend, }
