@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 
 from django.db import models
 from django.contrib.auth.models import User
-from django.template.defaultfilters import slugify
 
 from model_utils import Choices
 from model_utils.models import TimeStampedModel
@@ -11,6 +10,7 @@ from model_utils.fields import StatusField
 from core.backends import BACKENDS, get_backend
 from core.exceptions import SaveForbiddenInBackend
 from core.managers import AccountManager, RepositoryManager
+from core.utils import slugify
 
 BACKENDS_CHOICES = Choices(*BACKENDS.keys())
 
@@ -203,6 +203,15 @@ class Account(SyncableModel):
     class Meta:
         unique_together = (('backend', 'slug'),)
 
+    @models.permalink
+    def get_absolute_url(self):
+        """
+        Home page url for this Account
+        """
+        return ('account_home', (), dict(
+            backend = self.backend,
+            slug = self.slug
+        ))
 
     def get_new_status(self):
         """
@@ -546,6 +555,8 @@ class Repository(SyncableModel):
     homepage = models.URLField(max_length=255, blank=True, null=True)
     # The canonical project name (example twidi/myproject)
     project = models.TextField()
+    # The same, adapted for sorting
+    project_sort = models.TextField()
     # Is this repository private ?
     private = models.NullBooleanField(blank=True, null=True)
     # Repository dates
@@ -596,6 +607,16 @@ class Repository(SyncableModel):
 
     def __unicode__(self):
         return u'%s' % self.get_project()
+
+    @models.permalink
+    def get_absolute_url(self):
+        """
+        Home page url for this Account
+        """
+        return ('repository_home', (), dict(
+            backend = self.backend,
+            project = self.project
+        ))
 
     def get_new_status(self):
         """
@@ -655,6 +676,7 @@ class Repository(SyncableModel):
         """
         if not self.project:
             self.project = self.get_project()
+        self.project_sort = Repository.objects.slugify_project(self.project)
 
         if self.name:
             self.name_sort = slugify(self.name)
