@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.template.defaultfilters import slugify
 
 from model_utils import Choices
 from model_utils.models import TimeStampedModel
@@ -145,6 +146,8 @@ class Account(SyncableModel):
 
     # The slug for this account (text identifier for the provider : login, username...)
     slug = models.SlugField(max_length=255)
+    # The same, adapted for sorting
+    slug_sort = models.SlugField(max_length=255)
     # The fullname
     name = models.CharField(max_length=255, blank=True, null=True)
     # The avatar url
@@ -218,6 +221,13 @@ class Account(SyncableModel):
         self.last_fetch = datetime.now()
 
         self.save()
+
+    def save(self, *args, **kwargs):
+        """
+        Update the project and sortable fields
+        """
+        self.slug_sort = slugify(self.slug)
+        super(Account, self).save(*args, **kwargs)
 
     def fetch_following(self):
         """
@@ -509,6 +519,8 @@ class Repository(SyncableModel):
     slug = models.SlugField(max_length=255)
     # The fullname of this repository
     name = models.CharField(max_length=255, blank=True, null=True)
+    # The same, adapted for sorting
+    name_sort = models.CharField(max_length=255, blank=True, null=True)
     # The web url for this repository
     url = models.URLField(max_length=255, blank=True, null=True)
     # The description of this repository
@@ -529,6 +541,8 @@ class Repository(SyncableModel):
 
     # The owner's "slug" of this project, from the backend
     official_owner = models.CharField(max_length=255, blank=True, null=True)
+    # The same, adapted for sorting
+    official_owner_sort = models.CharField(max_length=255, blank=True, null=True)
     # The Account object whom own this Repository
     owner = models.ForeignKey(Account, related_name='own_repositories', blank=True, null=True, on_delete=models.SET_NULL)
 
@@ -615,10 +629,12 @@ class Repository(SyncableModel):
 
     def save(self, *args, **kwargs):
         """
-        Update the project field
+        Update the project and sortable fields
         """
         if not self.project:
             self.project = self.get_project()
+        self.official_owner_sort = slugify(self.official_owner)
+        self.name_sort = slugify(self.name)
         super(Repository, self).save(*args, **kwargs)
 
     def fetch_owner(self):

@@ -3,14 +3,18 @@ from django.shortcuts import render
 from personal.decorators import check_account
 
 _sort_map = dict(
-    name = ('name', 'project name'),
-    owner = ('official_owner', 'owner'),
+    # get_key = ('db_field', 'readable name'),
+    name = ('name_sort', 'project name'),
+    owner = ('official_owner_sort', 'owner'),
     updated = ('official_modified', 'update date'),
 )
 
 @login_required
 @check_account
 def watching(request, slug, backend, account=None):
+    """
+    Display all owned/followed repository for the given account, with sorting.
+    """
 
     # manage sort order
     sort = request.GET.get('sort_by', 'name')
