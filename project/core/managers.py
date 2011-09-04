@@ -24,14 +24,21 @@ class AccountManager(models.Manager):
 
         return account
 
-    def get_or_new(self, backend, slug):
+    def get_or_new(self, backend, slug, **defaults):
         """
         Try to get a existing accout, else create one (without saving it in
         database)
+        If defaults is given, it's content will be used to create the new Account
         """
         account = self.get_for_slug(backend, slug)
         if not account:
-            account = self.model(backend=backend, slug=slug)
+            defaults = copy(defaults)
+            allowed_fields = self.model._meta.get_all_field_names()
+            defaults = dict((key, value) for key, value in defaults.items()
+                if key in allowed_fields)
+            defaults['backend'] = backend
+            defaults['slug'] = slug
+            account = self.model(**defaults)
         return account
 
     def get_for_slug(self, backend, slug):
@@ -50,7 +57,7 @@ class RepositoryManager(models.Manager):
     Manager for the Repository model
     """
 
-    def get_or_new(self, backend, project=None, **kwargs):
+    def get_or_new(self, backend, project=None, **defaults):
         """
         Try to get a existing accout, else create one (without saving it in
         database)
@@ -59,26 +66,29 @@ class RepositoryManager(models.Manager):
         """
         backend = get_backend(backend)
 
-        params = copy(kwargs)
+        defaults = copy(defaults)
 
         # get params from the project name
         if project:
             identifiers = backend.parse_project(project)
             for identifier in backend.needed_repository_identifiers:
                 if identifiers.get(identifier, False):
-                    params[identifier] = identifiers[identifier]
+                    defaults[identifier] = identifiers[identifier]
 
-        # test that we have all needed params
-        backend.assert_valid_repository_identifiers(**params)
-
-        # remove empty params
-        params = dict((key, value) for key, value in params.items()
-            if key in backend.needed_repository_identifiers and value)
-        params['backend'] = backend.name
+        # test that we have all needed defaults
+        backend.assert_valid_repository_identifiers(**defaults)
 
         try:
-            repository = self.get(**params)
+            identifiers = dict((key, defaults.get(key, None))
+                for key in backend.needed_repository_identifiers)
+            repository = self.get(**identifiers)
         except self.model.DoesNotExist:
-            repository = self.model(**params)
+            # remove empty defaults
+            allowed_fields = self.model._meta.get_all_field_names()
+            defaults = dict((key, value) for key, value in defaults.items()
+                if key in allowed_fields)
+            defaults['backend'] = backend.name
+
+            repository = self.model(**defaults)
 
         return repository
