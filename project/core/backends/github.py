@@ -8,6 +8,7 @@ from core.backends import BaseBackend
 class GithubBackend(BaseBackend):
 
     name = 'github'
+    auth_backend = 'github'
     needed_repository_identifiers = ('slug', 'official_owner',)
 
     def __init__(self, *args, **kwargs):
