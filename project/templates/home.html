@@ -4,17 +4,17 @@
     {% if user.is_authenticated %}
         <p>Welcome <em>{{ user.username }} </em>!</p>
 
-        {% with auth=social_auth %}
+        {% with accounts=user.accounts.all %}
 
-            {% if not social_auth.associated.oauth %}
+            {% if not accounts %}
                 <p>You have no account associated, <a href="{% url accounts_manage %}">click here to start associating your account</a>.</p>
             {% else %}
                 <p><a href="{% url accounts_manage %}">Click here to manage your account</a>.</p>
 
                 <p>You can view watched projects for your accounts :</p>
                 <ul>
-                    {% for account in auth.associated.oauth %}
-                        <li><a href="{% url personal_watching login=account.extra_data.original_login provider=account.provider %}">{{ account.extra_data.original_login }}</em>@<em>{{ account.provider }}</a></li>
+                    {% for account in accounts %}
+                        <li><a href="{% url personal_watching slug=account.slug backend=account.backend %}">{{ account.slug }}</em>@<em>{{ account.backend }}</a></li>
                     {% endfor %}
                 </ul>
             {% endif %}

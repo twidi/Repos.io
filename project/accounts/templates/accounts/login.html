@@ -7,16 +7,12 @@
 
     <p>Please login with one of the providers listed below :</p>
 
-    {% with auth=social_auth %}
-
-        <ul>
-            {% for provider in auth.backends.oauth %}
-                <li><a href="{% url socialauth_begin provider %}">{{ provider }}</a></li>
-            {% endfor %}
-            <li>(more to come)</li>
-        </ul>
-
-    {% endwith %}
+    <ul>
+        {% for backend, auth_backend in backends_map %}
+            <li><a href="{% url socialauth_begin auth_backend %}">{{ backend }}</a></li>
+        {% endfor %}
+        <li>(more to come)</li>
+    </ul>
 
     {% include "accounts/include_about.html" %}
 
