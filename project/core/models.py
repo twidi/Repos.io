@@ -51,6 +51,12 @@ class SyncableModel(TimeStampedModel):
     def __unicode__(self):
         return u'%s' % self.slug
 
+    def is_new(self):
+        """
+        Return True if this object is a new one not saved in db
+        """
+        return self.status == 'creating' or not self.pk
+
     def __init__(self, *args, **kwargs):
         """
         Init some internal values
@@ -73,7 +79,9 @@ class SyncableModel(TimeStampedModel):
         """
         Return the status to be saved
         """
-        raise NotImplementedError('Implement in subclasses')
+        if not self.last_fetch:
+            return self.STATUS.to_update
+        return self.STATUS.ok
 
     def update_status(self):
         """
@@ -200,15 +208,21 @@ class Account(SyncableModel):
         """
         Return the status to be saved
         """
+        default = super(Account, self).get_new_status()
+        if default != self.STATUS.ok:
+            return default
+
         # a related list need to be fetched ?
         if None in (self.following_count, self.followers_count, self.repositories_count):
             return self.STATUS.need_related
+
         # a related list need to be updated ?
         for operation in ('following', 'followers', 'repositories'):
             field = '%s_modified' % operation
             date = getattr(self, field)
             if not date or date < datetime.now() - MIN_FETCH_RELATED_DELTA:
                 return self.STATUS.need_related
+
         return self.STATUS.ok
 
     def fetch(self):
@@ -226,7 +240,8 @@ class Account(SyncableModel):
         """
         Update the project and sortable fields
         """
-        self.slug_sort = slugify(self.slug)
+        if self.slug:
+            self.slug_sort = slugify(self.slug)
         super(Account, self).save(*args, **kwargs)
 
     def fetch_following(self):
@@ -275,7 +290,7 @@ class Account(SyncableModel):
             return None
 
         # save the account if it's a new one
-        is_new = not bool(account.id)
+        is_new = account.is_new()
         if is_new:
             account.followers_count = 1
             account.save()
@@ -368,7 +383,7 @@ class Account(SyncableModel):
             return None
 
         # save the account if it's a new one
-        is_new = not bool(account.id)
+        is_new = account.is_new()
         if is_new:
             account.following_count = 1
             account.save()
@@ -462,7 +477,7 @@ class Account(SyncableModel):
             return None
 
         # save the repository if it's a new one
-        is_new = not bool(repository.id)
+        is_new = repository.is_new()
         if is_new:
             repository.followers_count = 1
             repository.save()
@@ -541,8 +556,6 @@ class Repository(SyncableModel):
 
     # The owner's "slug" of this project, from the backend
     official_owner = models.CharField(max_length=255, blank=True, null=True)
-    # The same, adapted for sorting
-    official_owner_sort = models.CharField(max_length=255, blank=True, null=True)
     # The Account object whom own this Repository
     owner = models.ForeignKey(Account, related_name='own_repositories', blank=True, null=True, on_delete=models.SET_NULL)
 
@@ -588,26 +601,35 @@ class Repository(SyncableModel):
         """
         Return the status to be saved
         """
+        default = super(Repository, self).get_new_status()
+        if default != self.STATUS.ok:
+            return default
+
         # need the parents fork's name ?
         if self.is_fork and not self.official_fork_of:
             return self.STATUS.to_update
+
         # need the owner (or to remove it) ?
         if self.official_owner and not self.owner_id:
             return self.STATUS.need_related
         if not self.official_owner and self.owner_id:
             return self.STAUTS.need_related
+
         # need the parent fork ?
         if self.is_fork and not self.parent_fork_id:
             return self.STATUS.need_related
+
         # a related list need to be fetched ?
         if None in (self.followers_count,):
             return self.STATUS.need_related
+
         # a related list need to be updated ?
         for operation in ('followers', 'contributors'):
             field = '%s_modified' % operation
             date = getattr(self, field)
             if not date or date < datetime.now() - MIN_FETCH_RELATED_DELTA:
                 return self.STATUS.need_related
+
         return self.STATUS.ok
 
     def get_project(self):
@@ -633,8 +655,21 @@ class Repository(SyncableModel):
         """
         if not self.project:
             self.project = self.get_project()
-        self.official_owner_sort = slugify(self.official_owner)
-        self.name_sort = slugify(self.name)
+
+        if self.name:
+            self.name_sort = slugify(self.name)
+
+        # auto-create a Account object for owner if one
+        # is needed but not exists
+        if self.official_owner and not self.owner_id:
+            owner = Account.objects.get_or_new(
+                self.backend,
+                self.official_owner
+            )
+            if owner.is_new():
+                owner.save()
+            self.owner = owner
+
         super(Repository, self).save(*args, **kwargs)
 
     def fetch_owner(self):
@@ -642,6 +677,9 @@ class Repository(SyncableModel):
         Create or update the repository's owner
         """
         if not self.official_owner:
+            if self.owner_id:
+                self.owner = None
+                self.save()
             return False
 
         save_needed = False
@@ -743,7 +781,7 @@ class Repository(SyncableModel):
             return None
 
         # save the account if it's a new one
-        is_new = not bool(account.id)
+        is_new = account.is_new()
         if is_new:
             account.repositories_count = 1
             account.save()
@@ -834,8 +872,7 @@ class Repository(SyncableModel):
             return None
 
         # save the account if it's a new one
-        is_new = not bool(account.id)
-        if is_new:
+        if account.is_new():
             account.save()
 
         # add the contributor

@@ -5,7 +5,7 @@ from personal.decorators import check_account
 _sort_map = dict(
     # get_key = ('db_field', 'readable name'),
     name = ('name_sort', 'project name'),
-    owner = ('official_owner_sort', 'owner'),
+    owner = ('owner__slug_sort', 'owner'),
     updated = ('official_modified', 'update date'),
 )
 
@@ -31,7 +31,7 @@ def watching(request, slug, backend, account=None):
     if reverse:
         real_sort = '-' + real_sort
 
-    sorted_repositories = account.repositories.order_by(real_sort)
+    sorted_repositories = account.repositories.order_by(real_sort).select_related('owner')
 
     return render(request, 'personal/watching.html', dict(
         account = account,
