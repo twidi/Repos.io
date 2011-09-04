@@ -16,11 +16,11 @@ class InvalidIdentifiersForProject(CoreException):
         )
 
 class OriginalProviderLoginMissing(CoreException):
-    def __init__(self, user, backend, message=None):
+    def __init__(self, user, backend_name, message=None):
         super(SaveForbiddenInBackend, self).__init__(
             message or 'The original_login from the %s backend for the user %s is required' %
             (
-                backend,
+                backend_name,
                 user
             )
         )

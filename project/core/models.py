@@ -849,3 +849,5 @@ class Repository(SyncableModel):
         self.contributors_count = self.contributors.count()
         if save:
             self.save()
+
+from core.signals import *

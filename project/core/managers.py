@@ -2,7 +2,7 @@ from copy import copy
 
 from django.db import models
 
-from core.backends import get_backend
+from core.backends import get_backend, get_backend_from_auth
 from core.exceptions import OriginalProviderLoginMissing
 
 class AccountManager(models.Manager):
@@ -11,16 +11,22 @@ class AccountManager(models.Manager):
     """
 
     def get_for_social_auth_user(self, social_auth_user):
-        backend = social_auth_user.provider
+        auth_backend = social_auth_user.provider
+        backend = get_backend_from_auth(auth_backend)
+
         access_token = social_auth_user.extra_data.get('access_token', None)
         original_login = social_auth_user.extra_data.get('original_login', None)
 
         if not original_login:
-            raise OriginalProviderLoginMissing(social_auth_user.user, backend)
+            raise OriginalProviderLoginMissing(social_auth_user.user, backend.name)
 
-        account = self.get_or_new(backend, original_login)
+        account = self.get_or_new(backend.name, original_login)
         account.access_token = access_token
         account.user = social_auth_user.user
+        if account.fetch_needed():
+            account.fetch()
+        else:
+            account.save()
 
         return account
 
