@@ -1,27 +1,34 @@
 {% extends "personal/base.html" %}
 {% block personal_content %}
 
-    {% with repositories=account.repositories.all|dictsort:"name" %}
-        {% if repositories %}
+    {% if sorted_repositories %}
 
-            <p>Here are your {{ repositories|length }} watched repositories, sorted by name :</p>
+    <p>
+        Here are your {{ sorted_repositories|length }} owned/followed repositories, sorted by {{ sort.name }}{% if sort.reverse %} (descending){% else %} (ascending){% endif %}
+        [
+            <a href="./?sort_by={% if not sort.reverse %}-{% endif %}{{ sort.key }}">reverse</a>
+            or sort by :
+            {% for key, name in sort.others.items %}
+                <a href="./?sort_by={{ key }}">{{ name }}</a>{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        ]
+    </p>
 
-            <ul>
-                {% for rep in repositories %}
-                    <li>
-                        <a href="{{ rep.url }}">{{ rep.official_owner }}/<strong style='font-size:larger'>{{ rep.name }}</strong></a>
-                        (updated on {{ rep.official_modified }})
-                        <blockquote>{{ rep.description }}</blockquote>
-                    </li>
-                {% endfor %}
-            </ul>
+        <ul>
+            {% for rep in sorted_repositories %}
+                <li>
+                    <a href="{{ rep.url }}">{{ rep.official_owner }}/<strong style='font-size:larger'>{{ rep.name }}</strong></a>
+                    (updated on {{ rep.official_modified }})
+                    {% if rep.owner.id == account.id or rep.official_owner == account.slug %}<strong>[ YOURS ! ]</strong>{% endif %}
+                    <blockquote>{{ rep.description }}</blockquote>
+                </li>
+            {% endfor %}
+        </ul>
 
-        {% else %}
+    {% else %}
 
-            <p>You're not watching any repository ! (or it may be not possible to fetch them)</p>
+        <p>You're not watching any repository ! (or it may be not possible to fetch them)</p>
 
-        {% endif %}
-
-    {% endwith %}
+    {% endif %}
 
 {% endblock personal_content %}
