@@ -9,6 +9,7 @@ from core.exceptions import InvalidIdentifiersForProject
 class BaseBackend(object):
 
     name = None
+    auth_backend = None
     needed_repository_identifiers = ('slug',)
 
     def user_map(self, user):
@@ -105,6 +106,7 @@ def get_backends():
     Get all wanted available backends (inspired by django-social-auth)
     """
     backends = {}
+    backends_by_auth = {}
     enabled_backends = getattr(settings, 'CORE_ENABLED_BACKENDS', ('github',))
 
     mod_name = 'core.backends'
@@ -116,17 +118,31 @@ def get_backends():
                 name = basename(name).replace('.py', '')
                 sub = import_module(mod_name + '.' + name)
                 # register only enabled backends
-                backends.update(((key, val)
+                new_backends = dict((key, val)
                                     for key, val in sub.BACKENDS.items()
-                                        if val.enabled() and
+                                        if val.name and val.enabled() and
                                            (not enabled_backends or
-                                            key in enabled_backends)))
+                                            key in enabled_backends))
+
+                backends.update(new_backends)
+
+                backends_by_auth.update((backend.auth_backend, backend)
+                        for backend in new_backends.values()
+                            if backend.auth_backend)
+
             except (ImportError, AttributeError):
                 pass
-    return backends
+
+    return backends, backends_by_auth
 
 # load backends from defined modules
-BACKENDS = get_backends()
+BACKENDS, BACKENDS_BY_AUTH = get_backends()
+
+def get_backend_from_auth(auth_backend):
+    """
+    Return the backend to use for a specified auth backend
+    """
+    return BACKENDS_BY_AUTH.get(auth_backend, None)
 
 def get_backend(name, *args, **kwargs):
     """Return auth backend instance *if* it's registered, None in other case"""
