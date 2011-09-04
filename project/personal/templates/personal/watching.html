@@ -10,6 +10,7 @@
                 {% for rep in repositories %}
                     <li>
                         <a href="{{ rep.url }}">{{ rep.official_owner }}/<strong style='font-size:larger'>{{ rep.name }}</strong></a>
+                        (updated on {{ rep.official_modified }})
                         <blockquote>{{ rep.description }}</blockquote>
                     </li>
                 {% endfor %}

@@ -155,6 +155,8 @@ class Account(SyncableModel):
     since = models.DateField(blank=True, null=True)
     # Is this account private ?
     private = models.NullBooleanField(blank=True, null=True)
+    # Account dates
+    official_created = models.DateTimeField(blank=True, null=True)
 
     # If there is a user linked to this account
     user = models.ForeignKey(User, related_name='accounts', blank=True, null=True, on_delete=models.SET_NULL)
@@ -519,6 +521,9 @@ class Repository(SyncableModel):
     project = models.TextField()
     # Is this repository private ?
     private = models.NullBooleanField(blank=True, null=True)
+    # Repository dates
+    official_created = models.DateTimeField(blank=True, null=True)
+    official_modified = models.DateTimeField(blank=True, null=True)
 
     # Owner
 

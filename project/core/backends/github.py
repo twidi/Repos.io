@@ -75,6 +75,7 @@ class GithubBackend(BaseBackend):
             since = 'created_at',
             homepage = 'blog',
             avatar = 'avatar_url',
+            official_created = 'created_at',
         )
 
         result = {}
@@ -200,6 +201,8 @@ class GithubBackend(BaseBackend):
             official_followers_count = 'watchers',
             is_fork = 'fork',
             private = 'private',
+            official_created = 'created_at',
+            official_modified = 'pushed_at',
         )
 
         result = {}
