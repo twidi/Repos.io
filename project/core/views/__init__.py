@@ -32,7 +32,7 @@ def default(request, identifier):
 
     # else display all results
     return render(request, 'core/default.html', dict(
-        idenfitier = identifier,
+        identifier = identifier,
         count = dict(
             accounts = accounts_count,
             repositories = repositories_count,

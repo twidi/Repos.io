@@ -1,10 +1,12 @@
 {% extends "core/base.html" %}
 
+{% block core_content %}
+
 <p>You searched for <strong>{{ identifier }}</strong>.</p>
 
 {% if count.total %}
 
-    <p>We found {{ count.total }} matching elements ({{ count.accounts }} accounts and {{ count.repositories }} repositories }} : </p>
+    <p>We found {{ count.total }} matching elements ({{ count.accounts }} accounts and {{ count.repositories }} repositories : </p>
 
     {% if count.accounts %}
     <p>Accounts : </p>
@@ -19,7 +21,7 @@
     <p>Repositories : </p>
     <ul>
         {% for repository in repositories %}
-            <a href="{{ repository.get_absolute_url }}">{{ repository.project }} @ {{ repository.backend }}</a>
+            <li><a href="{{ repository.get_absolute_url }}">{{ repository.project }} @ {{ repository.backend }}</a></li>
         {% endfor %}
     </ul>
     {% endif %}
@@ -29,3 +31,5 @@
     <p>We found nothing matching this...</p>
 
 {% endif %}
+
+{% endblock core_content %}
