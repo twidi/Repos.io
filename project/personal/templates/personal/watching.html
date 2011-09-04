@@ -1,36 +1,26 @@
 {% extends "personal/base.html" %}
 {% block personal_content %}
 
-    {% if repositories %}
+    {% with repositories=account.repositories.all|dictsort:"name" %}
+        {% if repositories %}
 
-        <p>Here are your {{ repositories|length }} watched repositories, sorted by language and by name :</p>
+            <p>Here are your {{ repositories|length }} watched repositories, sorted by name :</p>
 
-        <ul>
-            {% regroup repositories|dictsort:"language" by language as language_list %}
-            {% for language in language_list %}
-            <li>{{ language.grouper|default:'Undefined' }} :</li>
-                <ul>
+            <ul>
+                {% for rep in repositories %}
+                    <li>
+                        <a href="{{ rep.url }}">{{ rep.official_owner }}/<strong style='font-size:larger'>{{ rep.name }}</strong></a>
+                        <blockquote>{{ rep.description }}</blockquote>
+                    </li>
+                {% endfor %}
+            </ul>
 
-                    {% with language.list|dictsort:"name" as rep_sorted %}
-                        {% for rep in rep_sorted %}
+        {% else %}
 
-                            <li>
-                                <a href="{{ rep.url }}">{{ rep.owner }}/<strong style='font-size:larger'>{{ rep.name }}</strong></a>
-                                (updated on {{ rep.pushed_at }})
-                                <blockquote>{{ rep.description }}</blockquote>
-                            </li>
+            <p>You're not watching any repository ! (or it may be not possible to fetch them)</p>
 
-                        {% endfor %}
-                    {% endwith %}
+        {% endif %}
 
-                </ul>
-            {% endfor %}
-        </ul>
-
-    {% else %}
-
-        <p>You're not watching any repository ! (or it may be not possible to fetch them)</p>
-
-    {% endif %}
+    {% endwith %}
 
 {% endblock personal_content %}

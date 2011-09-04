@@ -6,14 +6,14 @@
         {{ social_errors }}
     {% endif %}
 
-    {% with auth=social_auth %}
-        {% if auth.associated %}
+    {% with accounts=user.accounts.all %}
+        {% if accounts %}
 
             <p>Your account is linked to : </p>
 
             <ul>
-                {% for account in auth.associated.oauth %}
-                    <li><em>{{ account.extra_data.original_login }}</em>@<em>{{ account.provider }}</em></li>
+                {% for account in accounts %}
+                    <li><em>{{ account.slug }}</em>@<em>{{ account.backend }}</em></li>
                 {% endfor %}
             </ul>
 
@@ -27,8 +27,8 @@
 
         <ul>
 
-            {% for provider in auth.backends.oauth %}
-                <li><a href="{% url socialauth_associate_begin provider %}">{{ provider }}</a></li>
+            {% for backend, auth_backend in backends_map.items %}
+                <li><a href="{% url socialauth_associate_begin auth_backend %}">{{ backend }}</a></li>
             {% endfor %}
             <li>(more to come)</li>
 

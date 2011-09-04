@@ -3,21 +3,20 @@ from django.conf import settings
 
 def check_account(function=None):
     """
-    Check if a given login/provider is linked to the current user
+    Check if a given slug/backend is linked to the current user
     """
     def _dec(view_func):
-        def _view(request, login, provider, *args, **kwargs):
+        def _view(request, slug, backend, *args, **kwargs):
             user = request.user
             if not user.is_authenticated():
                 return HttpResponseRedirect(settings.LOGIN_URL)
-            if login and provider:
-                associated = user.social_auth.all()
-                for social_user in associated:
-                    if social_user.provider == provider and social_user.extra_data.get('original_login', None) == login:
-                        kwargs['social_user'] = social_user
-                        return view_func(request, login, provider, *args, **kwargs)
-
-            return HttpResponseForbidden("This account is not associated with your account")
+            try:
+                account = request.user.accounts.get(backend=backend, slug=slug)
+            except:
+                return HttpResponseForbidden("This account is not associated with your account")
+            else:
+                kwargs['account'] = account
+                return view_func(request, slug, backend, *args, **kwargs)
 
         _view.__name__ = view_func.__name__
         _view.__dict__ = view_func.__dict__
