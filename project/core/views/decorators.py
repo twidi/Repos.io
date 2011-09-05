@@ -34,7 +34,7 @@ def check_repository(function=None):
     def _dec(view_func):
         def _view(request, backend, project, *args, **kwargs):
             try:
-                repository = Repository.objects.get(backend=backend, project=project)
+                repository = Repository.objects.select_related('owner').get(backend=backend, project=project)
             except:
                 raise Http404
             else:
