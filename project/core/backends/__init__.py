@@ -11,6 +11,7 @@ class BaseBackend(object):
     name = None
     auth_backend = None
     needed_repository_identifiers = ('slug',)
+    repository_has_owner = False
 
     def user_map(self, user):
         """

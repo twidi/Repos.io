@@ -4,6 +4,7 @@ from django.db import models
 
 from core.backends import get_backend, get_backend_from_auth
 from core.exceptions import OriginalProviderLoginMissing
+from core.utils import slugify
 
 class AccountManager(models.Manager):
     """
@@ -98,3 +99,9 @@ class RepositoryManager(models.Manager):
             repository = self.model(**defaults)
 
         return repository
+
+    def slugify_project(self, project):
+        """
+        Slugify each part of a project, but keep the slashes
+        """
+        return '/'.join([slugify(part) for part in project.split('/')])

@@ -1,0 +1,39 @@
+{% extends "core/accounts/base.html" %}
+
+{% block account_content %}
+
+    {% if account.repositories_modified %}
+
+        {% if sorted_repositories %}
+
+        <p>
+            Here are the {{ sorted_repositories|length }} repositories followed/owned by {{ account.slug }}, sorted by {{ sort.name }}{% if sort.reverse %} (descending){% else %} (ascending){% endif %}
+            [
+                <a href="./?sort_by={% if not sort.reverse %}-{% endif %}{{ sort.key }}">reverse</a>
+                or sort by :
+                {% for key, name in sort.others.items %}
+                    <a href="./?sort_by={{ key }}">{{ name }}</a>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            ]
+            (last fetch on {{ account.repositories_modified }})
+        </p>
+
+            <ul>
+                {% for repository in sorted_repositories %}
+                    <li>
+                    <a href="{{ repository.get_absolute_url }}">{{ repository.slug }}</strong></a>{% if repository.owner %}, by <a href="{{ repository.owner.get_absolute_url }}">{{ repository.owner.slug }}</a>{% endif %}
+                        (updated on {{ repository.official_modified }})
+                        <blockquote>{{ repository.description }}</blockquote>
+                    </li>
+                {% endfor %}
+            </ul>
+
+        {% else %}
+            <p>{{ account.slug }} doesn't watch/own any repository</p>
+        {% endif %}
+
+    {% else %}
+        <p>We don't know if {{ account.slug }} watches/owns some repositories, they need to be fetched</p>
+    {% endif %}
+
+{% endblock account_content %}

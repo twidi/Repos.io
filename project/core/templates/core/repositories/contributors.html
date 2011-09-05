@@ -1,0 +1,18 @@
+{% extends "core/repositories/base.html" %}
+
+{% block repository_content %}
+
+    {% if repository.contributors_modified %}
+        <p>{{ repository.slug }} (by {{ repository.owner.slug }}) has {{ repository.contributors_count }} contributors : (last fetch on {{ repository.contributors_modified }})</p>
+        <ul>
+            {% for contributor in repository.contributors.all %}
+                <li>
+                    <a href="{{ contributor.get_absolute_url }}">{{ contributor.slug }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>{{ repository.slug }} has {{ repository.official_contributors_count }} contributors, but they need to be fetched</p>
+    {% endif %}
+
+{% endblock repository_content %}

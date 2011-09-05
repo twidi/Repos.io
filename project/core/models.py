@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
+from copy import copy
 
 from django.db import models
 from django.contrib.auth.models import User
-from django.template.defaultfilters import slugify
 
 from model_utils import Choices
 from model_utils.models import TimeStampedModel
@@ -11,6 +11,7 @@ from model_utils.fields import StatusField
 from core.backends import BACKENDS, get_backend
 from core.exceptions import SaveForbiddenInBackend
 from core.managers import AccountManager, RepositoryManager
+from core.utils import slugify
 
 BACKENDS_CHOICES = Choices(*BACKENDS.keys())
 
@@ -51,6 +52,12 @@ class SyncableModel(TimeStampedModel):
     def __unicode__(self):
         return u'%s' % self.slug
 
+    def is_new(self):
+        """
+        Return True if this object is a new one not saved in db
+        """
+        return self.status == 'creating' or not self.pk
+
     def __init__(self, *args, **kwargs):
         """
         Init some internal values
@@ -73,7 +80,9 @@ class SyncableModel(TimeStampedModel):
         """
         Return the status to be saved
         """
-        raise NotImplementedError('Implement in subclasses')
+        if not self.last_fetch:
+            return self.STATUS.to_update
+        return self.STATUS.ok
 
     def update_status(self):
         """
@@ -150,6 +159,8 @@ class Account(SyncableModel):
     slug_sort = models.SlugField(max_length=255)
     # The fullname
     name = models.CharField(max_length=255, blank=True, null=True)
+    # The backend url
+    url = models.URLField(max_length=255, blank=True, null=True)
     # The avatar url
     avatar = models.URLField(max_length=255, blank=True, null=True)
     # The account's homeage
@@ -195,20 +206,25 @@ class Account(SyncableModel):
     class Meta:
         unique_together = (('backend', 'slug'),)
 
-
     def get_new_status(self):
         """
         Return the status to be saved
         """
+        default = super(Account, self).get_new_status()
+        if default != self.STATUS.ok:
+            return default
+
         # a related list need to be fetched ?
         if None in (self.following_count, self.followers_count, self.repositories_count):
             return self.STATUS.need_related
+
         # a related list need to be updated ?
         for operation in ('following', 'followers', 'repositories'):
             field = '%s_modified' % operation
             date = getattr(self, field)
             if not date or date < datetime.now() - MIN_FETCH_RELATED_DELTA:
                 return self.STATUS.need_related
+
         return self.STATUS.ok
 
     def fetch(self):
@@ -226,7 +242,8 @@ class Account(SyncableModel):
         """
         Update the project and sortable fields
         """
-        self.slug_sort = slugify(self.slug)
+        if self.slug:
+            self.slug_sort = slugify(self.slug)
         super(Account, self).save(*args, **kwargs)
 
     def fetch_following(self):
@@ -275,7 +292,7 @@ class Account(SyncableModel):
             return None
 
         # save the account if it's a new one
-        is_new = not bool(account.id)
+        is_new = account.is_new()
         if is_new:
             account.followers_count = 1
             account.save()
@@ -368,7 +385,7 @@ class Account(SyncableModel):
             return None
 
         # save the account if it's a new one
-        is_new = not bool(account.id)
+        is_new = account.is_new()
         if is_new:
             account.following_count = 1
             account.save()
@@ -462,7 +479,7 @@ class Account(SyncableModel):
             return None
 
         # save the repository if it's a new one
-        is_new = not bool(repository.id)
+        is_new = repository.is_new()
         if is_new:
             repository.followers_count = 1
             repository.save()
@@ -506,6 +523,63 @@ class Account(SyncableModel):
         if save:
             self.save()
 
+    def _get_url(self, url_type, **kwargs):
+        """
+        Construct the url for a permalink
+        """
+        if not url_type.startswith('account'):
+            url_type = 'account_%s' % url_type
+        params = copy(kwargs)
+        if 'backend' not in params:
+            params['backend'] = self.backend
+        if 'slug' not in params:
+            params['slug'] = self.slug
+        return (url_type, (), params)
+
+    @models.permalink
+    def get_absolute_url(self):
+        """
+        Home page url for this Account
+        """
+        return self._get_url('home')
+
+    @models.permalink
+    def get_followers_url(self):
+        """
+        Followers page url for this Account
+        """
+        return self._get_url('followers')
+
+    @models.permalink
+    def get_following_url(self):
+        """
+        Following page url for this Account
+        """
+        return self._get_url('following')
+
+    @models.permalink
+    def get_repositories_url(self):
+        """
+        Repositories page url for this Account
+        """
+        return self._get_url('repositories')
+
+    def following_slugs(self):
+        """
+        Return the following as a list of slugs
+        """
+        if not hasattr(self, '_following_slugs'):
+            self._following_slugs = [f.slug for f in self.following.all()]
+        return self._following_slugs
+
+    def followers_slugs(self):
+        """
+        Return the followers as a list of slugs
+        """
+        if not hasattr(self, '_followers_slugs'):
+            self._followers_slugs = [f.slug for f in self.followers.all()]
+        return self._followers_slugs
+
 class Repository(SyncableModel):
     """
     Represent a repository from a backend
@@ -517,10 +591,10 @@ class Repository(SyncableModel):
 
     # The slug for this repository (text identifier for the provider)
     slug = models.SlugField(max_length=255)
+    # The same, adapted for sorting
+    slug_sort = models.CharField(max_length=255, blank=True, null=True)
     # The fullname of this repository
     name = models.CharField(max_length=255, blank=True, null=True)
-    # The same, adapted for sorting
-    name_sort = models.CharField(max_length=255, blank=True, null=True)
     # The web url for this repository
     url = models.URLField(max_length=255, blank=True, null=True)
     # The description of this repository
@@ -531,6 +605,8 @@ class Repository(SyncableModel):
     homepage = models.URLField(max_length=255, blank=True, null=True)
     # The canonical project name (example twidi/myproject)
     project = models.TextField()
+    # The same, adapted for sorting
+    project_sort = models.TextField()
     # Is this repository private ?
     private = models.NullBooleanField(blank=True, null=True)
     # Repository dates
@@ -541,8 +617,6 @@ class Repository(SyncableModel):
 
     # The owner's "slug" of this project, from the backend
     official_owner = models.CharField(max_length=255, blank=True, null=True)
-    # The same, adapted for sorting
-    official_owner_sort = models.CharField(max_length=255, blank=True, null=True)
     # The Account object whom own this Repository
     owner = models.ForeignKey(Account, related_name='own_repositories', blank=True, null=True, on_delete=models.SET_NULL)
 
@@ -588,26 +662,35 @@ class Repository(SyncableModel):
         """
         Return the status to be saved
         """
+        default = super(Repository, self).get_new_status()
+        if default != self.STATUS.ok:
+            return default
+
         # need the parents fork's name ?
         if self.is_fork and not self.official_fork_of:
             return self.STATUS.to_update
+
         # need the owner (or to remove it) ?
         if self.official_owner and not self.owner_id:
             return self.STATUS.need_related
         if not self.official_owner and self.owner_id:
             return self.STAUTS.need_related
+
         # need the parent fork ?
         if self.is_fork and not self.parent_fork_id:
             return self.STATUS.need_related
+
         # a related list need to be fetched ?
         if None in (self.followers_count,):
             return self.STATUS.need_related
+
         # a related list need to be updated ?
         for operation in ('followers', 'contributors'):
             field = '%s_modified' % operation
             date = getattr(self, field)
             if not date or date < datetime.now() - MIN_FETCH_RELATED_DELTA:
                 return self.STATUS.need_related
+
         return self.STATUS.ok
 
     def get_project(self):
@@ -633,8 +716,22 @@ class Repository(SyncableModel):
         """
         if not self.project:
             self.project = self.get_project()
-        self.official_owner_sort = slugify(self.official_owner)
-        self.name_sort = slugify(self.name)
+        self.project_sort = Repository.objects.slugify_project(self.project)
+
+        if self.slug:
+            self.slug_sort = slugify(self.slug)
+
+        # auto-create a Account object for owner if one
+        # is needed but not exists
+        if self.official_owner and not self.owner_id:
+            owner = Account.objects.get_or_new(
+                self.backend,
+                self.official_owner
+            )
+            if owner.is_new():
+                owner.save()
+            self.owner = owner
+
         super(Repository, self).save(*args, **kwargs)
 
     def fetch_owner(self):
@@ -642,6 +739,9 @@ class Repository(SyncableModel):
         Create or update the repository's owner
         """
         if not self.official_owner:
+            if self.owner_id:
+                self.owner = None
+                self.save()
             return False
 
         save_needed = False
@@ -743,7 +843,7 @@ class Repository(SyncableModel):
             return None
 
         # save the account if it's a new one
-        is_new = not bool(account.id)
+        is_new = account.is_new()
         if is_new:
             account.repositories_count = 1
             account.save()
@@ -834,8 +934,7 @@ class Repository(SyncableModel):
             return None
 
         # save the account if it's a new one
-        is_new = not bool(account.id)
-        if is_new:
+        if account.is_new():
             account.save()
 
         # add the contributor
@@ -870,5 +969,39 @@ class Repository(SyncableModel):
         self.contributors_count = self.contributors.count()
         if save:
             self.save()
+
+    def _get_url(self, url_type, **kwargs):
+        """
+        Construct the url for a permalink
+        """
+        if not url_type.startswith('repository'):
+            url_type = 'repository_%s' % url_type
+        params = copy(kwargs)
+        if 'backend' not in params:
+            params['backend'] = self.backend
+        if 'project' not in params:
+            params['project'] = self.project
+        return (url_type, (), params)
+
+    @models.permalink
+    def get_absolute_url(self):
+        """
+        Home page url for this Repository
+        """
+        return self._get_url('home')
+
+    @models.permalink
+    def get_followers_url(self):
+        """
+        Followers page url for this Repository
+        """
+        return self._get_url('followers')
+
+    @models.permalink
+    def get_contributors_url(self):
+        """
+        contributors page url for this Repository
+        """
+        return self._get_url('contributors')
 
 from core.signals import *

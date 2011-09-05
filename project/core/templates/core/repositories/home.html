@@ -1,0 +1,36 @@
+{% extends "core/repositories/base.html" %}
+
+{% block repository_content %}
+
+    <p>
+    {% if repository.logo %}<img src="{{ repository.logo }}" />{% endif %}
+    {{ repository.name }}, on {{ repository.backend }} since {{ repository.official_created }}, updated on {{ repository.official_modified }}
+    </p>
+
+    <p>
+    <a href="{{ repository.url }}">Page on {{ repository.backend }}</a>
+    {% if repository.homepage %}<a href="{{ repository.homepage }}">Its homepage</a>{% endif %}
+    </p>
+
+    <blockquote>{{ repository.description }}</blockquote>
+
+    <p>(last fetch on {{ repository.last_fetch }})</p>
+
+    <p>
+        {% if repository.followers_modified %}
+            <a href="{{ repository.get_followers_url }}">{{ repository.followers_count }} followers</a> (updated on {{ repository.followers_modified }})
+        {% else %}
+            {{ repository.official_followers_count }} followers (list must be fetched before display)
+        {% endif %}
+    </p>
+
+    <p>
+        {% if repository.contributors_modified %}
+            <a href="{{ repository.get_contributors_url }}">{{ repository.contributors_count }} contributors</a> (updated on {{ repository.contributors_modified }})
+        {% else %}
+            {{ repository.official_contributors_count }} contributors (list must be fetched before display)
+        {% endif %}
+    </p>
+
+
+{% endblock repository_content %}

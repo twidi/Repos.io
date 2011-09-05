@@ -11,10 +11,10 @@
             {% else %}
                 <p><a href="{% url accounts_manage %}">Click here to manage your account</a>.</p>
 
-                <p>You can view watched projects for your accounts :</p>
+                <p>You can view details for your accounts :</p>
                 <ul>
                     {% for account in accounts %}
-                        <li><a href="{% url personal_watching slug=account.slug backend=account.backend %}">{{ account.slug }}</em>@<em>{{ account.backend }}</a></li>
+                        <li>{% include "core/accounts/link.html" %}</li>
                     {% endfor %}
                 </ul>
             {% endif %}

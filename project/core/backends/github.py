@@ -10,6 +10,7 @@ class GithubBackend(BaseBackend):
     name = 'github'
     auth_backend = 'github'
     needed_repository_identifiers = ('slug', 'official_owner',)
+    repository_has_owner = True
 
     def __init__(self, *args, **kwargs):
         """
@@ -72,7 +73,6 @@ class GithubBackend(BaseBackend):
         simple_mapping = dict(
             slug = 'login',
             name = 'name',
-            since = 'created_at',
             homepage = 'blog',
             avatar = 'avatar_url',
             official_created = 'created_at',
@@ -90,6 +90,8 @@ class GithubBackend(BaseBackend):
 
         if 'avatar' not in result and getattr(user, 'gravatar_id', None):
                 result['avatar'] = 'http://www.gravatar.com/avatar/%s' % user.gravatar_id
+
+        result['url'] = 'https://github.com/%s/' % user.login
 
         return result
 
