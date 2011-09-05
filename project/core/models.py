@@ -997,4 +997,11 @@ class Repository(SyncableModel):
         """
         return self._get_url('followers')
 
+    @models.permalink
+    def get_contributors_url(self):
+        """
+        contributors page url for this Repository
+        """
+        return self._get_url('contributors')
+
 from core.signals import *

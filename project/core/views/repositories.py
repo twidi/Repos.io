@@ -20,3 +20,11 @@ def followers(request, backend, project, repository=None):
         repository = repository
     ))
 
+@check_repository
+def contributors(request, backend, project, repository=None):
+    """
+    Page listing users contributing to a repository
+    """
+    return render(request, 'core/repositories/contributors.html', dict(
+        repository = repository
+    ))
