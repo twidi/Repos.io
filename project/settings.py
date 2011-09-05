@@ -109,6 +109,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'django.contrib.messages.context_processors.messages',
     'project.core.context_processors.backends',
+    'project.core.context_processors.objects',
 )
 
 ROOT_URLCONF = 'project.urls'

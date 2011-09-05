@@ -2,7 +2,7 @@
 {% block content %}
 
     {% if user.is_authenticated %}
-        <p>Welcome <em>{{ user.username }} </em>!</p>
+        <h1>Welcome <em>{{ user.username }} </em>!</h1>
 
         {% with accounts=user.accounts.all %}
 
@@ -23,9 +23,34 @@
 
     {% else %}
 
-        <p>Welcome !</p>
+        <h1>Welcome !</h1>
         <p><a href="{% url accounts_login %}">You need to be authenticated to use our site. Click here to do so.</a></p>
 
     {% endif %}
+
+    <hr />
+
+    {% with accounts_manager.get_last_fetched as last_accounts %}
+        {% if last_accounts %}
+            <h2>Last fetched accounts :</h2>
+            <ul>
+                {% for an_account in last_accounts %}
+                    <li>{% include "core/accounts/link.html" with account=an_account %}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    {% with repositories_manager.get_last_fetched as last_repositories %}
+        {% if last_repositories %}
+            <h2>Last fetched repositories :</h2>
+            <ul>
+                {% for a_repository in last_repositories %}
+                    <li>{% include "core/repositories/link.html" with repository=a_repository %}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
 
 {% endblock content %}

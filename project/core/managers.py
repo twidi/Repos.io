@@ -6,7 +6,19 @@ from core.backends import get_backend, get_backend_from_auth
 from core.exceptions import OriginalProviderLoginMissing
 from core.utils import slugify
 
-class AccountManager(models.Manager):
+class SyncableModelManager(models.Manager):
+    """
+    Base manager for all syncable models
+    """
+
+    def get_last_fetched(self, length=20):
+        """
+        Return the last fetch objects
+        """
+        return self.filter(last_fetch__isnull=False).order_by('-last_fetch')[:length]
+
+
+class AccountManager(SyncableModelManager):
     """
     Manager for the Account model
     """
@@ -59,7 +71,7 @@ class AccountManager(models.Manager):
             return None
 
 
-class RepositoryManager(models.Manager):
+class RepositoryManager(SyncableModelManager):
     """
     Manager for the Repository model
     """
