@@ -1,0 +1,19 @@
+{% extends "core/accounts/base.html" %}
+
+{% block account_content %}
+
+    {% if account.followers_modified %}
+        <p>{{ account.name }} is followed by {{ account.followers_count }} people : </p>
+        <ul>
+            {% for follower in account.followers.all %}
+                <li>
+                    <a href="{{ follower.get_absolute_url }}">{{ follower.slug }}</a>
+                    {% if follower.slug in account.following_slugs %} (followed back){% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>{{ account.name }} has {{ account.official_followers_count }} followers, but they need to be fetched</p>
+    {% endif %}
+
+{% endblock account_content %}

@@ -1,0 +1,36 @@
+{% extends "core/accounts/base.html" %}
+
+{% block account_content %}
+    <p>
+    {% if account.avatar %}<img src="{{ account.avatar }}" />{% endif %}
+    {{ account.name }}, on {{ account.backend }} since {{ account.official_created }}.
+    </p>
+
+    <p>
+    <a href="{{ account.url }}">Page on {{ account.backend }}</a>
+    {% if account.homepage %}<a href="{{ account.homepage }}">His homepage</a>{% endif %}
+    </p>
+
+    <p>
+        {% if account.followers_modified %}
+            <a href="{{ account.get_followers_url }}">{{ account.followers_count }} followers</a> (updated on {{ account.followers_modified }})
+        {% else %}
+            {{ account.official_followers_count }} followers (list must be fetched before display)
+        {% endif %}
+    </p>
+    <p>
+        {% if account.following_modified %}
+            <a href="{{ account.get_following_url }}">{{ account.following_count }} following</a> (updated on {{ account.following_modified }})
+        {% else %}
+            {{ account.official_following_count }} following (list must be fetched before display)
+        {% endif %}
+    </p>
+    <p>
+        {% if account.repositories_modified %}
+            <a href="{{ account.get_repositories_url }}">{{ account.repositories_count }} repositories</a> (updated on {{ account.repositories_modified }})
+        {% else %}
+            {{ account.official_repositories_count }} repositories (list must be fetched before display)
+        {% endif %}
+    </p>
+
+{% endblock %}

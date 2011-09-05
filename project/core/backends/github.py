@@ -72,7 +72,6 @@ class GithubBackend(BaseBackend):
         simple_mapping = dict(
             slug = 'login',
             name = 'name',
-            since = 'created_at',
             homepage = 'blog',
             avatar = 'avatar_url',
             official_created = 'created_at',
@@ -90,6 +89,8 @@ class GithubBackend(BaseBackend):
 
         if 'avatar' not in result and getattr(user, 'gravatar_id', None):
                 result['avatar'] = 'http://www.gravatar.com/avatar/%s' % user.gravatar_id
+
+        result['url'] = 'https://github.com/%s/' % user.login
 
         return result
 

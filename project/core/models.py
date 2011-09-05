@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from copy import copy
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -158,6 +159,8 @@ class Account(SyncableModel):
     slug_sort = models.SlugField(max_length=255)
     # The fullname
     name = models.CharField(max_length=255, blank=True, null=True)
+    # The backend url
+    url = models.URLField(max_length=255, blank=True, null=True)
     # The avatar url
     avatar = models.URLField(max_length=255, blank=True, null=True)
     # The account's homeage
@@ -202,16 +205,6 @@ class Account(SyncableModel):
 
     class Meta:
         unique_together = (('backend', 'slug'),)
-
-    @models.permalink
-    def get_absolute_url(self):
-        """
-        Home page url for this Account
-        """
-        return ('account_home', (), dict(
-            backend = self.backend,
-            slug = self.slug
-        ))
 
     def get_new_status(self):
         """
@@ -530,6 +523,63 @@ class Account(SyncableModel):
         if save:
             self.save()
 
+    def _get_url(self, url_type, **kwargs):
+        """
+        Construct the url for a permalink
+        """
+        if not url_type.startswith('account'):
+            url_type = 'account_%s' % url_type
+        params = copy(kwargs)
+        if 'backend' not in params:
+            params['backend'] = self.backend
+        if 'slug' not in params:
+            params['slug'] = self.slug
+        return (url_type, (), params)
+
+    @models.permalink
+    def get_absolute_url(self):
+        """
+        Home page url for this Account
+        """
+        return self._get_url('home')
+
+    @models.permalink
+    def get_followers_url(self):
+        """
+        Followers page url for this Account
+        """
+        return self._get_url('followers')
+
+    @models.permalink
+    def get_following_url(self):
+        """
+        Following page url for this Account
+        """
+        return self._get_url('following')
+
+    @models.permalink
+    def get_repositories_url(self):
+        """
+        Repositories page url for this Account
+        """
+        return self._get_url('repositories')
+
+    def following_slugs(self):
+        """
+        Return the following as a list of slugs
+        """
+        if not hasattr(self, '_following_slugs'):
+            self._following_slugs = [f.slug for f in self.following.all()]
+        return self._following_slugs
+
+    def followers_slugs(self):
+        """
+        Return the followers as a list of slugs
+        """
+        if not hasattr(self, '_followers_slugs'):
+            self._followers_slugs = [f.slug for f in self.followers.all()]
+        return self._followers_slugs
+
 class Repository(SyncableModel):
     """
     Represent a repository from a backend
@@ -607,16 +657,6 @@ class Repository(SyncableModel):
 
     def __unicode__(self):
         return u'%s' % self.get_project()
-
-    @models.permalink
-    def get_absolute_url(self):
-        """
-        Home page url for this Account
-        """
-        return ('repository_home', (), dict(
-            backend = self.backend,
-            project = self.project
-        ))
 
     def get_new_status(self):
         """
@@ -929,5 +969,32 @@ class Repository(SyncableModel):
         self.contributors_count = self.contributors.count()
         if save:
             self.save()
+
+    def _get_url(self, url_type, **kwargs):
+        """
+        Construct the url for a permalink
+        """
+        if not url_type.startswith('repository'):
+            url_type = 'repository_%s' % url_type
+        params = copy(kwargs)
+        if 'backend' not in params:
+            params['backend'] = self.backend
+        if 'project' not in params:
+            params['project'] = self.slug
+        return (url_type, (), params)
+
+    @models.permalink
+    def get_absolute_url(self):
+        """
+        Home page url for this Repository
+        """
+        return self._get_url('home')
+
+    @models.permalink
+    def get_followers_url(self):
+        """
+        Followers page url for this Repository
+        """
+        return self._get_url('followers')
 
 from core.signals import *

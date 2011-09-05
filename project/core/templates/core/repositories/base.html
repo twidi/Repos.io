@@ -1,3 +1,3 @@
-<h1>Project {% include "core/repositories/link.html" %}{% if repository.owner %}, by {% include "core/users/link.html" with account=repository.owner %}{% endif %}</h1>
+<h1>Project {% include "core/repositories/link.html" %}{% if repository.owner %}, by {% include "core/accounts/link.html" with account=repository.owner %}{% endif %}</h1>
 {% block core_content %}{% block repository_content %}{% endblock %}{% endblock %}
 
