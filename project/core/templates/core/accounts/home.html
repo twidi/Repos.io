@@ -11,6 +11,8 @@
     {% if account.homepage %}<a href="{{ account.homepage }}">His homepage</a>{% endif %}
     </p>
 
+    <p>(last fetch on {{ account.last_fetch }})</p>
+
     <p>
         {% if account.followers_modified %}
             <a href="{{ account.get_followers_url }}">{{ account.followers_count }} followers</a> (updated on {{ account.followers_modified }})

@@ -12,7 +12,7 @@
     <p>Accounts : </p>
     <ul>
         {% for account in accounts %}
-            <a href="{{ account.get_absolute_url }}">{{ account.name }} @ {{ account.backend }}</a>
+            <a href="{{ account.get_absolute_url }}">{{ account.slug }} @ {{ account.backend }}</a>
         {% endfor %}
     </ul>
     {% endif %}

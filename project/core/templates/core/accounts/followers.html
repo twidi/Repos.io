@@ -3,7 +3,7 @@
 {% block account_content %}
 
     {% if account.followers_modified %}
-        <p>{{ account.name }} is followed by {{ account.followers_count }} people : </p>
+        <p>{{ account.slug }} is followed by {{ account.followers_count }} people : (last fetch on {{ account.followers_modified }})</p>
         <ul>
             {% for follower in account.followers.all %}
                 <li>
@@ -13,7 +13,7 @@
             {% endfor %}
         </ul>
     {% else %}
-        <p>{{ account.name }} has {{ account.official_followers_count }} followers, but they need to be fetched</p>
+        <p>{{ account.slug }} has {{ account.official_followers_count }} followers, but they need to be fetched</p>
     {% endif %}
 
 {% endblock account_content %}

@@ -10,6 +10,7 @@ class GithubBackend(BaseBackend):
     name = 'github'
     auth_backend = 'github'
     needed_repository_identifiers = ('slug', 'official_owner',)
+    repository_has_owner = True
 
     def __init__(self, *args, **kwargs):
         """

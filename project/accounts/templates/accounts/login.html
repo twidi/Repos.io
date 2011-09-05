@@ -8,7 +8,7 @@
     <p>Please login with one of the providers listed below :</p>
 
     <ul>
-        {% for backend, auth_backend in backends_map %}
+        {% for backend, auth_backend in backends_map.items %}
             <li><a href="{% url socialauth_begin auth_backend %}">{{ backend }}</a></li>
         {% endfor %}
         <li>(more to come)</li>

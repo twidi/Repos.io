@@ -13,7 +13,7 @@
 
             <ul>
                 {% for account in accounts %}
-                    <li><em>{{ account.slug }}</em>@<em>{{ account.backend }}</em></li>
+                    <li>{% include "core/accounts/link.html" %}</li>
                 {% endfor %}
             </ul>
 
