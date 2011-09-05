@@ -3,20 +3,17 @@ from copy import copy
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 
 from model_utils import Choices
 from model_utils.models import TimeStampedModel
 from model_utils.fields import StatusField
 
 from core.backends import BACKENDS, get_backend
-from core.exceptions import SaveForbiddenInBackend
 from core.managers import AccountManager, RepositoryManager
 from core.utils import slugify
 
 BACKENDS_CHOICES = Choices(*BACKENDS.keys())
-
-MIN_FETCH_DELTA = timedelta(minutes=30)
-MIN_FETCH_RELATED_DELTA = timedelta(minutes=30)
 
 class SyncableModel(TimeStampedModel):
     """
@@ -26,12 +23,19 @@ class SyncableModel(TimeStampedModel):
     """
 
     STATUS = Choices(
-        ('creating', 'Creating'),              # just created
-        ('to_update', 'To Update'),            # need to be updated
-        ('need_related', 'Related to update'), # related need to be updated
-        ('updating', 'Updating'),              # update running from the backend
-        ('ok', 'Ok'),                          # everything ok ok
+        ('creating', 'Creating'),                  # just created
+        ('fetch_needed', 'Need to fetch object'),  # need to be updated
+        ('need_related', 'Need to fetch related'), # related need to be updated
+        ('updating', 'Updating'),                  # update running from the backend (not used)
+        ('ok', 'Ok'),                              # everything ok ok
     )
+
+    # it's forbidden to fetch if the last fetch is less than...
+    MIN_FETCH_DELTA = getattr(settings, 'MIN_FETCH_DELTA', timedelta(minutes=30))
+    MIN_FETCH_RELATED_DELTA = getattr(settings, 'MIN_FETCH_RELATED_DELTA', timedelta(minutes=30))
+    # we need to fetch is the last fetch is more than
+    MIN_FETCH_DELTA_NEEDED = getattr(settings, 'MIN_FETCH_DELTA_NEEDED', timedelta(hours=6))
+    MIN_FETCH_RELATED_DELTA_NEEDED = getattr(settings, 'MIN_FETCH_RELATED_DELTA_NEEDED', timedelta(hours=6))
 
     # The backend from where this object come from
     backend = models.CharField(max_length=30, choices=BACKENDS_CHOICES)
@@ -43,7 +47,9 @@ class SyncableModel(TimeStampedModel):
     last_fetch = models.DateTimeField(blank=True, null=True)
 
     # Fetch operations
-    fetch_related_operations = ()
+    related_operations = (
+        # name, with count, with modified
+    )
 
     class Meta:
         abstract = True
@@ -65,7 +71,6 @@ class SyncableModel(TimeStampedModel):
         super(SyncableModel, self).__init__(*args, **kwargs)
         if not self.status:
             self.status = self.STATUS.creating
-        self._block_save = False
 
     def get_backend(self):
         """
@@ -80,8 +85,28 @@ class SyncableModel(TimeStampedModel):
         """
         Return the status to be saved
         """
-        if not self.last_fetch:
-            return self.STATUS.to_update
+        # no id, object is in creating mode
+        if not self.id:
+            return self.STATUS.creating
+
+        # Never fetched of fetched "long" time ago => fetch needed
+        if not self.last_fetch or self.last_fetch < datetime.now() - self.MIN_FETCH_DELTA_NEEDED:
+            return self.STATUS.fetch_needed
+
+        # Work on each related field
+        for name, with_count, with_modified in self.related_operations:
+            if with_count:
+                # count never updated => fetch of related needed
+                count = getattr(self, '%s_count' % name)
+                if count is None:
+                    return self.STATUS.need_related
+            if with_modified:
+                # modified date never updated or too old => fetch of related needed
+                date = getattr(self, '%s_modified' % name)
+                if not date or date < datetime.now() - self.MIN_FETCH_RELATED_DELTA_NEEDED:
+                    return self.STATUS.need_related
+
+        # else, default ok
         return self.STATUS.ok
 
     def update_status(self):
@@ -96,33 +121,63 @@ class SyncableModel(TimeStampedModel):
         Save is forbidden while in the backend...
         Also update the status before saving
         """
-        if self._block_save:
-            raise SaveForbiddenInBackend()
-
         self.status = self.get_new_status()
         super(SyncableModel, self).save(*args, **kwargs)
 
     def fetch_needed(self):
         """
         Check if a fetch is needed for this object.
-        It's True if it's a new object, if the status is "to_update" or
+        It's True if it's a new object, if the status is "fetch_needed" or
         if it's ok and fetched long time ago
         """
-        if not self.id:
-            return True
-        if self.status in (self.STATUS.to_update,):
-            return True
-        if self.status == 'ok' and self.last_fetch < datetime.now() - MIN_FETCH_DELTA:
+        self.status = self.get_new_status()
+        if self.status  in (self.STATUS.creating, self.STATUS.fetch_needed,):
             return True
         return False
+
+    def fetch_allowed(self):
+        """
+        Return True if a new fetch is allowed (not too recent)
+        """
+        return bool(not self.last_fetch or self.last_fetch < datetime.now() - self.MIN_FETCH_DELTA)
+
+    def fetch(self):
+        """
+        Fetch data from the provider (need to be implemented in subclass)
+        """
+        return self.fetch_allowed()
 
     def fetch_related_needed(self):
         """
         Check if we need to update some related objects
         """
-        if not self.id:
+        self.status = self.get_new_status()
+        if self.status in (self.STATUS.creating,):
             return False
-        return self.get_new_status() in (self.STATUS.to_update, self.STATUS.need_related)
+        return self.status in (self.STATUS.fetch_needed, self.STATUS.need_related)
+
+    def fetch_related_allowed(self):
+        """
+        Return True if a new fetch of related is allowed (if at least one is
+        not too recent)
+        """
+        for name, with_count, with_modified in self.related_operations:
+            if not with_modified:
+                continue
+            if self.fetch_related_allowed_for(name):
+                return True
+
+        return False
+
+    def fetch_related_allowed_for(self, operation):
+        """
+        Return True if a new fetch of a related is allowed(if not too recent)
+        """
+        if operation in [op[0] for op in self.related_operations if op[2]]:
+            date = getattr(self, '%s_modified' % operation)
+            if not date or date < datetime.now() - self.MIN_FETCH_RELATED_DELTA:
+                return True
+        return False
 
     def fetch_related(self, limit=None):
         """
@@ -133,8 +188,10 @@ class SyncableModel(TimeStampedModel):
         if not self.fetch_related_needed():
             return 0
         done = 0
-        for operation_name in self.fetch_related_operations:
-            operation = getattr(self, 'fetch_%s' % operation_name)
+        for operation in self.related_operations:
+            if not self.fetch_related_allowed_for(operation[0]):
+                continue
+            operation = getattr(self, 'fetch_%s' % operation[0])
             if operation():
                 done += 1
             if limit and done >= limit:
@@ -150,6 +207,13 @@ class Account(SyncableModel):
     How load an account, the good way :
         Account.objects.get_or_new(backend, slug)
     """
+
+    # it's forbidden to fetch if the last fetch is less than...
+    MIN_FETCH_DELTA = getattr(settings, 'ACCOUNT_MIN_FETCH_DELTA', SyncableModel.MIN_FETCH_DELTA)
+    MIN_FETCH_RELATED_DELTA = getattr(settings, 'ACCOUNT_MIN_FETCH_RELATED_DELTA', SyncableModel.MIN_FETCH_RELATED_DELTA)
+    # we need to fetch is the last fetch is more than
+    MIN_FETCH_DELTA_NEEDED = getattr(settings, 'ACCOUNT_MIN_FETCH_DELTA_NEEDED', SyncableModel.MIN_FETCH_DELTA_NEEDED)
+    MIN_FETCH_RELATED_DELTA_NEEDED = getattr(settings, 'ACCOUNT_MIN_FETCH_RELATED_DELTA_NEEDED', SyncableModel.MIN_FETCH_RELATED_DELTA_NEEDED)
 
     # Basic informations
 
@@ -201,42 +265,28 @@ class Account(SyncableModel):
     objects = AccountManager()
 
     # Fetch operations
-    fetch_related_operations = ('following', 'followers', 'repositories',)
+    related_operations = (
+        # name, with count, with modified
+        ('following', True, True),
+        ('followers', True, True),
+        ('repositories', True, True),
+    )
 
     class Meta:
         unique_together = (('backend', 'slug'),)
-
-    def get_new_status(self):
-        """
-        Return the status to be saved
-        """
-        default = super(Account, self).get_new_status()
-        if default != self.STATUS.ok:
-            return default
-
-        # a related list need to be fetched ?
-        if None in (self.following_count, self.followers_count, self.repositories_count):
-            return self.STATUS.need_related
-
-        # a related list need to be updated ?
-        for operation in ('following', 'followers', 'repositories'):
-            field = '%s_modified' % operation
-            date = getattr(self, field)
-            if not date or date < datetime.now() - MIN_FETCH_RELATED_DELTA:
-                return self.STATUS.need_related
-
-        return self.STATUS.ok
 
     def fetch(self):
         """
         Fetch data from the provider
         """
-        self._block_save = True
+        if not super(Account, self).fetch():
+            return False
+
         self.get_backend().user_fetch(self)
-        self._block_save = False
         self.last_fetch = datetime.now()
 
         self.save()
+        return True
 
     def save(self, *args, **kwargs):
         """
@@ -587,6 +637,13 @@ class Repository(SyncableModel):
         Repository.objects.get_or_new(backend, project_name)
     """
 
+    # it's forbidden to fetch if the last fetch is less than...
+    MIN_FETCH_DELTA = getattr(settings, 'REPOSITORY_MIN_FETCH_DELTA', SyncableModel.MIN_FETCH_DELTA)
+    MIN_FETCH_RELATED_DELTA = getattr(settings, 'REPOSITORY_MIN_FETCH_RELATED_DELTA', SyncableModel.MIN_FETCH_RELATED_DELTA)
+    # we need to fetch is the last fetch is more than
+    MIN_FETCH_DELTA_NEEDED = getattr(settings, 'REPOSITORY_MIN_FETCH_DELTA_NEEDED', SyncableModel.MIN_FETCH_DELTA_NEEDED)
+    MIN_FETCH_RELATED_DELTA_NEEDED = getattr(settings, 'REPOSITORY_MIN_FETCH_RELATED_DELTA_NEEDED', SyncableModel.MIN_FETCH_RELATED_DELTA_NEEDED)
+
     # Basic informations
 
     # The slug for this repository (text identifier for the provider)
@@ -648,7 +705,13 @@ class Repository(SyncableModel):
     objects = RepositoryManager()
 
     # Fetch operations
-    fetch_related_operations = ('owner', 'parent_fork', 'followers', 'contributors')
+    related_operations = (
+        # name, with count, with modified
+        ('owner', False, False),
+        ('parent_fork', False, False),
+        ('followers', True, True),
+        ('contributors', True, True),
+    )
 
 
     class Meta:
@@ -668,7 +731,7 @@ class Repository(SyncableModel):
 
         # need the parents fork's name ?
         if self.is_fork and not self.official_fork_of:
-            return self.STATUS.to_update
+            return self.STATUS.fetch_needed
 
         # need the owner (or to remove it) ?
         if self.official_owner and not self.owner_id:
@@ -679,17 +742,6 @@ class Repository(SyncableModel):
         # need the parent fork ?
         if self.is_fork and not self.parent_fork_id:
             return self.STATUS.need_related
-
-        # a related list need to be fetched ?
-        if None in (self.followers_count,):
-            return self.STATUS.need_related
-
-        # a related list need to be updated ?
-        for operation in ('followers', 'contributors'):
-            field = '%s_modified' % operation
-            date = getattr(self, field)
-            if not date or date < datetime.now() - MIN_FETCH_RELATED_DELTA:
-                return self.STATUS.need_related
 
         return self.STATUS.ok
 
@@ -703,9 +755,10 @@ class Repository(SyncableModel):
         """
         Fetch data from the provider
         """
-        self._block_save = True
+        if not super(Repository, self).fetch():
+            return False
+
         self.get_backend().repository_fetch(self)
-        self._block_save = False
         self.last_fetch = datetime.now()
 
         self.save()

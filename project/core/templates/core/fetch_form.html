@@ -1,0 +1,26 @@
+{% if request.user and request.user.is_authenticated %}
+    {% if for_related and obj.fetch_related_allowed and obj.last_fetch or not for_related and obj.fetch_allowed %}
+        <form action="{% url fetch %}" method="post">{% csrf_token %}
+            <input type="hidden" name="type" value="{{ fetch_type }}" />
+            <input type="hidden" name="id" value="{{ obj.id }}" />
+            <input type="hidden" name="backend" value="{{ obj.backend }}" />
+            {% if fetch_type == 'account' %}
+                <input type="hidden" name="slug" value="{{ obj.slug }}" />
+            {% else %}
+                <input type="hidden" name="project" value="{{ obj.project }}" />
+            {% endif %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+            {% if for_related %}
+                <input type="hidden" name="related" value="1" />
+            {% endif %}
+            <input type="submit" name="submit" value="Fetch {% if for_related %}related{% else %}{{ fetch_type }}{% endif %} now" />
+            <em>(
+            {% if for_related %}
+                Can take many minutes !
+            {% else %}
+                Can take a few seconds
+            {% endif %}
+            )</em>
+        </form>
+    {% endif %}
+{% endif %}
