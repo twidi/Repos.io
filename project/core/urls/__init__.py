@@ -7,7 +7,7 @@ from core.backends import BACKENDS
 backend_part = r'(?P<backend>(?:%s))/' % '|'.join(BACKENDS.keys())
 
 urlpatterns = patterns('',
-    url(r'^project/' + backend_part + '(?P<project>[\w\-\/]+)/', include('core.urls.repositories')),
+    url(r'^project/' + backend_part + '(?P<project>[\w\-]+(?:/[\w\-]+)?)/', include('core.urls.repositories')),
     url(r'^user/' + backend_part + '(?P<slug>\w+)/', include('core.urls.accounts')),
     url(r'^(?P<identifier>[\w\/\-]+)', default, name='default'),
 )

@@ -1,1 +1,18 @@
 {% extends "core/repositories/base.html" %}
+
+{% block repository_content %}
+
+    {% if repository.followers_modified %}
+        <p>{{ repository.slug }} (by {{ repository.owner.slug }}) is followed by {{ repository.followers_count }} people : (last fetch on {{ repository.followers_modified }})</p>
+        <ul>
+            {% for follower in repository.followers.all %}
+                <li>
+                    <a href="{{ follower.get_absolute_url }}">{{ follower.slug }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>{{ repository.slug }} has {{ repository.official_followers_count }} followers, but they need to be fetched</p>
+    {% endif %}
+
+{% endblock repository_content %}

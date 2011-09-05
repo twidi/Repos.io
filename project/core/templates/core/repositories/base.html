@@ -1,4 +1,10 @@
 {% extends "core/base.html" %}
-<h1>Project {% include "core/repositories/link.html" %}{% if repository.owner %}, by {% include "core/accounts/link.html" with account=repository.owner %}{% endif %}</h1>
-{% block core_content %}{% block repository_content %}{% endblock %}{% endblock %}
+{% block core_content %}
+    <h1>Project {% include "core/repositories/link.html" %}{% if repository.owner %}, by <a href="{{ repository.owner.get_absolute_url }}">{{ repository.owner.slug }}</a>{% endif %}</h1>
+    {% if repository.last_fetch %}
+        {% block repository_content %}{% endblock %}
+    {% else %}
+        <p>This repository needs to be fetched once from {{ account.backend }} before display.</p>
+    {% endif %}
+{% endblock %}
 
