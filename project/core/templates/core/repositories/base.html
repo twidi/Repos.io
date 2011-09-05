@@ -1,6 +1,7 @@
 {% extends "core/base.html" %}
 {% block core_content %}
     <h1>Project {% include "core/repositories/link.html" %}{% if repository.owner %}, by <a href="{{ repository.owner.get_absolute_url }}">{{ repository.owner.slug }}</a>{% endif %}</h1>
+    {% include "core/repositories/fetch_form.html" %}{% include "core/repositories/fetch_form.html" with for_related=1 %}
     {% if repository.last_fetch %}
         {% block repository_content %}{% endblock %}
     {% else %}

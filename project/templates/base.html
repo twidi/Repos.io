@@ -1,3 +1,13 @@
 <p><a href="/">Home</a> | {% if user.is_authenticated %}Logged in as {{ user.username }} | <a href="{% url accounts_logout %}?next=/">Logout</a>.{% else %}<a href="{% url accounts_login %}">Login/Register</a>{% endif %}
+
+{% if messages %}
+    <hr />
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
 <hr />
 {% block content %}{% endblock %}

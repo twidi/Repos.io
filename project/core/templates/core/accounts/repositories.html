@@ -22,7 +22,7 @@
                 {% for repository in sorted_repositories %}
                     <li>
                     <a href="{{ repository.get_absolute_url }}">{{ repository.slug }}</strong></a>{% if repository.owner %}, by <a href="{{ repository.owner.get_absolute_url }}">{{ repository.owner.slug }}</a>{% endif %}
-                        (updated on {{ repository.official_modified }})
+                        ({% if repository.official_modified %}updated on {{ repository.official_modified }}{% else %}never updated{% endif %})
                         <blockquote>{{ repository.description }}</blockquote>
                     </li>
                 {% endfor %}

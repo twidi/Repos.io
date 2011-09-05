@@ -4,7 +4,7 @@
 
     <p>
     {% if repository.logo %}<img src="{{ repository.logo }}" />{% endif %}
-    {{ repository.name }}, on {{ repository.backend }} since {{ repository.official_created }}, updated on {{ repository.official_modified }}
+    {{ repository.name }}, on {{ repository.backend }} since {{ repository.official_created }}, {% if repository.official_modified %}updated on {{ repository.official_modified }}{% else %}never updated{% endif %}
     </p>
 
     <p>
@@ -20,7 +20,7 @@
         {% if repository.followers_modified %}
             <a href="{{ repository.get_followers_url }}">{{ repository.followers_count }} followers</a> (updated on {{ repository.followers_modified }})
         {% else %}
-            {{ repository.official_followers_count }} followers (list must be fetched before display)
+            {{ repository.official_followers_count }} followers (related must be fetched before display)
         {% endif %}
     </p>
 
@@ -28,7 +28,7 @@
         {% if repository.contributors_modified %}
             <a href="{{ repository.get_contributors_url }}">{{ repository.contributors_count }} contributors</a> (updated on {{ repository.contributors_modified }})
         {% else %}
-            {{ repository.official_contributors_count }} contributors (list must be fetched before display)
+            unknown number of contributors (related must be fetched before display)
         {% endif %}
     </p>
 

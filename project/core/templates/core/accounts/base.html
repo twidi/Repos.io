@@ -1,6 +1,7 @@
 {% extends "core/base.html" %}
 {% block core_content %}
     <h1>Account {% include "core/accounts/link.html" %}</h1>
+    {% include "core/accounts/fetch_form.html" %}{% include "core/accounts/fetch_form.html" with for_related=1 %}
     {% if account.last_fetch %}
         {% block account_content %}{% endblock %}
     {% else %}
