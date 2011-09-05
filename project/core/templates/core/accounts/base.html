@@ -1,6 +1,6 @@
 {% extends "core/base.html" %}
-<h1>Account {% include "core/accounts/link.html" %}</h1>
 {% block core_content %}
+    <h1>Account {% include "core/accounts/link.html" %}</h1>
     {% if account.last_fetch %}
         {% block account_content %}{% endblock %}
     {% else %}
