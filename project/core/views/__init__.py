@@ -18,7 +18,7 @@ def default(request, identifier):
     # find matching repositories
     project_identifier = Repository.objects.slugify_project(identifier)
     repositories = Repository.objects.filter(
-        Q(project_sort=project_identifier) | Q(name_sort=project_identifier))
+        Q(project_sort=project_identifier) | Q(slug_sort=project_identifier))
     repositories_count = repositories.count()
 
     # only one result => redirect to its page

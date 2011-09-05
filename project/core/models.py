@@ -591,10 +591,10 @@ class Repository(SyncableModel):
 
     # The slug for this repository (text identifier for the provider)
     slug = models.SlugField(max_length=255)
+    # The same, adapted for sorting
+    slug_sort = models.CharField(max_length=255, blank=True, null=True)
     # The fullname of this repository
     name = models.CharField(max_length=255, blank=True, null=True)
-    # The same, adapted for sorting
-    name_sort = models.CharField(max_length=255, blank=True, null=True)
     # The web url for this repository
     url = models.URLField(max_length=255, blank=True, null=True)
     # The description of this repository
@@ -718,8 +718,8 @@ class Repository(SyncableModel):
             self.project = self.get_project()
         self.project_sort = Repository.objects.slugify_project(self.project)
 
-        if self.name:
-            self.name_sort = slugify(self.name)
+        if self.slug:
+            self.slug_sort = slugify(self.slug)
 
         # auto-create a Account object for owner if one
         # is needed but not exists
@@ -980,7 +980,7 @@ class Repository(SyncableModel):
         if 'backend' not in params:
             params['backend'] = self.backend
         if 'project' not in params:
-            params['project'] = self.slug
+            params['project'] = self.project
         return (url_type, (), params)
 
     @models.permalink

@@ -6,7 +6,7 @@ from core.views.decorators import check_account
 
 _sort_map = dict(
     # get_key = ('db_field', 'readable name'),
-    name = ('name_sort', 'project name'),
+    name = ('slug_sort', 'project name'),
     owner = ('owner__slug_sort', 'owner'),
     updated = ('official_modified', 'update date'),
 )
