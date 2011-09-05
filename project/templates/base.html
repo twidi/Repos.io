@@ -1,3 +1,16 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>Organize my Repositories</title>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap-1.2.0.min.css">
+</head>
+
+<body>
+<div class="container-fluid">
+
 <p><a href="/">Home</a> | {% if user.is_authenticated %}Logged in as {{ user.username }} | <a href="{% url accounts_logout %}?next=/">Logout</a>.{% else %}<a href="{% url accounts_login %}">Login/Register</a>{% endif %}
 
 {% if messages %}
@@ -11,3 +24,7 @@
 
 <hr />
 {% block content %}{% endblock %}
+
+</div>
+</body>
+</html>
