@@ -1,17 +1,6 @@
 {% extends "core/accounts/base.html" %}
 
 {% block account_content %}
-    <p>
-    {% if account.avatar %}<img src="{{ account.avatar }}" />{% endif %}
-    {{ account.name }}, on {{ account.backend }} since {{ account.official_created }}.
-    </p>
-
-    <p>
-    <a href="{{ account.url }}">Page on {{ account.backend }}</a>
-    {% if account.homepage %}<a href="{{ account.homepage }}">His homepage</a>{% endif %}
-    </p>
-
-    <p>(last fetch on {{ account.last_fetch }})</p>
 
     <p>
         {% if account.followers_modified %}
