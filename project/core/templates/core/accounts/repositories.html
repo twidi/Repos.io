@@ -28,11 +28,15 @@
                 {% for repository in sorted_repositories %}
                 <tr>
                     <td>
-                        <strong><a href="{{ repository.get_absolute_url }}">{{ repository.slug }}</a></strong>
+                        {% include "core/repositories/logo.html" %}</strong>
+                        <strong>{% include "core/repositories/link.html" with no_backend=1 no_owner=1 %}</strong>
                         {% if repository.description %}<blockquote>{{ repository.description }}</blockquote>{% endif %}
                     </td>
                     {% if with_owners %}
-                        <td><a href="{{ repository.owner.get_absolute_url }}">{{ repository.owner.slug }}</a></td>
+                        <td>
+                            {% include "core/accounts/avatar.html" with account=repository.owner size=16 %}
+                            {% include "core/accounts/link.html" with no_backend=1 account=repository.owner %}
+                        </td>
                     {% endif %}
                     <td>{% if repository.official_modified %}{{ repository.official_modified }}{% else %}-{% endif %}</td>
                 </tr>

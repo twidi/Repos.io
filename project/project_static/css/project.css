@@ -12,18 +12,23 @@ body {
 body > div.container > section header {
     margin-bottom: 20px;
 }
-body > div.container > section header > div > img {
+body > div.container > section header img {
+    vertical-align: middle;
+}
+body > div.container > section header > div > a > img {
     float: left;
     margin-right: 10px;
 }
 body > div.container > section header h1 {
     margin-bottom: 0;
+    margin-left: 90px;
 }
 body > div.container > section header h1~h2 {
-    line-height: 10px;
+    line-height: 16px;
+    margin: -2px 0 8px 90px;
 }
-body > div.container > section header img~p {
-    margin: 3px 3px 3px -90px;
+body > div.container > section header h1~p {
+    margin: 3px 3px 3px 90px;
 }
 
 /* Fetch date information (buttons on the right) */
@@ -92,6 +97,19 @@ table.zebra-striped th.purple.header:after {
 /* Style repositories table */
 table.repositories blockquote {
     margin: 5px 0 0;
+}
+table.repositories td:first-child img {
+    float: left;
+    margin-right: 5px;
+}
+table.repositories td:first-child blockquote {
+    margin-left: 37px;
+}
+table.repositories td:nth-child(2) {
+    white-space: nowrap;
+}
+table.repositories td:nth-child(2) img {
+    vertical-align: middle;
 }
 table.repositories td:nth-child(3) {
     white-space: nowrap;

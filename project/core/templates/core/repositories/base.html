@@ -3,9 +3,17 @@
     <section id="repository">
         <header class="row">
             <div class="span-two-thirds columns">
-                <img width="80" height="80" src="{% if repository.logo %}{{ repository.logo }}{% else %}{{ STATIC_URL }}img/avatar_default_{{ repository.backend }}.png{% endif %}" />
+                {% include "core/repositories/logo.html" with size=80 %}
                 <h1>{% include "core/repositories/link.html" with no_owner=1 %}</h1>
-                {% if repository.owner %}<h2><small>by <a href="{{ repository.owner.get_absolute_url }}">{{ repository.owner.slug }}</a></small></h2>{% endif %}
+                {% if repository.owner %}
+                    <h2>
+                        <small>
+                            by
+                            {% include "core/accounts/avatar.html" with account=repository.owner size=16 %}
+                            {% include "core/accounts/link.html" with no_backend=1 account=repository.owner %}
+                        </small>
+                    </h2>
+                {% endif %}
                 <p>
                     {{ repository.name|default:repository.slug }}
                     <a href="{{ repository.url }}" title="Go to the project's page on {{ repository.backend }}"><img src="{{ STATIC_URL }}img/favicon_{{ repository.backend }}.png" alt="Page on {{ repository.backend }}"/></a>

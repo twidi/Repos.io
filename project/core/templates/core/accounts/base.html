@@ -3,7 +3,7 @@
     <section id="user">
         <header class="row">
             <div class="span-two-thirds columns">
-                <img width="80" height="80" src="{% if account.avatar %}{{ account.avatar }}{% else %}{{ STATIC_URL }}img/avatar_default_{{ account.backend }}.png{% endif %}" />
+                {% include "core/accounts/avatar.html" with size=80 %}
                 <h1> {% include "core/accounts/link.html" %}</h1>
                 <p>
                     {{ account.name|default:account.slug }}
