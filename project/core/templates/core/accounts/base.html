@@ -7,8 +7,7 @@
                 <h1> {% include "core/accounts/link.html" %}</h1>
                 <p>
                     {{ account.name|default:account.slug }}
-                    <a href="{{ account.url }}" title="Go to its page on {{ account.backend }}"><img src="{{ STATIC_URL }}img/favicon_{{ account.backend }}.png" alt="Page on {{ account.backend }}"/></a>
-                    {% if account.homepage %}<a href="{{ account.homepage }}" title="Go to its homepage: {{ account.homepage }}"><img src="{{ STATIC_URL }}img/favicon_home.png" alt="His homepage" /></a>{% endif %}
+                    {% include "core/accounts/links.html" %}
                 </p>
                 {% if account.last_fetch %}<p>On {{ account.backend }} since {{ account.official_created }}.</p>{% endif %}
             </div>
