@@ -58,19 +58,14 @@
 
 <div class="container-fluid">
 
-
 {% if messages %}
-    <hr />
     <ul class="messages">
         {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        <li class="alert-message {% if message.tags %}{{ message.tags }}{% else %}info{% endif %}"><a href='#' class='close'>&times;</a><p>{{ message }}</p></li>
         {% endfor %}
     </ul>
-    {% endif %}
+{% endif %}
 
-<hr />
 {% block content %}{% endblock %}
 
-</div>
-</body>
-</html>
+</div></body></html>
