@@ -78,5 +78,6 @@ def repositories(request, backend, slug, account=None):
             name = sort_map[sort][1],
             others = dict((key, value[1]) for key, value in sort_map.items() if key != sort),
         ),
+        with_owners = repository_has_owner,
     ))
 

@@ -2,7 +2,7 @@
 
 {% block repository_content %}
 
-    <blockquote>{{ repository.description }}</blockquote>
+    {% if repository.description %}<blockquote>{{ repository.description }}</blockquote>{% endif %}
 
     <p>
         {% if repository.followers_modified %}

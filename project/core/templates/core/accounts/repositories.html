@@ -6,27 +6,39 @@
 
         {% if sorted_repositories %}
 
-        <p>
-            Here are the {{ sorted_repositories|length }} repositories followed/owned by {{ account.slug }}, sorted by {{ sort.name }}{% if sort.reverse %} (descending){% else %} (ascending){% endif %}
-            [
-                <a href="./?sort_by={% if not sort.reverse %}-{% endif %}{{ sort.key }}">reverse</a>
-                or sort by :
-                {% for key, name in sort.others.items %}
-                    <a href="./?sort_by={{ key }}">{{ name }}</a>{% if not forloop.last %}, {% endif %}
-                {% endfor %}
-            ]
-            (last fetch on {{ account.repositories_modified }})
-        </p>
+        <p>Here are the {{ sorted_repositories|length }} repositories followed/owned by {{ account.slug }} (last fetch on {{ account.repositories_modified }}) :</p>
 
-            <ul>
+        <table class='zebra-striped sortable repositories'>
+            <thead>
+                <tr>
+                    <th class="yellow header{% if sort.key == 'name' %} headerSort{% if sort.reverse %}Down{% else %}Up{% endif %}{% endif %}">
+                        <a href="./?sort_by={% if sort.key == 'name' and not sort.reverse %}-{% endif %}name">Name</a>
+                    </th>
+                    {% if with_owners %}
+                    <th class="blue header{% if sort.key == 'owner' %} headerSort{% if sort.reverse %}Down{% else %}Up{% endif %}{% endif %}">
+                        <a href="./?sort_by={% if sort.key == 'owner' and not sort.reverse %}-{% endif %}owner">Owner</a>
+                    </th>
+                    {% endif %}
+                    <th class="green header{% if sort.key == 'updated' %} headerSort{% if sort.reverse %}Down{% else %}Up{% endif %}{% endif %}">
+                        <a href="./?sort_by={% if sort.key == 'updated' and not sort.reverse %}-{% endif %}updated">Update</a>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
                 {% for repository in sorted_repositories %}
-                    <li>
-                    <a href="{{ repository.get_absolute_url }}">{{ repository.slug }}</strong></a>{% if repository.owner %}, by <a href="{{ repository.owner.get_absolute_url }}">{{ repository.owner.slug }}</a>{% endif %}
-                        ({% if repository.official_modified %}updated on {{ repository.official_modified }}{% else %}never updated{% endif %})
-                        <blockquote>{{ repository.description }}</blockquote>
-                    </li>
+                <tr>
+                    <td>
+                        <strong><a href="{{ repository.get_absolute_url }}">{{ repository.slug }}</a></strong>
+                        {% if repository.description %}<blockquote>{{ repository.description }}</blockquote>{% endif %}
+                    </td>
+                    {% if with_owners %}
+                        <td><a href="{{ repository.owner.get_absolute_url }}">{{ repository.owner.slug }}</a></td>
+                    {% endif %}
+                    <td>{% if repository.official_modified %}{{ repository.official_modified }}{% else %}-{% endif %}</td>
+                </tr>
                 {% endfor %}
-            </ul>
+            </tbody>
+        </table>
 
         {% else %}
             <p>{{ account.slug }} doesn't watch/own any repository</p>

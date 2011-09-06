@@ -1,6 +1,9 @@
+/* Topbar's height and a little more */
 body {
     padding-top: 50px;
 }
+
+/* Do not visually "select" elements in topbar's sub-menu when their "parent" is selected */
 .topbar li.active li a {
     background: transparent;
 }
@@ -23,6 +26,7 @@ body > div.container > section header img~p {
     margin: 3px 3px 3px -90px;
 }
 
+/* Fetch date information (buttons on the right) */
 .fetch-date {
     display: block;
 }
@@ -39,4 +43,56 @@ body > div.container > section header img~p {
     display: block;
     font-size: smaller;
     text-align: left;
+}
+
+/* Use links in table's header to sort */
+table.zebra-striped.sortable th.header {
+    position: relative;
+    padding: 0;
+    cursor: default;
+}
+table.zebra-striped.sortable th.header a {
+    display: block;
+    color: inherit;
+    margin: 0;
+    padding: 9px 10px;
+}
+table.zebra-striped.sortable th.header:after {
+    border-width: 4px 4px 0;
+    position: relative;
+    top: -15px;
+    right: 10px;
+    margin: -4px 0 0;
+}
+table.zebra-striped.sortable th.header.headerSortDown:after {
+    border-width: 0 4px 4px;
+}
+
+/* Color arrows in tables */
+table.zebra-striped th.blue.header:after {
+  border-color: #049cdb transparent;
+}
+table.zebra-striped th.green.header:after {
+  border-color: #46a546 transparent;
+}
+table.zebra-striped th.red.header:after {
+  border-color: #9d261d transparent;
+}
+table.zebra-striped th.yellow.header:after {
+  border-color: #ffc40d transparent;
+}
+table.zebra-striped th.orange.header:after {
+  border-color: #f89406 transparent;
+}
+table.zebra-striped th.purple.header:after {
+  border-color: #7a43b6 transparent;
+}
+
+
+/* Style repositories table */
+table.repositories blockquote {
+    margin: 5px 0 0;
+}
+table.repositories td:nth-child(3) {
+    white-space: nowrap;
 }
