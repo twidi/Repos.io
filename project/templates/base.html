@@ -21,7 +21,7 @@
             <h3><a href="/">Organize my Repositories</a></h3>
 
             <ul class="nav">
-                <li class="active"><a href="/">Home</a></li>
+                <li{% if section == 'home' %} class="active"{% endif %}><a href="/">Home</a></li>
                 <li><a href="http://github.com/twidi/OrganizeMyRepositories/">About</a></li>
             </ul>
 
@@ -31,11 +31,11 @@
                     <li><a href="{% url accounts_manage %}">Logged as {{ user.username }}</a></li>
                     {% with accounts=user.accounts.all %}
                         {% if accounts %}
-                            <li class='dropdown'>
+                            <li class='dropdown{% if section == 'accounts' %} active{% endif %}'>
                                 <a href="{% url accounts_manage %}" class="dropdown-toggle">Your accounts</a>
                                 <ul class="dropdown-menu">
-                                    {% for account in accounts %}
-                                        <li>{% include "core/accounts/link.html" %}</li>
+                                    {% for an_account in accounts %}
+                                    <li{% if section == 'user' and account.id == an_account.id %} class="active"{% endif %}>{% include "core/accounts/link.html" with account=an_account%}</li>
                                     {% endfor %}
                                     <li class="divider"></li>
                                     <li><a href="{% url accounts_manage %}">Manage</a></li>

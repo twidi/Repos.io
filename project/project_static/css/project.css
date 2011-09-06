@@ -1,3 +1,6 @@
 body {
     padding-top: 50px;
 }
+.topbar li.active li a {
+    background: transparent;
+}
