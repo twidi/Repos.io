@@ -1,22 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
 
+<div class="row">
+
+<div class="span-one-third column">
     {% if user.is_authenticated %}
         <h1>Welcome <em>{{ user.username }} </em>!</h1>
 
         {% with accounts=user.accounts.all %}
 
             {% if not accounts %}
-                <p>You have no account associated, <a href="{% url accounts_manage %}">click here to start associating your account</a>.</p>
+                <p>You have no account associated.</p>
+                <p><a class="btn primary large" href="{% url accounts_manage %}">Associate your account</a></p>
             {% else %}
-                <p><a href="{% url accounts_manage %}">Click here to manage your account</a>.</p>
-
-                <p>You can view details for your accounts :</p>
+                <p>Start by visiting on of your accounts :</p>
                 <ul>
                     {% for account in accounts %}
                         <li>{% include "core/accounts/link.html" %}</li>
                     {% endfor %}
                 </ul>
+                <p><a class="btn" href="{% url accounts_manage %}">Manage your accounts</a></p>
             {% endif %}
 
         {% endwith %}
@@ -24,15 +27,17 @@
     {% else %}
 
         <h1>Welcome !</h1>
-        <p><a href="{% url accounts_login %}">You need to be authenticated to use our site. Click here to do so.</a></p>
+        <p>You need to be authenticated to use our site.</p>
+        <p><a class="btn primary large" href="{% url accounts_login %}">Authenticate with a provider</a></p>
 
     {% endif %}
 
-    <hr />
+</div>
+<div class="span-one-third column">
 
     {% with accounts_manager.get_last_fetched as last_accounts %}
         {% if last_accounts %}
-            <h2>Last fetched accounts :</h2>
+            <h2>Last fetched accounts</h2>
             <ul>
                 {% for an_account in last_accounts %}
                     <li>{% include "core/accounts/link.html" with account=an_account %}</li>
@@ -41,9 +46,12 @@
         {% endif %}
     {% endwith %}
 
+</div>
+<div class="span-one-third column">
+
     {% with repositories_manager.get_last_fetched as last_repositories %}
         {% if last_repositories %}
-            <h2>Last fetched repositories :</h2>
+            <h2>Last fetched repositories</h2>
             <ul>
                 {% for a_repository in last_repositories %}
                     <li>{% include "core/repositories/link.html" with repository=a_repository %}</li>
@@ -52,5 +60,7 @@
         {% endif %}
     {% endwith %}
 
+</div>
+</div>
 
 {% endblock content %}
