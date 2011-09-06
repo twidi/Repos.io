@@ -1,11 +1,45 @@
 {% extends "core/base.html" %}
 {% block core_content %}
-    <h1>Project {% include "core/repositories/link.html" %}{% if repository.owner %}, by <a href="{{ repository.owner.get_absolute_url }}">{{ repository.owner.slug }}</a>{% endif %}</h1>
-    {% include "core/repositories/fetch_form.html" %}{% include "core/repositories/fetch_form.html" with for_related=1 %}
-    {% if repository.last_fetch %}
-        {% block repository_content %}{% endblock %}
-    {% else %}
-        <p>This repository needs to be fetched once from {{ account.backend }} before display.</p>
-    {% endif %}
+    <section id="repository">
+        <header class="row">
+            <div class="span-two-thirds columns">
+                <img width="80" height="80" src="{% if repository.logo %}{{ repository.logo }}{% else %}{{ STATIC_URL }}img/avatar_default_{{ repository.backend }}.png{% endif %}" />
+                <h1>{% include "core/repositories/link.html" with no_owner=1 %}</h1>
+                {% if repository.owner %}<h2><small>by <a href="{{ repository.owner.get_absolute_url }}">{{ repository.owner.slug }}</a></small></h2>{% endif %}
+                <p>
+                    {{ repository.name|default:repository.slug }}
+                    <a href="{{ repository.url }}" title="Go to the project's page on {{ repository.backend }}"><img src="{{ STATIC_URL }}img/favicon_{{ repository.backend }}.png" alt="Page on {{ repository.backend }}"/></a>
+                    {% if repository.homepage %}<a href="{{ repository.homepage }}" title="Go to the project's homepage: {{ repository.homepage }}"><img src="{{ STATIC_URL }}img/favicon_home.png" alt="His homepage" /></a>{% endif %}
+                </p>
+                <p>On {{ repository.backend }} since {{ repository.official_created }}, {% if repository.official_modified %}updated on {{ repository.official_modified }}{% else %}never updated{% endif %}</p>
+            </div>
+            <div class="span-one-third columns">
+                {% include "core/repositories/fetch_form.html" %}{% include "core/repositories/fetch_form.html" with for_related=1 %}
+            </div>
+        </header>
+        {% if repository.last_fetch %}
+            <ul class="tabs">
+                <li{% if subsection == 'home' %} class="active"{% endif %}><a href="{{ repository.get_absolute_url }}">Home</a></li>
+                <li{% if subsection == 'followers' %} class="active"{% endif %}><a href="{{ repository.get_followers_url }}">
+                {% if repository.followers_modified %}
+                    {{ repository.followers_count }} followers
+                {% else %}
+                    {{ repository.official_followers_count }}? followers
+                {% endif %}
+                </a></li>
+                <li{% if subsection == 'contributors' %} class="active"{% endif %}><a href="{{ repository.get_contributors_url }}">
+                {% if repository.contributors_modified %}
+                    {{ repository.contributors_count }} contributors
+                {% else %}
+                    ?? contributors
+                {% endif %}
+                </a></li>
+            </ul>
+
+            {% block repository_content %}{% endblock %}
+        {% else %}
+            <div class="alert-message warning"><p>This repository needs to be fetched once from {{ repository.backend }} before display.</p></div>
+        {% endif %}
+    </section>
 {% endblock %}
 

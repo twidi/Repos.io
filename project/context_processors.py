@@ -25,8 +25,15 @@ def design(request):
             # remove the "account_" part
             subsection = url_name[8:]
 
-    elif request.path.startswith('/repository/'):
+    elif request.path.startswith('/project/'):
         section = 'repository'
+        try:
+            url_name = resolve(request.path).url_name
+        except:
+            pass
+        else:
+            # remove the "repository_" part
+            subsection = url_name[11:]
 
     # final result
     return dict(
