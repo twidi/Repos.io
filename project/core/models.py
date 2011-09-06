@@ -169,6 +169,20 @@ class SyncableModel(TimeStampedModel):
 
         return False
 
+    def last_fetch_related(self):
+        """
+        Get the last related modified date
+        """
+        last = None
+        for name, with_count, with_modified in self.related_operations:
+            if not with_modified:
+                continue
+            date = getattr(self, '%s_modified' % name)
+            if last is None or date > last:
+                last = date
+
+        return last
+
     def fetch_related_allowed_for(self, operation):
         """
         Return True if a new fetch of a related is allowed(if not too recent)

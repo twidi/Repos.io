@@ -1,6 +1,6 @@
 {% if request.user and request.user.is_authenticated %}
     {% if for_related and obj.fetch_related_allowed and obj.last_fetch or not for_related and obj.fetch_allowed %}
-        <form action="{% url fetch %}" method="post">{% csrf_token %}
+        <form class='fetch-form' action="{% url fetch %}" method="post">{% csrf_token %}
             <input type="hidden" name="type" value="{{ fetch_type }}" />
             <input type="hidden" name="id" value="{{ obj.id }}" />
             <input type="hidden" name="backend" value="{{ obj.backend }}" />
@@ -13,14 +13,17 @@
             {% if for_related %}
                 <input type="hidden" name="related" value="1" />
             {% endif %}
-            <input type="submit" name="submit" value="Fetch {% if for_related %}related{% else %}{{ fetch_type }}{% endif %} now" />
-            <em>(
-            {% if for_related %}
-                Can take many minutes !
-            {% else %}
-                Can take a few seconds
-            {% endif %}
-            )</em>
+            <button class="btn" type='submit' name='submit' value='submit'>
+                <strong>Fetch {% if for_related %}related{% else %}{{ fetch_type }}{% endif %} now</strong>
+                <em>(
+                {% if for_related %}
+                    Can take many minutes !
+                {% else %}
+                    Can take a few seconds
+                {% endif %}
+                )</em>
+                <span>Last fetch : {% if for_related %}{{ obj.last_fetch_related|default:'never' }}{% else %}{{ obj.last_fetch|default:'never' }}{% endif %}</span>
+            </button>
         </form>
     {% endif %}
 {% endif %}

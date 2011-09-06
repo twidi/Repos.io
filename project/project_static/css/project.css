@@ -4,3 +4,19 @@ body {
 .topbar li.active li a {
     background: transparent;
 }
+
+.fetch-forms {
+    float: left;
+}
+.fetch-form {
+    margin-left: 20px;
+    display: inline-block;
+}
+.fetch-form button em {
+    font-size: smaller;
+}
+.fetch-form button span {
+    display: block;
+    font-size: smaller;
+    text-align: left;
+}
