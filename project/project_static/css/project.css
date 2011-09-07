@@ -217,3 +217,11 @@ body#accounts-manage .row:nth-child(2) section:nth-child(2) p:nth-child(3) {
 body#accounts-manage .row:nth-child(2) section:nth-child(2)  a.btn {
     margin-right: 10px;
 }
+
+/* Account page */
+body#user-home dd {
+    margin-bottom: 20px;
+}
+body#user-home .row:last-child section:last-child {
+    text-align: center;
+}
