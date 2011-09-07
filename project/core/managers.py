@@ -15,7 +15,10 @@ class SyncableModelManager(models.Manager):
         """
         Return the last fetch objects
         """
-        return self.filter(last_fetch__isnull=False).order_by('-last_fetch')[:length]
+        result = self.filter(last_fetch__isnull=False).order_by('-last_fetch')
+        if length:
+            result = result[:length]
+        return result
 
 
 class AccountManager(SyncableModelManager):
@@ -117,3 +120,12 @@ class RepositoryManager(SyncableModelManager):
         Slugify each part of a project, but keep the slashes
         """
         return '/'.join([slugify(part) for part in project.split('/')])
+
+    def get_last_fetched(self, length=20):
+        """
+        Return the last fetch repositories, with owners
+        """
+        result = super(RepositoryManager, self).get_last_fetched(length=None).select_related('owner')
+        if length:
+            result = result[:length]
+        return result

@@ -3,6 +3,11 @@ body {
     padding-top: 50px;
 }
 
+small {
+    color: #bfbfbf;
+    font-size: smaller;
+}
+
 /* Do not visually "select" elements in topbar's sub-menu when their "parent" is selected */
 .topbar li.active li a {
     background: transparent;
@@ -130,5 +135,13 @@ table.accounts td:first-child {
     height: 30px;
 }
 table.accounts td:first-child img {
+    vertical-align: middle;
+}
+
+/* Home tables */
+table.simple-content td {
+    padding: 5px;
+}
+table.simple-content td:first-child img {
     vertical-align: middle;
 }

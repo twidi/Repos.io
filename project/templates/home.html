@@ -3,7 +3,7 @@
 
 <div class="row">
 
-<div class="span-one-third column">
+<div class="span5 column">
     {% if user.is_authenticated %}
         <h1>Welcome <em>{{ user.username }} </em>!</h1>
 
@@ -33,30 +33,45 @@
     {% endif %}
 
 </div>
-<div class="span-one-third column">
+<div class="span4 column">
 
     {% with accounts_manager.get_last_fetched as last_accounts %}
         {% if last_accounts %}
-            <h2>Last fetched accounts</h2>
-            <ul>
-                {% for an_account in last_accounts %}
-                    <li>{% include "core/accounts/link.html" with account=an_account %}</li>
-                {% endfor %}
-            </ul>
+            <h2>Last 20 users</h2>
+            <table class="simple-content">
+                <tbody>
+                    {% for an_account in last_accounts %}
+                    <tr>
+                        <td>
+                            {% include "core/accounts/avatar.html" with account=an_account size=16 %}
+                            {% include "core/accounts/link.html" with account=an_account %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         {% endif %}
     {% endwith %}
 
 </div>
-<div class="span-one-third column">
+<div class="span7 column">
 
     {% with repositories_manager.get_last_fetched as last_repositories %}
         {% if last_repositories %}
-            <h2>Last fetched repositories</h2>
-            <ul>
-                {% for a_repository in last_repositories %}
-                    <li>{% include "core/repositories/link.html" with repository=a_repository %}</li>
-                {% endfor %}
-            </ul>
+            <h2>Last 20 repositories</h2>
+            <table class="simple-content">
+                <tbody>
+                    {% for a_repository in last_repositories %}
+                    <tr>
+                        <td>
+                            {% include "core/repositories/logo.html" with repository=a_repository size=16 %}
+                            {% include "core/repositories/link.html" with repository=a_repository no_owner=1 %}
+                            <small>by {% include "core/accounts/link.html" with account=a_repository.owner no_backend=1 %}</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         {% endif %}
     {% endwith %}
 
