@@ -138,10 +138,38 @@ table.accounts td:first-child img {
     vertical-align: middle;
 }
 
-/* Home tables */
-table.simple-content td {
+/* Home */
+body#home .row:first-child section:first-child {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background : #f5f5f5;
+}
+body#home .row:first-child section:first-child h1 {
+    text-align: center;
+}
+body#home .row:first-child section:first-child hr {
+    margin: 10px 0;
+}
+body#home .row:first-child section:first-child p {
+    margin-left: 10px;
+    margin-right: 10px;
+    line-height: 15px;
+}
+body#home .row:first-child section:first-child table {
+    width: 90%;
+    margin: auto;
+}
+body#home .row:first-child section:first-child table tr:first-child td {
+    border-top: 1px solid #DDDDDD;
+}
+body#home .row:first-child section:first-child p.with-btn {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+body#home table td {
     padding: 5px;
 }
-table.simple-content td:first-child img {
+body#home table td:first-child img {
     vertical-align: middle;
 }

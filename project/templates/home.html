@@ -1,11 +1,12 @@
 {% extends "base.html" %}
+{% block body_id %}home{% endblock %}
 {% block content %}
 
 <div class="row">
 
-<div class="span5 column">
+<section class="span5">
     {% if user.is_authenticated %}
-        <h1>Welcome <em>{{ user.username }} </em>!</h1>
+        <h1>Welcome back <em>{{ user.username }} </em>!</h1>
 
         {% with accounts=user.accounts.all %}
 
@@ -14,12 +15,19 @@
                 <p><a class="btn primary large" href="{% url accounts_manage %}">Associate your account</a></p>
             {% else %}
                 <p>Start by visiting on of your accounts :</p>
-                <ul>
+            <table>
+                <tbody>
                     {% for account in accounts %}
-                        <li>{% include "core/accounts/link.html" %}</li>
+                    <tr>
+                        <td>
+                        {% include "core/accounts/avatar.html" with size=16 %}
+                        {% include "core/accounts/link.html" %}
+                        </td>
+                    </tr>
                     {% endfor %}
-                </ul>
-                <p><a class="btn" href="{% url accounts_manage %}">Manage your accounts</a></p>
+                </tbody>
+            </table>
+                <p class='with-btn'><a class="btn" href="{% url accounts_manage %}">Manage your accounts</a></p>
             {% endif %}
 
         {% endwith %}
@@ -27,18 +35,23 @@
     {% else %}
 
         <h1>Welcome !</h1>
-        <p>You need to be authenticated to use our site.</p>
-        <p><a class="btn primary large" href="{% url accounts_login %}">Authenticate with a provider</a></p>
+        <p><strong>Organize my Repositories</strong> is here to help you organize repositories you own or follow on many sites (we call them providers), like Github, Bitbucket, Google Code...<em>*</em></p>
+        <p>Just start by authenticate with a provider (you'll then be able to associate other accounts), and enjoy !</p>
+        <p>You can see your accounts, your followers and following, your own repositories and the ones you follow on each providers, you can note them, star them, add private notes...</p>
+        <p>Actually we only do read-only task on authorized providers, but later you'll be able to manage all your repositories here.</p>
+        <p class='with-btn'><a class="btn primary large" href="{% url accounts_login %}">Authenticate with a provider</a></p>
+        <p><em>* we only support Github right now, others will come later</em></p>
 
     {% endif %}
 
-</div>
-<div class="span4 column">
+</section>
+
+<section class="span4">
 
     {% with accounts_manager.get_last_fetched as last_accounts %}
         {% if last_accounts %}
             <h2>Last 20 users</h2>
-            <table class="simple-content">
+            <table>
                 <tbody>
                     {% for an_account in last_accounts %}
                     <tr>
@@ -53,13 +66,14 @@
         {% endif %}
     {% endwith %}
 
-</div>
-<div class="span7 column">
+</section>
+
+<section class="span7">
 
     {% with repositories_manager.get_last_fetched as last_repositories %}
         {% if last_repositories %}
             <h2>Last 20 repositories</h2>
-            <table class="simple-content">
+            <table>
                 <tbody>
                     {% for a_repository in last_repositories %}
                     <tr>
@@ -75,7 +89,8 @@
         {% endif %}
     {% endwith %}
 
-</div>
+</section>
+
 </div>
 
 {% endblock content %}
