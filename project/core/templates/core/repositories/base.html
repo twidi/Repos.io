@@ -28,20 +28,16 @@
         {% if repository.last_fetch %}
             <ul class="tabs">
                 <li{% if subsection == 'home' %} class="active"{% endif %}><a href="{{ repository.get_absolute_url }}">Home</a></li>
-                <li{% if subsection == 'followers' %} class="active"{% endif %}><a href="{{ repository.get_followers_url }}">
-                {% if repository.followers_modified %}
-                    {{ repository.followers_count }} followers
-                {% else %}
-                    {{ repository.official_followers_count }}? followers
+                {% if repository.followers_modified or subsection == 'followers' %}
+                    <li{% if subsection == 'followers' %} class="active"{% endif %}>
+                        <a href="{{ repository.get_followers_url }}">{{ repository.followers_count }}{% if not repository.followers_modified %}?{% endif %} followers</a>
+                    </li>
                 {% endif %}
-                </a></li>
-                <li{% if subsection == 'contributors' %} class="active"{% endif %}><a href="{{ repository.get_contributors_url }}">
-                {% if repository.contributors_modified %}
-                    {{ repository.contributors_count }} contributors
-                {% else %}
-                    ?? contributors
+                {% if repository.contributors_modified or subsection == 'contributors' %}
+                    <li{% if subsection == 'contributors' %} class="active"{% endif %}>
+                        <a href="{{ repository.get_contributors_url }}">{% if repository.contributors_modified %}{{ repository.contributors_count }}{% else %}??{% endif %} contributors</a>
+                    </li>
                 {% endif %}
-                </a></li>
             </ul>
 
             {% block repository_content %}{% endblock %}

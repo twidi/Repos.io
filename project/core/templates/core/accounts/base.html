@@ -18,27 +18,21 @@
         {% if account.last_fetch %}
             <ul class="tabs">
                 <li{% if subsection == 'home' %} class="active"{% endif %}><a href="{{ account.get_absolute_url }}">Home</a></li>
-                <li{% if subsection == 'followers' %} class="active"{% endif %}><a href="{{ account.get_followers_url }}">
-                {% if account.followers_modified %}
-                    {{ account.followers_count }} followers
-                {% else %}
-                    {{ account.official_followers_count }}? followers
+                {% if account.followers_modified or subsection == 'followers' %}
+                    <li{% if subsection == 'followers' %} class="active"{% endif %}>
+                        <a href="{{ account.get_followers_url }}">{{ account.followers_count }}{% if not account.followers_modified %}?{% endif %} followers</a>
+                    </li>
                 {% endif %}
-                </a></li>
-                <li{% if subsection == 'following' %} class="active"{% endif %}><a href="{{ account.get_following_url }}">
-                {% if account.following_modified %}
-                    {{ account.following_count }} following
-                {% else %}
-                    {{ account.official_following_count }}? following
+                {% if account.following_modified or subsection == 'following' %}
+                    <li{% if subsection == 'following' %} class="active"{% endif %}>
+                        <a href="{{ account.get_following_url }}">{{ account.following_count }}{% if not account.following_modified %}?{% endif %} following</a>
+                    </li>
                 {% endif %}
-                </a></li>
-                <li{% if subsection == 'repositories' %} class="active"{% endif %}><a href="{{ account.get_repositories_url }}">
-                {% if account.repositories_modified %}
-                    {{ account.repositories_count }} repositories
-                {% else %}
-                    ?? repositories
+                {% if account.repositories_modified or subsection == 'repositories' %}
+                    <li{% if subsection == 'repositories' %} class="active"{% endif %}>
+                        <a href="{{ account.get_repositories_url }}">{% if account.repositories_modified %}{{ account.repositories_count }}{% else %}??{% endif %} repositories</a>
+                    </li>
                 {% endif %}
-                </a></li>
             </ul>
 
             {% block account_content %}{% endblock %}
