@@ -30,7 +30,8 @@ I love this idea, can i help you ?
 
 Yes of course, the source code of this project is on our `GitHub repository`_, you can fork it and send us pull requests, add/resolve issues...
 
-The site is coded using django (1.3), django-social-auth (for authentication) and python-github2 (for access to the github api)
+The site is coded using django (1.3), django-social-auth (for authentication) and python-github2 (for access to the github api).
+For the client site we use the `Twitter boostrap`_, some javascript with jQuery_ and of course some addtional CSS (soon via Sass_)
 
 Is that all ?
 -------------
@@ -48,9 +49,13 @@ Providers :
 Some possible functionnalities :
  - tree view of forks
  - rss feeds (with filters !)
+ - recommendations on accounts/repositories to follow
 
 
 
 
 .. _GitHub: http://www.github.com
 .. _GitHub repository: https://github.com/twidi/OrganizeMyRepositories
+.. _Twitter boostrap: http://twitter.github.com/bootstrap/
+.. _jQuery: http://www.jquery.com/
+.. _Sass: http://sass-lang.com/
