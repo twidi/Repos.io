@@ -8,6 +8,11 @@ small {
     font-size: smaller;
 }
 
+.btn img {
+    vertical-align: middle;
+    margin-left: -5px;
+}
+
 /* Do not visually "select" elements in topbar's sub-menu when their "parent" is selected */
 .topbar li.active li a {
     background: transparent;
@@ -172,4 +177,24 @@ body#home table td {
 }
 body#home table td:first-child img {
     vertical-align: middle;
+}
+
+/* Login page */
+body#login section {
+    width: 460px;
+    margin: 100px auto 0;
+    padding: 30px 50px;
+    border-top: 1px solid #DDDDDD;
+    border-bottom: 1px solid #DDDDDD;
+}
+body#login p:nth-child(2) {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+body#login p:last-child {
+    margin-bottom: 0;
+}
+body#login a.btn {
+    margin-right: 10px;
 }
