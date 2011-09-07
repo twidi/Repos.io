@@ -12,7 +12,7 @@
     <script src="{{ STATIC_URL }}js/project.js"></script>
 </head>
 
-<body id="{% block body_id %}body{% endblock %}">
+<body id="{% block body_id %}{% if section %}{{ section }}{% if subsection %}-{{ subsection }}{% endif %}{% else %}body{% endif %}{% endblock %}">
 
 <div class="topbar">
     <div class="topbar-inner">

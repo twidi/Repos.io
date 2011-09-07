@@ -14,6 +14,13 @@ def design(request):
 
     elif request.path.startswith('/accounts/'):
         section = 'accounts'
+        try:
+            url_name = resolve(request.path).url_name
+        except:
+            pass
+        else:
+            # remove the "accounts_" part
+            subsection = url_name[9:]
 
     elif request.path.startswith('/user/'):
         section = 'user'
