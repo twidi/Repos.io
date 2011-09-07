@@ -2,23 +2,42 @@
 
 {% block repository_content %}
 
-    {% if repository.description %}<blockquote>{{ repository.description }}</blockquote>{% endif %}
+<div class="row">
 
-    <p>
-        {% if repository.followers_modified %}
-            <a href="{{ repository.get_followers_url }}">{{ repository.followers_count }} followers</a> (updated on {{ repository.followers_modified }})
-        {% else %}
-            {{ repository.official_followers_count }} followers (related must be fetched before display)
+    <section class="span11">
+
+        {% if repository.description %}
+            Description :
+            <blockquote>{{ repository.description }}</blockquote>
         {% endif %}
-    </p>
 
-    <p>
-        {% if repository.contributors_modified %}
-            <a href="{{ repository.get_contributors_url }}">{{ repository.contributors_count }} contributors</a> (updated on {{ repository.contributors_modified }})
-        {% else %}
-            unknown number of contributors (related must be fetched before display)
-        {% endif %}
-    </p>
+        <dl>
+            <dt>
+                {% if repository.followers_modified %}
+                <a href="{{ repository.get_followers_url }}">{{ repository.followers_count }} followers</a> <small>(updated on {{ repository.followers_modified }})</small>
+                {% else %}
+                    {{ repository.official_followers_count }} followers <small>(related{% if not user.is_authenticated %} by an authenticated user {% endif %} must be fetched before display)</small>
+                {% endif %}
+            </dt>
+            <dd>Followers are people who are following {{ repository.slug }} to have news on this repository on {{ account.backend }}</dd>
 
+            <dt>
+                {% if repository.contributors_modified %}
+                    <a href="{{ repository.get_contributors_url }}">{{ repository.contributors_count }} contributors</a> <small>(updated on {{ repository.contributors_modified }})</small>
+                {% else %}
+                    unknown number of contributors <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
+                {% endif %}
+            </dt>
+            <dd>Contributors are all people who, sometimes, even just one time, worked on {{ repository.slug }} on {{ repository.backend }}</dd>
+
+        </dl>
+
+    </section>
+
+    <section class="span5">
+        <a class="btn primary" href="{{ repository.url }}"><img src="{{ STATIC_URL }}img/favicon_{{ repository.backend }}.png" /> Go to the {{ repository.backend }} page</a>
+    </section>
+
+</div>
 
 {% endblock repository_content %}
