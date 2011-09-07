@@ -1,0 +1,4 @@
+<th class="{% if color %}{{ color }} {% endif %}sortable header{% if sort.key == key %} headerSort{% if sort.reverse %}Down{% else %}Up{% endif %}{% endif %}">
+    <a href="./?sort_by={% if sort.key == key and not sort.reverse %}-{% endif %}{{ key }}">{{ name }}</a>
+</th>
+

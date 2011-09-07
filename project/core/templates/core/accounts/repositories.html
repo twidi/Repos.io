@@ -8,20 +8,14 @@
 
         <p>Here are the {{ sorted_repositories|length }} repositories followed/owned by {{ account.slug }} (last fetch on {{ account.repositories_modified }}) :</p>
 
-        <table class='zebra-striped sortable repositories'>
+        <table class='zebra-striped repositories'>
             <thead>
                 <tr>
-                    <th class="yellow header{% if sort.key == 'name' %} headerSort{% if sort.reverse %}Down{% else %}Up{% endif %}{% endif %}">
-                        <a href="./?sort_by={% if sort.key == 'name' and not sort.reverse %}-{% endif %}name">Name</a>
-                    </th>
+                    {% include "core/sort_th.html" with color="orange" key="name" name="Name" %}
                     {% if with_owners %}
-                    <th class="blue header{% if sort.key == 'owner' %} headerSort{% if sort.reverse %}Down{% else %}Up{% endif %}{% endif %}">
-                        <a href="./?sort_by={% if sort.key == 'owner' and not sort.reverse %}-{% endif %}owner">Owner</a>
-                    </th>
+                        {% include "core/sort_th.html" with color="blue" key="owner" name="Owner" %}
                     {% endif %}
-                    <th class="green header{% if sort.key == 'updated' %} headerSort{% if sort.reverse %}Down{% else %}Up{% endif %}{% endif %}">
-                        <a href="./?sort_by={% if sort.key == 'updated' and not sort.reverse %}-{% endif %}updated">Update</a>
-                    </th>
+                    {% include "core/sort_th.html" with color="green" key="updated" name="Update" %}
                 </tr>
             </thead>
             <tbody>

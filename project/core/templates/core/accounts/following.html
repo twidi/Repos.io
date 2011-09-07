@@ -4,14 +4,31 @@
 
     {% if account.following_modified %}
         <p>{{ account.slug }} follows {{ account.following_count }} people : (last fetch on {{ account.following_modified }})</p>
-        <ul>
-            {% for following in account.following.all %}
-                <li>
-                    <a href="{{ following.get_absolute_url }}">{{ following.slug }}</a>
-                    {% if following.slug in account.followers_slugs %} (followed back){% endif %}
-                </li>
-            {% endfor %}
-        </ul>
+
+        <table class='zebra-striped accounts'>
+            <thead>
+                <tr>
+                    {% include "core/sort_th.html" with color="orange" key="name" name="Name" %}
+                    <th class="blue">Reciprocity</th>
+                    <th class="green">Links</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for following in sorted_following %}
+                <tr>
+                    <td>
+                        {% include "core/accounts/avatar.html" with account=following %}
+                        {% include "core/accounts/link.html" with no_backend=1 account=following %}
+                    </td>
+                    {% if following.slug in account.followers_slugs %}<td title="{{ following.slug }} follows {{ account.slug }} too !">&check;</td>{% else %}<td></td>{% endif %}
+                    <td>
+                        {% include "core/accounts/links.html" with account=following %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
     {% else %}
         <p>{{ account.slug }} has {{ account.official_following_count }} following, but they need to be fetched</p>
     {% endif %}

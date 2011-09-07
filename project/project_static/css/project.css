@@ -51,25 +51,25 @@ body > div.container > section header h1~p {
 }
 
 /* Use links in table's header to sort */
-table.zebra-striped.sortable th.header {
+table.zebra-striped th.sortable.header {
     position: relative;
     padding: 0;
     cursor: default;
 }
-table.zebra-striped.sortable th.header a {
+table.zebra-striped th.sortable.header a {
     display: block;
     color: inherit;
     margin: 0;
     padding: 9px 10px;
 }
-table.zebra-striped.sortable th.header:after {
+table.zebra-striped th.sortable.header:after {
     border-width: 4px 4px 0;
     position: relative;
     top: -15px;
     right: 10px;
     margin: -4px 0 0;
 }
-table.zebra-striped.sortable th.header.headerSortDown:after {
+table.zebra-striped th.sortable.header.headerSortDown:after {
     border-width: 0 4px 4px;
 }
 
@@ -113,4 +113,22 @@ table.repositories td:nth-child(2) img {
 }
 table.repositories td:nth-child(3) {
     white-space: nowrap;
+}
+
+/* Style accounts table */
+table.accounts {
+    width: auto;
+}
+table.accounts td:nth-child(2),
+table.accounts.with_owner td:nth-child(3) {
+    font-weight: bold;
+    text-align: center;
+    font-size: 24px;
+}
+table.accounts td:first-child {
+    padding: 5px 10px 5px 5px;
+    height: 30px;
+}
+table.accounts td:first-child img {
+    vertical-align: middle;
 }

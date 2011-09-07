@@ -1071,4 +1071,20 @@ class Repository(SyncableModel):
         """
         return self._get_url('contributors')
 
+    def followers_slugs(self):
+        """
+        Return the followers as a list of slugs
+        """
+        if not hasattr(self, '_followers_slugs'):
+            self._followers_slugs = [f.slug for f in self.followers.all()]
+        return self._followers_slugs
+
+    def contributors_slugs(self):
+        """
+        Return the contributors as a list of slugs
+        """
+        if not hasattr(self, '_contributors_slugs'):
+            self._contributors_slugs = [f.slug for f in self.contributors.all()]
+        return self._contributors_slugs
+
 from core.signals import *

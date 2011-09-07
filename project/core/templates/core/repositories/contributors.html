@@ -4,13 +4,33 @@
 
     {% if repository.contributors_modified %}
         <p>{{ repository.slug }} (by {{ repository.owner.slug }}) has {{ repository.contributors_count }} contributors : (last fetch on {{ repository.contributors_modified }})</p>
-        <ul>
-            {% for contributor in repository.contributors.all %}
-                <li>
-                    <a href="{{ contributor.get_absolute_url }}">{{ contributor.slug }}</a>
-                </li>
-            {% endfor %}
-        </ul>
+
+        <table class='zebra-striped accounts with_owner'>
+            <thead>
+                <tr>
+                    {% include "core/sort_th.html" with color="orange" key="name" name="Name" %}
+                    <th class="blue">Owner</th>
+                    <th class="purple">Follower</th>
+                    <th class="green">Links</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contributor in sorted_contributors %}
+                <tr>
+                    <td>
+                        {% include "core/accounts/avatar.html" with account=contributor %}
+                        {% include "core/accounts/link.html" with no_backend=1 account=contributor %}
+                    </td>
+                    {% if contributor.id = repository.owner.id %}<td title="{{ contributor.slug }} is the owner of {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
+                    {% if contributor.slug in repository.followers_slugs %}<td title="{{ contributor.slug }} follows {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
+                    <td>
+                        {% include "core/accounts/links.html" with account=contributor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
     {% else %}
         <p>{{ repository.slug }} has {{ repository.official_contributors_count }} contributors, but they need to be fetched</p>
     {% endif %}
