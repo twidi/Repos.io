@@ -38,7 +38,7 @@
                                     <li{% if section == 'user' and account.id == an_account.id %} class="active"{% endif %}>{% include "core/accounts/link.html" with account=an_account%}</li>
                                     {% endfor %}
                                     <li class="divider"></li>
-                                    <li><a href="{% url accounts_manage %}">Manage</a></li>
+                                    <li{% if section == 'accounts'%} class="active"{% endif %}><a href="{% url accounts_manage %}">Manage</a></li>
                                 </ul>
                             </li>
                         {% else %}
@@ -56,15 +56,15 @@
     </div>
 </div>
 
-<div class="container">
-
 {% if messages %}
-    <ul class="messages">
+    <ul id="messages" class="container">
         {% for message in messages %}
         <li class="alert-message {% if message.tags %}{{ message.tags }}{% else %}info{% endif %}"><a href='#' class='close'>&times;</a><p>{{ message }}</p></li>
         {% endfor %}
     </ul>
 {% endif %}
+
+<div id="container" class="container">
 
 {% block content %}{% endblock %}
 

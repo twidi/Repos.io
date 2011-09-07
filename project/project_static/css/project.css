@@ -15,29 +15,32 @@ small {
 
 /* Do not visually "select" elements in topbar's sub-menu when their "parent" is selected */
 .topbar li.active li a {
-    background: transparent;
+    background-color: transparent;
+}
+.topbar li.active li.active a {
+    background-color: rgba(0, 0, 0, 0.5)
 }
 
 /* first level section */
-body > div.container > section header {
+#container > section header {
     margin-bottom: 20px;
 }
-body > div.container > section header img {
+#container > section header img {
     vertical-align: middle;
 }
-body > div.container > section header > div > a > img {
+#container > section header > div > a > img {
     float: left;
     margin-right: 10px;
 }
-body > div.container > section header h1 {
+#container > section header h1 {
     margin-bottom: 0;
     margin-left: 90px;
 }
-body > div.container > section header h1~h2 {
+#container > section header h1~h2 {
     line-height: 16px;
     margin: -2px 0 8px 90px;
 }
-body > div.container > section header h1~p {
+#container > section header h1~p {
     margin: 3px 3px 3px 90px;
 }
 
@@ -196,5 +199,21 @@ body#login p:last-child {
     margin-bottom: 0;
 }
 body#login a.btn {
+    margin-right: 10px;
+}
+
+/* Manage page */
+body#manage .row:nth-child(2) section:first-child table tr:first-child td {
+    border-top: 1px solid #DDDDDD;
+}
+body#manage table td:first-child img {
+    vertical-align: middle;
+}
+body#manage .row:nth-child(2) section:nth-child(2) p:nth-child(3) {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+body#manage .row:nth-child(2) section:nth-child(2)  a.btn {
     margin-right: 10px;
 }

@@ -2,10 +2,6 @@
 {% block body_id %}login{% endblock %}
 {% block content %}
 
-    {% if request.session.social_errors %}
-        {{ social_errors }}
-    {% endif %}
-
     <section>
 
         <p>Please login with one of these providers :</p>

@@ -2,7 +2,7 @@
 {% block core_content %}
     <section id="user">
         <header class="row">
-            <div class="span-two-thirds columns">
+            <div class="span-two-thirds">
                 {% include "core/accounts/avatar.html" with size=80 %}
                 <h1> {% include "core/accounts/link.html" %}</h1>
                 <p>
@@ -11,7 +11,7 @@
                 </p>
                 {% if account.last_fetch %}<p>On {{ account.backend }} since {{ account.official_created }}.</p>{% endif %}
             </div>
-            <div class="span-one-third columns">
+            <div class="span-one-third">
                 {% include "core/accounts/fetch_form.html" %}{% include "core/accounts/fetch_form.html" with for_related=1 %}
             </div>
         </header>
