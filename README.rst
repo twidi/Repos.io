@@ -1,4 +1,4 @@
-OrganizeMyRepositories
+Repos.io
 ======================
 
 The idea
@@ -55,7 +55,7 @@ Some possible functionnalities :
 
 
 .. _GitHub: http://www.github.com
-.. _GitHub repository: https://github.com/twidi/OrganizeMyRepositories
+.. _GitHub repository: https://github.com/twidi/Repos.io
 .. _Twitter boostrap: http://twitter.github.com/bootstrap/
 .. _jQuery: http://www.jquery.com/
 .. _Sass: http://sass-lang.com/

@@ -1,19 +1,20 @@
 {% extends 'base.html' %}
+{% block title %}Login on {% endblock %}
 {% block content %}
 
-    {% if request.session.social_errors %}
-        {{ social_errors }}
-    {% endif %}
+    <section>
 
-    <p>Please login with one of the providers listed below :</p>
+        <p>Please login with one of these providers :</p>
 
-    <ul>
-        {% for backend, auth_backend in backends_map.items %}
-            <li><a href="{% url socialauth_begin auth_backend %}">{{ backend }}</a></li>
-        {% endfor %}
-        <li>(more to come)</li>
-    </ul>
+        <p>
+            {% for backend, auth_backend in backends_map.items %}
+            <a class="btn large" href="{% url socialauth_begin auth_backend %}"><img src="{{ STATIC_URL }}img/favicon_github.png" /> {{ backend }}</a>
+            {% endfor %}
+            <span>(more to come)</span>
+        </p>
 
-    {% include "accounts/include_about.html" %}
+        {% include "accounts/include_about.html" %}
+
+    </section>
 
 {% endblock content %}

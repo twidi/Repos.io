@@ -1,1 +1,1 @@
-<a href="{{ account.get_absolute_url }}">{{ account.slug }} @ {{ account.backend }}</a>
+<a href="{{ account.get_absolute_url }}" title="{% if account.last_fetch %}{{ account.name|default:account.slug }}{% else %}{{ account.slug }} (not fetched){% endif %}">{{ account.slug }}{% if not no_backend %}<small> @ {{ account.backend }}</small>{% endif %}</a>

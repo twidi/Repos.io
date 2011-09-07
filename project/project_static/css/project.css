@@ -1,0 +1,235 @@
+/* Topbar's height and a little more */
+body {
+    padding-top: 50px;
+}
+
+small {
+    color: #bfbfbf;
+    font-size: smaller;
+}
+
+.btn img {
+    vertical-align: middle;
+    margin-left: -5px;
+}
+
+/* Do not visually "select" elements in topbar's sub-menu when their "parent" is selected */
+.topbar li.active li a {
+    background-color: transparent;
+}
+.topbar li.active li.active a {
+    background-color: rgba(0, 0, 0, 0.5)
+}
+
+/* first level section */
+#container > section header {
+    margin-bottom: 20px;
+}
+#container > section header img {
+    vertical-align: middle;
+}
+#container > section header > div > a > img {
+    float: left;
+    margin-right: 10px;
+}
+#container > section header h1 {
+    margin-bottom: 0;
+    margin-left: 90px;
+}
+#container > section header h1~h2 {
+    line-height: 16px;
+    margin: -2px 0 8px 90px;
+}
+#container > section header h1~p {
+    margin: 3px 3px 3px 90px;
+}
+
+/* Fetch date information (buttons on the right) */
+.fetch-date {
+    display: block;
+}
+.fetch-form {
+    margin-bottom: 0;
+}
+.fetch-form:first-child, .fetch-date:first-child {
+    margin-bottom: 10px;
+}
+.fetch-form button em {
+    font-size: smaller;
+}
+.fetch-form button span {
+    display: block;
+    font-size: smaller;
+    text-align: left;
+}
+
+/* Use links in table's header to sort */
+table.zebra-striped th.sortable.header {
+    position: relative;
+    padding: 0;
+    cursor: default;
+}
+table.zebra-striped th.sortable.header a {
+    display: block;
+    color: inherit;
+    margin: 0;
+    padding: 9px 10px;
+}
+table.zebra-striped th.sortable.header:after {
+    border-width: 4px 4px 0;
+    position: relative;
+    top: -15px;
+    right: 10px;
+    margin: -4px 0 0;
+}
+table.zebra-striped th.sortable.header.headerSortDown:after {
+    border-width: 0 4px 4px;
+}
+
+/* Color arrows in tables */
+table.zebra-striped th.blue.header:after {
+  border-color: #049cdb transparent;
+}
+table.zebra-striped th.green.header:after {
+  border-color: #46a546 transparent;
+}
+table.zebra-striped th.red.header:after {
+  border-color: #9d261d transparent;
+}
+table.zebra-striped th.yellow.header:after {
+  border-color: #ffc40d transparent;
+}
+table.zebra-striped th.orange.header:after {
+  border-color: #f89406 transparent;
+}
+table.zebra-striped th.purple.header:after {
+  border-color: #7a43b6 transparent;
+}
+
+
+/* Style repositories table */
+table.repositories blockquote {
+    margin: 5px 0 0;
+}
+table.repositories td:first-child img {
+    float: left;
+    margin-right: 5px;
+}
+table.repositories td:first-child blockquote {
+    margin-left: 37px;
+}
+table.repositories td:nth-child(2) {
+    white-space: nowrap;
+}
+table.repositories td:nth-child(2) img {
+    vertical-align: middle;
+}
+table.repositories td:nth-child(3) {
+    white-space: nowrap;
+}
+
+/* Style accounts table */
+table.accounts {
+    width: auto;
+}
+table.accounts td:nth-child(2),
+table.accounts.with_owner td:nth-child(3) {
+    font-weight: bold;
+    text-align: center;
+    font-size: 24px;
+}
+table.accounts td:first-child {
+    padding: 5px 10px 5px 5px;
+    height: 30px;
+}
+table.accounts td:first-child img {
+    vertical-align: middle;
+}
+
+/* Home */
+body#home .row:first-child section:first-child {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background : #f5f5f5;
+}
+body#home .row:first-child section:first-child h1 {
+    text-align: center;
+}
+body#home .row:first-child section:first-child hr {
+    margin: 10px 0;
+}
+body#home .row:first-child section:first-child p {
+    margin-left: 10px;
+    margin-right: 10px;
+    line-height: 15px;
+}
+body#home .row:first-child section:first-child table {
+    width: 90%;
+    margin: auto;
+}
+body#home .row:first-child section:first-child table tr:first-child td {
+    border-top: 1px solid #DDDDDD;
+}
+body#home .row:first-child section:first-child p.with-btn {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+body#home table td {
+    padding: 5px;
+}
+body#home table td:first-child img {
+    vertical-align: middle;
+}
+
+/* Login page */
+body#accounts-login section {
+    width: 460px;
+    margin: 100px auto 0;
+    padding: 30px 50px;
+    border-top: 1px solid #DDDDDD;
+    border-bottom: 1px solid #DDDDDD;
+}
+body#accounts-login p:nth-child(2) {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+body#accounts-login p:last-child {
+    margin-bottom: 0;
+}
+body#accounts-login a.btn {
+    margin-right: 10px;
+}
+
+/* Manage page */
+body#accounts-manage .row:nth-child(2) section:first-child table tr:first-child td {
+    border-top: 1px solid #DDDDDD;
+}
+body#accounts-manage table td:first-child img {
+    vertical-align: middle;
+}
+body#accounts-manage .row:nth-child(2) section:nth-child(2) p:nth-child(3) {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+body#accounts-manage .row:nth-child(2) section:nth-child(2)  a.btn {
+    margin-right: 10px;
+}
+
+/* Account home */
+body#user-home dd {
+    margin-bottom: 20px;
+}
+body#user-home .row:last-child section:last-child {
+    text-align: center;
+}
+
+/* Repository home */
+body#repository-home dd {
+    margin-bottom: 20px;
+}
+body#repository-home .row:last-child section:last-child {
+    text-align: center;
+}

@@ -169,6 +169,20 @@ class SyncableModel(TimeStampedModel):
 
         return False
 
+    def last_fetch_related(self):
+        """
+        Get the last related modified date
+        """
+        last = None
+        for name, with_count, with_modified in self.related_operations:
+            if not with_modified:
+                continue
+            date = getattr(self, '%s_modified' % name)
+            if last is None or date > last:
+                last = date
+
+        return last
+
     def fetch_related_allowed_for(self, operation):
         """
         Return True if a new fetch of a related is allowed(if not too recent)
@@ -1056,5 +1070,21 @@ class Repository(SyncableModel):
         contributors page url for this Repository
         """
         return self._get_url('contributors')
+
+    def followers_slugs(self):
+        """
+        Return the followers as a list of slugs
+        """
+        if not hasattr(self, '_followers_slugs'):
+            self._followers_slugs = [f.slug for f in self.followers.all()]
+        return self._followers_slugs
+
+    def contributors_slugs(self):
+        """
+        Return the contributors as a list of slugs
+        """
+        if not hasattr(self, '_contributors_slugs'):
+            self._contributors_slugs = [f.slug for f in self.contributors.all()]
+        return self._contributors_slugs
 
 from core.signals import *

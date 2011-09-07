@@ -1,22 +1,32 @@
 {% extends "base.html" %}
 {% block content %}
 
+<div class="row">
+
+<section class="span5">
     {% if user.is_authenticated %}
-        <h1>Welcome <em>{{ user.username }} </em>!</h1>
+        <h1>Welcome back <em>{{ user.username }} </em>!</h1>
 
         {% with accounts=user.accounts.all %}
 
             {% if not accounts %}
-                <p>You have no account associated, <a href="{% url accounts_manage %}">click here to start associating your account</a>.</p>
+                <p>You have no account associated.</p>
+                <p><a class="btn primary large" href="{% url accounts_manage %}">Associate your account</a></p>
             {% else %}
-                <p><a href="{% url accounts_manage %}">Click here to manage your account</a>.</p>
-
-                <p>You can view details for your accounts :</p>
-                <ul>
+                <p>Start by visiting one of your accounts :</p>
+            <table>
+                <tbody>
                     {% for account in accounts %}
-                        <li>{% include "core/accounts/link.html" %}</li>
+                    <tr>
+                        <td>
+                        {% include "core/accounts/avatar.html" with size=16 %}
+                        {% include "core/accounts/link.html" %}
+                        </td>
+                    </tr>
                     {% endfor %}
-                </ul>
+                </tbody>
+            </table>
+                <p class='with-btn'><a class="btn" href="{% url accounts_manage %}">Manage your accounts</a></p>
             {% endif %}
 
         {% endwith %}
@@ -24,33 +34,62 @@
     {% else %}
 
         <h1>Welcome !</h1>
-        <p><a href="{% url accounts_login %}">You need to be authenticated to use our site. Click here to do so.</a></p>
+        <p><strong>Repos.io</strong> is here to help you organize repositories you own or follow on many sites (we call them providers), like Github, Bitbucket, Google Code...<em>*</em></p>
+        <p>Just start by authenticate with a provider (you'll then be able to associate other accounts), and enjoy !</p>
+        <p>You can see your accounts, your followers and following, your own repositories and the ones you follow on each providers, you can note them, star them, add private notes...</p>
+        <p>Actually we only do read-only task on authorized providers, but later you'll be able to manage all your repositories here.</p>
+        <p class='with-btn'><a class="btn primary large" href="{% url accounts_login %}">Authenticate with a provider</a></p>
+        <p><em>* we only support Github right now, others will come later</em></p>
 
     {% endif %}
 
-    <hr />
+</section>
+
+<section class="span4">
 
     {% with accounts_manager.get_last_fetched as last_accounts %}
         {% if last_accounts %}
-            <h2>Last fetched accounts :</h2>
-            <ul>
-                {% for an_account in last_accounts %}
-                    <li>{% include "core/accounts/link.html" with account=an_account %}</li>
-                {% endfor %}
-            </ul>
+            <h2>Last 20 users</h2>
+            <table>
+                <tbody>
+                    {% for an_account in last_accounts %}
+                    <tr>
+                        <td>
+                            {% include "core/accounts/avatar.html" with account=an_account size=16 %}
+                            {% include "core/accounts/link.html" with account=an_account %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         {% endif %}
     {% endwith %}
+
+</section>
+
+<section class="span7">
 
     {% with repositories_manager.get_last_fetched as last_repositories %}
         {% if last_repositories %}
-            <h2>Last fetched repositories :</h2>
-            <ul>
-                {% for a_repository in last_repositories %}
-                    <li>{% include "core/repositories/link.html" with repository=a_repository %}</li>
-                {% endfor %}
-            </ul>
+            <h2>Last 20 repositories</h2>
+            <table>
+                <tbody>
+                    {% for a_repository in last_repositories %}
+                    <tr>
+                        <td>
+                            {% include "core/repositories/logo.html" with repository=a_repository size=16 %}
+                            {% include "core/repositories/link.html" with repository=a_repository no_owner=1 %}
+                            <small>by {% include "core/accounts/link.html" with account=a_repository.owner no_backend=1 %}</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         {% endif %}
     {% endwith %}
 
+</section>
+
+</div>
 
 {% endblock content %}

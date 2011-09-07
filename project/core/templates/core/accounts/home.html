@@ -1,38 +1,48 @@
 {% extends "core/accounts/base.html" %}
 
 {% block account_content %}
-    <p>
-    {% if account.avatar %}<img src="{{ account.avatar }}" />{% endif %}
-    {{ account.name }}, on {{ account.backend }} since {{ account.official_created }}.
-    </p>
 
-    <p>
-    <a href="{{ account.url }}">Page on {{ account.backend }}</a>
-    {% if account.homepage %}<a href="{{ account.homepage }}">His homepage</a>{% endif %}
-    </p>
+<div class="row">
 
-    <p>(last fetch on {{ account.last_fetch }})</p>
+    <section class="span11">
 
-    <p>
-        {% if account.followers_modified %}
-            <a href="{{ account.get_followers_url }}">{{ account.followers_count }} followers</a> (updated on {{ account.followers_modified }})
-        {% else %}
-            {{ account.official_followers_count }} followers (related must be fetched before display)
-        {% endif %}
-    </p>
-    <p>
-        {% if account.following_modified %}
-            <a href="{{ account.get_following_url }}">{{ account.following_count }} following</a> (updated on {{ account.following_modified }})
-        {% else %}
-            {{ account.official_following_count }} following (related must be fetched before display)
-        {% endif %}
-    </p>
-    <p>
-        {% if account.repositories_modified %}
-            <a href="{{ account.get_repositories_url }}">{{ account.repositories_count }} owned/watched repositories</a> (updated on {{ account.repositories_modified }})
-        {% else %}
-            unknown number of owned/watched repositories (related must be fetched before display)
-        {% endif %}
-    </p>
+        <dl>
+            <dt>
+                {% if account.followers_modified %}
+                    <a href="{{ account.get_followers_url }}">{{ account.followers_count }} followers</a> <small>(updated on {{ account.followers_modified }})</small>
+                {% else %}
+                {{ account.official_followers_count }} followers <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
+                {% endif %}
+            </dt>
+            <dd>Followers are people who are following {{ account.slug }} to know about what he's doing on {{ account.backend }}</dd>
+
+            <dt>
+                {% if account.following_modified %}
+                    <a href="{{ account.get_following_url }}">{{ account.following_count }} following</a> <small>(updated on {{ account.following_modified }})</small>
+                {% else %}
+                    {{ account.official_following_count }} following <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
+                {% endif %}
+            </dt>
+            <dd>Following are people that {{ account.slug }} follows to know what they are doing on {{ account.backend }}</dd>
+
+
+            <dt>
+                {% if account.repositories_modified %}
+                    <a href="{{ account.get_repositories_url }}">{{ account.repositories_count }} repositories</a> <small>(updated on {{ account.repositories_modified }})</small>
+                {% else %}
+                    unknown number repositories <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
+                {% endif %}
+            </dt>
+            <dd>These repositories are the ones {{ account.slug }} ownes, or follows (or likes, stars...) on {{ account.backend }}.</dd>
+
+        </dl>
+
+    </section>
+
+    <section class="span5">
+        <a class="btn primary" href="{{ account.url }}"><img src="{{ STATIC_URL }}img/favicon_{{ account.backend }}.png" /> Go to the {{ account.backend }} page</a>
+    </section>
+
+</div>
 
 {% endblock %}

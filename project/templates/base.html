@@ -1,13 +1,71 @@
-<p><a href="/">Home</a> | {% if user.is_authenticated %}Logged in as {{ user.username }} | <a href="{% url accounts_logout %}?next=/">Logout</a>.{% else %}<a href="{% url accounts_login %}">Login/Register</a>{% endif %}
+<!DOCTYPE html>
+    <html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}{% endblock %}Repos.io</title>
+    <meta name="description" content="Organize your owned/watched repositories from github (and soon bitbucked, google code) : https://github.com/twidi/Repos.io/">
+    <meta name="author" content="Stephane Angel / Twidi">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap-1.2.0.min.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/project.css">
+    <script src="{{ STATIC_URL }}js/jquery-1.5.2.min.js"></script>
+    <script src="{{ STATIC_URL }}js/project.js"></script>
+</head>
+
+<body id="{% block body_id %}{% if section %}{{ section }}{% if subsection %}-{{ subsection }}{% endif %}{% else %}body{% endif %}{% endblock %}">
+
+<div class="topbar">
+    <div class="topbar-inner">
+        <div class="container-fluid">
+
+            <h3><a href="/">Repos.io</a></h3>
+
+            <ul class="nav">
+                <li{% if section == 'home' %} class="active"{% endif %}><a href="/">Home</a></li>
+                <li><a href="http://github.com/twidi/Repos.io/">About</a></li>
+            </ul>
+
+            <ul class="nav secondary-nav">
+
+                {% if user.is_authenticated %}
+                    <li><a href="{% url accounts_manage %}">Logged as {{ user.username }}</a></li>
+                    {% with accounts=user.accounts.all %}
+                        {% if accounts %}
+                            <li class='dropdown{% if section == 'accounts' %} active{% endif %}'>
+                                <a href="{% url accounts_manage %}" class="dropdown-toggle">Your accounts</a>
+                                <ul class="dropdown-menu">
+                                    {% for an_account in accounts %}
+                                    <li{% if section == 'user' and account.id == an_account.id %} class="active"{% endif %}>{% include "core/accounts/link.html" with account=an_account%}</li>
+                                    {% endfor %}
+                                    <li class="divider"></li>
+                                    <li{% if section == 'accounts'%} class="active"{% endif %}><a href="{% url accounts_manage %}">Manage</a></li>
+                                </ul>
+                            </li>
+                        {% else %}
+                            <li><a href="{% url accounts_manage %}" class="dropdown-toggle">Your accounts</a></li>
+                        {% endif %}
+                    {% endwith %}
+                    <li><a href="{% url accounts_logout %}?next={{ request.get_full_path }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{% url accounts_login %}?next=/">Login / Register</a></li>
+                {% endif %}
+
+            </ul>
+
+        </div>
+    </div>
+</div>
 
 {% if messages %}
-    <hr />
-    <ul class="messages">
+    <ul id="messages" class="container">
         {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        <li class="alert-message {% if message.tags %}{{ message.tags }}{% else %}info{% endif %}"><a href='#' class='close'>&times;</a><p>{{ message }}</p></li>
         {% endfor %}
     </ul>
-    {% endif %}
+{% endif %}
 
-<hr />
+<div id="container" class="container">
+
 {% block content %}{% endblock %}
+
+</div></body></html>

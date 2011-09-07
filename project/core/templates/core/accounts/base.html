@@ -1,10 +1,44 @@
 {% extends "core/base.html" %}
+{% block title %}"{{ account.slug }}" @{{account.backend }} on {% endblock %}
 {% block core_content %}
-    <h1>Account {% include "core/accounts/link.html" %}</h1>
-    {% include "core/accounts/fetch_form.html" %}{% include "core/accounts/fetch_form.html" with for_related=1 %}
-    {% if account.last_fetch %}
-        {% block account_content %}{% endblock %}
-    {% else %}
-        <p>This account needs to be fetched once from {{ account.backend }} before display.</p>
-    {% endif %}
+    <section id="user">
+        <header class="row">
+            <div class="span-two-thirds">
+                {% include "core/accounts/avatar.html" with size=80 %}
+                <h1> {% include "core/accounts/link.html" %}</h1>
+                <p>
+                    {{ account.name|default:account.slug }}
+                    {% include "core/accounts/links.html" %}
+                </p>
+                {% if account.last_fetch %}<p>On {{ account.backend }} since {{ account.official_created }}.</p>{% endif %}
+            </div>
+            <div class="span-one-third">
+                {% include "core/accounts/fetch_form.html" %}{% include "core/accounts/fetch_form.html" with for_related=1 %}
+            </div>
+        </header>
+        {% if account.last_fetch %}
+            <ul class="tabs">
+                <li{% if subsection == 'home' %} class="active"{% endif %}><a href="{{ account.get_absolute_url }}">Home</a></li>
+                {% if account.followers_modified or subsection == 'followers' %}
+                    <li{% if subsection == 'followers' %} class="active"{% endif %}>
+                        <a href="{{ account.get_followers_url }}">{{ account.followers_count }}{% if not account.followers_modified %}?{% endif %} followers</a>
+                    </li>
+                {% endif %}
+                {% if account.following_modified or subsection == 'following' %}
+                    <li{% if subsection == 'following' %} class="active"{% endif %}>
+                        <a href="{{ account.get_following_url }}">{{ account.following_count }}{% if not account.following_modified %}?{% endif %} following</a>
+                    </li>
+                {% endif %}
+                {% if account.repositories_modified or subsection == 'repositories' %}
+                    <li{% if subsection == 'repositories' %} class="active"{% endif %}>
+                        <a href="{{ account.get_repositories_url }}">{% if account.repositories_modified %}{{ account.repositories_count }}{% else %}??{% endif %} repositories</a>
+                    </li>
+                {% endif %}
+            </ul>
+
+            {% block account_content %}{% endblock %}
+        {% else %}
+            <div class="alert-message warning"><p>This account needs to be fetched once from {{ account.backend }} before display.</p></div>
+            {% endif %}
+    </section>
 {% endblock %}

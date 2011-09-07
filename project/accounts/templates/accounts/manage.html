@@ -1,41 +1,59 @@
 {% extends "accounts/base.html" %}
-
+{% block title %}Your accounts on {% endblock %}
 {% block accounts_content %}
 
-    {% if request.session.social_errors %}
-        {{ social_errors }}
-    {% endif %}
+<div class="row">
 
     {% with accounts=user.accounts.all %}
-        {% if accounts %}
 
-            <p>Your account is linked to : </p>
+        <section class="span5">
 
-            <ul>
-                {% for account in accounts %}
-                    <li>{% include "core/accounts/link.html" %}</li>
+            <h2>Your accounts</h2>
+
+            {% if accounts %}
+
+                <p>Your are linked to these accounts : </p>
+
+                <table>
+                    <tbody>
+                        {% for account in accounts %}
+                        <tr>
+                            <td>
+                            {% include "core/accounts/avatar.html" with size=32 %}
+                            {% include "core/accounts/link.html" %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            {% else %}
+
+                <p>Your account is not linked to any provider, please associate with one <strong style="font-size:larger;">&rarr;</strong></p>
+
+            {% endif %}
+
+        </section>
+
+        <section class="span9 offset2">
+
+            <h2>Associate more accounts</h2>
+
+            <p>You can associate your account with another provider <em>(if you want to assciate many github accounts, you must disconnect from github and reconnect with the other account you want to associate)</em> :</p>
+
+            <p>
+                {% for backend, auth_backend in backends_map.items %}
+                    <a class="btn large" href="{% url socialauth_associate_begin auth_backend %}"><img src="{{ STATIC_URL }}img/favicon_github.png" /> {{ backend }}</a>
                 {% endfor %}
-            </ul>
+                <span>(more to come)</span>
+            </p>
 
-            <p>You can associate your account with another provider (if you want to assciate many github accounts, you must disconnect from github and reconnect with the other account you want to associate) :</p>
+            {% include "accounts/include_about.html" %}
 
-        {% else %}
-
-            <p>Your account is not linked to any provider, please associate with at least one below :</p>
-
-        {% endif %}
-
-        <ul>
-
-            {% for backend, auth_backend in backends_map.items %}
-                <li><a href="{% url socialauth_associate_begin auth_backend %}">{{ backend }}</a></li>
-            {% endfor %}
-            <li>(more to come)</li>
-
-        </ul>
+        </section>
 
     {% endwith %}
 
-    {% include "accounts/include_about.html" %}
+</div>
 
 {% endblock accounts_content %}
