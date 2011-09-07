@@ -1,5 +1,5 @@
 {% extends "core/repositories/base.html" %}
-
+{% block title %}Contributors of {{ block.super }}{% endblock %}
 {% block repository_content %}
 
     {% if repository.contributors_modified %}

@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% block title %}"{{ repository.slug }}"{% if repository.owner %} (by {{ repository.owner.slug }}){% endif %} @{{repository.backend }} on {% endblock %}
 {% block core_content %}
     <section id="repository">
         <header class="row">

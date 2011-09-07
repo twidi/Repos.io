@@ -1,5 +1,5 @@
 {% extends "core/accounts/base.html" %}
-
+{% block title %}Repositories of {{ block.super }}{% endblock %}
 {% block account_content %}
 
     {% if account.repositories_modified %}

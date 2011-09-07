@@ -1,5 +1,5 @@
 {% extends "core/accounts/base.html" %}
-
+{% block title %}Followers of {{ block.super }}{% endblock %}
 {% block account_content %}
 
     {% if account.followers_modified %}

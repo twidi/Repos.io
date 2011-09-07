@@ -3,8 +3,8 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Organize my Repositories</title>
-    <meta name="description" content="Organize your owned/watched repositories from github (and soon bitbucked, google code) : https://github.com/twidi/OrganizeMyRepositories/">
+    <title>{% block title %}{% endblock %}Repos.io</title>
+    <meta name="description" content="Organize your owned/watched repositories from github (and soon bitbucked, google code) : https://github.com/twidi/Repos.io/">
     <meta name="author" content="Stephane Angel / Twidi">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap-1.2.0.min.css">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/project.css">
@@ -18,11 +18,11 @@
     <div class="topbar-inner">
         <div class="container-fluid">
 
-            <h3><a href="/">Organize my Repositories</a></h3>
+            <h3><a href="/">Repos.io</a></h3>
 
             <ul class="nav">
                 <li{% if section == 'home' %} class="active"{% endif %}><a href="/">Home</a></li>
-                <li><a href="http://github.com/twidi/OrganizeMyRepositories/">About</a></li>
+                <li><a href="http://github.com/twidi/Repos.io/">About</a></li>
             </ul>
 
             <ul class="nav secondary-nav">
