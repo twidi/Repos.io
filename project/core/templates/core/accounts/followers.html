@@ -3,7 +3,10 @@
 {% block account_content %}
 
     {% if account.followers_modified %}
-        <p>{{ account.slug }} is followed by {{ account.followers_count }} people : (last fetch on {{ account.followers_modified }})</p>
+
+        {% if sorted_followers %}
+
+        <p>{{ account.slug }} is followed by {{ account.followers_count }} people : <small>(last fetch on {{ account.followers_modified }})</small></p>
 
         <table class='zebra-striped accounts'>
             <thead>
@@ -29,8 +32,12 @@
             </tbody>
         </table>
 
+        {% else %}
+            <p>{{ account.slug }} doesn't have any follower</p>
+        {% endif %}
+
     {% else %}
-        <p>{{ account.slug }} has {{ account.official_followers_count }} followers, but they need to be fetched</p>
+        <p>{{ account.slug }} has {{ account.official_followers_count }} followers, but they need to be fetched{% if not user.is_authenticated %} by an authenticated user{% endif %}</p>
     {% endif %}
 
 {% endblock account_content %}

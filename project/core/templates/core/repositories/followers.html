@@ -3,7 +3,10 @@
 {% block repository_content %}
 
     {% if repository.followers_modified %}
-        <p>{{ repository.slug }} (by {{ repository.owner.slug }}) is followed by {{ repository.followers_count }} people : (last fetch on {{ repository.followers_modified }})</p>
+
+        {% if sorted_followers %}
+
+        <p>{{ repository.slug }} (by {{ repository.owner.slug }}) is followed by {{ repository.followers_count }} people : <small>(last fetch on {{ repository.followers_modified }})</small></p>
 
         <table class='zebra-striped accounts with_owner'>
             <thead>
@@ -31,8 +34,12 @@
             </tbody>
         </table>
 
+        {% else %}
+            <p>{{ repository.slug }} doesn't have any follower</p>
+        {% endif %}
+
     {% else %}
-        <p>{{ repository.slug }} has {{ repository.official_followers_count }} followers, but they need to be fetched</p>
+        <p>{{ repository.slug }} has {{ repository.official_followers_count }} followers, but they need to be fetched{% if not user.is_authenticated %} by an authenticated user{% endif %}</p>
     {% endif %}
 
 {% endblock repository_content %}
