@@ -3,6 +3,7 @@ from os.path import basename
 
 from django.conf import settings
 from django.utils.importlib import import_module
+from django.utils.functional import memoize
 
 from core.exceptions import InvalidIdentifiersForProject, BackendError
 
@@ -161,12 +162,24 @@ def get_backends():
 # load backends from defined modules
 BACKENDS, BACKENDS_BY_AUTH = get_backends()
 
-def get_backend_from_auth(auth_backend):
+def get_backend_from_auth(auth_backend_name):
     """
-    Return the backend to use for a specified auth backend
+    Return a valid backend to use for a specified auth_backend, None in other case
     """
-    return BACKENDS_BY_AUTH.get(auth_backend, None)
+    backend_class = BACKENDS_BY_AUTH.get(auth_backend_name, None)
+    if not backend_class:
+        return None
+    return get_backend(backend_class.name)
+get_backend_from_auth.__cache = {}
+get_backend = memoize(get_backend_from_auth, get_backend_from_auth.__cache, 1)
 
-def get_backend(name, *args, **kwargs):
-    """Return auth backend instance *if* it's registered, None in other case"""
-    return BACKENDS.get(name, lambda *args, **kwargs: None)(*args, **kwargs)
+def get_backend(name):
+    """
+    Return a valid backend based on its name, None in other case
+    """
+    backend_class = BACKENDS_BY_AUTH.get(name, None)
+    if not backend_class:
+        return None
+    return backend_class()
+get_backend.__cache = {}
+get_backend = memoize(get_backend, get_backend.__cache, 1)
