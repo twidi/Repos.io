@@ -100,6 +100,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django_globals.middleware.Global',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -136,6 +137,7 @@ INSTALLED_APPS = (
     # apps
     'django_extensions',
     'social_auth',
+    'django_globals',
 
     # ours
     'core',

@@ -12,6 +12,7 @@ from model_utils.fields import StatusField
 from core.backends import BACKENDS, get_backend
 from core.managers import AccountManager, RepositoryManager
 from core.utils import slugify
+from core.exceptions import BackendError, MultipleBackendError
 
 BACKENDS_CHOICES = Choices(*BACKENDS.keys())
 
@@ -200,16 +201,30 @@ class SyncableModel(TimeStampedModel):
         Returns the number of operations done
         """
         done = 0
+        exceptions = []
         for operation in self.related_operations:
             if not self.fetch_related_allowed_for(operation[0]):
                 continue
             operation = getattr(self, 'fetch_%s' % operation[0])
-            if operation():
-                done += 1
+
+            try:
+                if operation():
+                    done += 1
+            except BackendError, e:
+                exceptions.append(e)
+
             if limit and done >= limit:
                 break
         if done:
             self.save()
+
+        # handle one or many exceptions
+        if exceptions:
+            if len(exceptions) == 1:
+                raise exceptions[0]
+            else:
+                raise MultipleBackendError([e.message for e in exceptions])
+
         return done
 
     def update_many_fields(self, **params):
@@ -225,7 +240,7 @@ class SyncableModel(TimeStampedModel):
                 continue
             field = getattr(self, param)
             if not callable(field) and field != value:
-                print "%s : update %s from [%s] to [%s]" % (self, param, getattr(self,param), value)
+                #print "%s : update %s from [%s] to [%s]" % (self, param, getattr(self,param), value)
                 setattr(self, param, value)
                 updated += 1
         if updated:

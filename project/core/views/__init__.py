@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from core.backends import BACKENDS
 from core.utils import slugify
 from core.models import Account, Repository
+from core.exceptions import BackendError, MultipleBackendError
 
 def default(request, identifier):
     """
@@ -74,15 +75,26 @@ def fetch(request):
 
         if related:
             if obj.fetch_related_allowed():
-                obj.fetch_related()
-                messages.success(request, 'Fetch of related is successfull !')
+                try:
+                    obj.fetch_related()
+                except MultipleBackendError, e:
+                    for message in e.messages:
+                        messages.error(request, message)
+                except BackendError, e:
+                    messages.error(request, e.message)
+                else:
+                    messages.success(request, 'Fetch of related is successfull !')
             else:
                 messages.error(request, 'Fetch of related is not allowed (maybe the last one is too recent')
 
         else:
             if obj.fetch_allowed():
-                obj.fetch()
-                messages.success(request, 'Fetch of this %s is successfull !' % otype)
+                try:
+                    obj.fetch()
+                except BackendError, e:
+                    messages.error(request, e.message)
+                else:
+                    messages.success(request, 'Fetch of this %s is successfull !' % otype)
             else:
                 messages.error(request, 'Fetch is not allowed (maybe the last one is too recent')
 

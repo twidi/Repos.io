@@ -4,7 +4,7 @@ from os.path import basename
 from django.conf import settings
 from django.utils.importlib import import_module
 
-from core.exceptions import InvalidIdentifiersForProject
+from core.exceptions import InvalidIdentifiersForProject, BackendError
 
 class BaseBackend(object):
 
@@ -12,6 +12,12 @@ class BaseBackend(object):
     auth_backend = None
     needed_repository_identifiers = ('slug',)
     repository_has_owner = False
+
+    def get_exception(self, code, what):
+        """
+        Return an internal exception (BackendError)
+        """
+        return BackendError.make_for(self.name, code, what)
 
     def user_map(self, user):
         """
