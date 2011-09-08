@@ -13,6 +13,13 @@ small {
     margin-left: -5px;
 }
 
+#messages {
+    margin-bottom: 15px;
+}
+#messages .alert-message {
+    margin-bottom: 5px;
+}
+
 /* Do not visually "select" elements in topbar's sub-menu when their "parent" is selected */
 .topbar li.active li a {
     background-color: transparent;
