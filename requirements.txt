@@ -7,6 +7,9 @@ django-extensions
 
 # python tools
 debug
+textile
+markdown
+docutils
 
 # github !
 #github2 (missing repository info with parent : https://github.com/ask/python-github2/pull/60 )

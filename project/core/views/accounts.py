@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from core.views.decorators import check_account
+from core.views.decorators import check_account, check_support
 from core.views.sort import get_repository_sort, get_account_sort
 
 @check_account
@@ -13,6 +13,7 @@ def home(request, backend, slug, account=None):
     ))
 
 
+@check_support('user_followers')
 @check_account
 def followers(request, backend, slug, account=None):
     """
@@ -34,6 +35,7 @@ def followers(request, backend, slug, account=None):
         ),
     ))
 
+@check_support('user_following')
 @check_account
 def following(request, backend, slug, account=None):
     """
@@ -55,6 +57,7 @@ def following(request, backend, slug, account=None):
         ),
     ))
 
+@check_support('user_repositories')
 @check_account
 def repositories(request, backend, slug, account=None):
     """
@@ -62,7 +65,7 @@ def repositories(request, backend, slug, account=None):
     """
 
     sort_key = request.GET.get('sort_by', 'name')
-    repository_has_owner = account.get_backend().repository_has_owner
+    repository_has_owner = account.get_backend().supports('repository_owner')
     sort = get_repository_sort(sort_key, repository_has_owner)
 
     sorted_repositories = account.repositories.order_by(sort['db_sort']).select_related('owner')

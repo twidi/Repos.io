@@ -48,6 +48,7 @@ class SyncableModel(TimeStampedModel):
     last_fetch = models.DateTimeField(blank=True, null=True)
 
     # Fetch operations
+    backend_prefix = ''
     related_operations = (
         # name, with count, with modified
     )
@@ -80,7 +81,6 @@ class SyncableModel(TimeStampedModel):
         if not hasattr(self, '_backend'):
             self._backend = get_backend(self.backend)
         return self._backend
-        self.save()
 
     def get_new_status(self):
         """
@@ -175,8 +175,11 @@ class SyncableModel(TimeStampedModel):
         Get the last related modified date
         """
         last = None
+        backend = self.get_backend()
         for name, with_count, with_modified in self.related_operations:
             if not with_modified:
+                continue
+            if not backend.supports(self.backend_prefix + name):
                 continue
             date = getattr(self, '%s_modified' % name)
             if last is None or date > last:
@@ -188,10 +191,20 @@ class SyncableModel(TimeStampedModel):
         """
         Return True if a new fetch of a related is allowed(if not too recent)
         """
-        if operation in [op[0] for op in self.related_operations if op[2]]:
-            date = getattr(self, '%s_modified' % operation)
-            if not date or date < datetime.now() - self.MIN_FETCH_RELATED_DELTA:
-                return True
+        try:
+            name, with_count, with_modified = [op for op in self.related_operations if op[0] == operation][0]
+        except:
+            return False
+
+        if not with_modified:
+            return True
+
+        if not self.get_backend().supports(self.backend_prefix + operation):
+            return False
+        date = getattr(self, '%s_modified' % operation)
+        if not date or date < datetime.now() - self.MIN_FETCH_RELATED_DELTA:
+            return True
+
         return False
 
     def fetch_related(self, limit=None):
@@ -205,10 +218,11 @@ class SyncableModel(TimeStampedModel):
         for operation in self.related_operations:
             if not self.fetch_related_allowed_for(operation[0]):
                 continue
-            operation = getattr(self, 'fetch_%s' % operation[0])
+            action = getattr(self, 'fetch_%s' % operation[0])
 
             try:
-                if operation():
+                #print "%s : update %s" % (self, operation[0])
+                if action():
                     done += 1
             except BackendError, e:
                 exceptions.append(e)
@@ -312,6 +326,7 @@ class Account(SyncableModel):
     objects = AccountManager()
 
     # Fetch operations
+    backend_prefix = 'user_'
     related_operations = (
         # name, with count, with modified
         ('following', True, True),
@@ -347,6 +362,9 @@ class Account(SyncableModel):
         """
         Fetch the accounts followed by this account
         """
+        if not self.get_backend().supports('user_following'):
+            return False
+
         # get all previous following
         old_following = dict((a.slug, a) for a in self.following.all())
 
@@ -440,6 +458,9 @@ class Account(SyncableModel):
         """
         Fetch the accounts following this account
         """
+        if not self.get_backend().supports('user_followers'):
+            return False
+
         # get all previous followers
         old_followers = dict((a.slug, a) for a in self.followers.all())
 
@@ -531,6 +552,9 @@ class Account(SyncableModel):
         """
         Fetch the repositories owned/watched by this account
         """
+        if not self.get_backend().supports('user_repositories'):
+            return False
+
         # get all previous repositories
         old_repositories = dict((r.project, r) for r in self.repositories.all())
 
@@ -748,16 +772,24 @@ class Repository(SyncableModel):
     contributors_count = models.PositiveIntegerField(blank=True, null=True)
     contributors_modified = models.DateTimeField(blank=True, null=True)
 
+    # more about the content of the reopsitory
+    default_branch = models.CharField(max_length=255, blank=True, null=True)
+    readme = models.TextField(blank=True, null=True)
+    readme_type = models.CharField(max_length=10, blank=True, null=True)
+    readme_modified = models.DateTimeField(blank=True, null=True)
+
     # The default manager
     objects = RepositoryManager()
 
     # Fetch operations
+    backend_prefix = 'repository_'
     related_operations = (
         # name, with count, with modified
         ('owner', False, False),
         ('parent_fork', False, False),
         ('followers', True, True),
         ('contributors', True, True),
+        ('readme', False, True),
     )
 
 
@@ -838,6 +870,9 @@ class Repository(SyncableModel):
         """
         Create or update the repository's owner
         """
+        if not self.get_backend().supports('repository_owner'):
+            return False
+
         if not self.official_owner:
             if self.owner_id:
                 self.owner = None
@@ -870,6 +905,9 @@ class Repository(SyncableModel):
         Create of update the parent fork, only if needed and if we have the
         parent fork's name
         """
+        if not self.get_backend().supports('repository_parent_fork'):
+            return False
+
         if not (self.is_fork and self.official_fork_of):
             if self.parent_fork_id:
                 self.parent_fork = None
@@ -901,6 +939,9 @@ class Repository(SyncableModel):
         """
         Fetch the accounts following this repository
         """
+        if not self.get_backend().supports('repository_followers'):
+            return False
+
         # get all previous followers
         old_followers = dict((a.slug, a) for a in self.followers.all())
 
@@ -992,6 +1033,9 @@ class Repository(SyncableModel):
         """
         Fetch the accounts following this repository
         """
+        if not self.get_backend().supports('repository_contributors'):
+            return False
+
         # get all previous contributors
         old_contributors = dict((a.slug, a) for a in self.contributors.all())
 
@@ -1119,5 +1163,27 @@ class Repository(SyncableModel):
         if not hasattr(self, '_contributors_slugs'):
             self._contributors_slugs = [f.slug for f in self.contributors.all()]
         return self._contributors_slugs
+
+    def fetch_readme(self):
+        """
+        Try to get a readme in the repository
+        """
+        if not self.get_backend().supports('repository_readme'):
+            return False
+
+        readme = self.get_backend().repository_readme(self)
+
+        if readme is not None:
+            if isinstance(readme, (list, tuple)):
+                readme_type = readme[1]
+                readme = readme[0]
+            else:
+                readme_type = 'txt'
+
+            self.readme = readme
+            self.readme_type = readme_type
+            self.readme_modified = datetime.now()
+            self.save()
+        return True
 
 from core.signals import *

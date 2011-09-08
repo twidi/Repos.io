@@ -1,17 +1,29 @@
+from copy import copy
+
 from github2.client import Github
 from github2.users import User
 from github2.request import HttpError
 
 from django.conf import settings
 
-from core.backends import BaseBackend
+from core.backends import BaseBackend, README_NAMES, README_TYPES
 
 class GithubBackend(BaseBackend):
 
     name = 'github'
     auth_backend = 'github'
     needed_repository_identifiers = ('slug', 'official_owner',)
-    repository_has_owner = True
+    support = copy(BaseBackend.support)
+    support.update(dict(
+        user_followers = True,
+        user_following = True,
+        user_repositories = True,
+        repository_owner = True,
+        repository_parent_fork = True,
+        repository_followers = True,
+        repository_contributors = True,
+        repository_readme = True,
+    ))
 
     def __init__(self, *args, **kwargs):
         """
@@ -229,6 +241,7 @@ class GithubBackend(BaseBackend):
             private = 'private',
             official_created = 'created_at',
             official_modified = 'pushed_at',
+            default_branch = 'master_branch',
         )
 
         result = {}
@@ -288,5 +301,90 @@ class GithubBackend(BaseBackend):
                 result.append(account_dict)
 
         return result
+
+    def repository_readme(self, repository, access_token=None):
+        """
+        Try to get a readme in the repository
+        """
+        # get/create the github instance
+        github = self.github(access_token)
+
+        # try with each name
+        commits = None
+        for name in README_NAMES:
+            # we start by getting the last commit id for a file starting with this name
+            try:
+                commits = github.commits.list(
+                    project = repository.project,
+                    branch = repository.default_branch or 'master',
+                    file = '%s*' % name
+                )
+            except HttpError, e:
+                if e.code == 404:
+                    continue
+                raise self._get_exception(e, '%s\'s commits' % repository.project)
+            except Exception, e:
+                raise self._get_exception(e, '%s\'s commits' % repository.project)
+            else:
+                found_name = name
+                break
+
+        # no commit found => no readme
+        if not commits:
+            return ('', None)
+
+        for commit in commits:
+
+            # get more information about this commit
+            try:
+                commit_infos = github.commits.show(repository.project, commits[0].id)
+            except Exception, e:
+                raise self._get_exception(e, '%s\'s commits' % repository.project)
+
+            # nothing added or modified ?
+            if not commit_infos.added and not commit_infos.modified:
+                continue
+
+            # get files that looks like a readme file
+            files = set()
+            if commit_infos.added:
+                files.update([file for file in commit_infos.added if file.startswith(found_name)])
+            if commit_infos.modified:
+                files.update([diff['filename'] for diff in commit_infos.modified if diff['filename'].startswith(found_name)])
+
+            if not files:
+                continue
+
+            # get contents for all these files
+            contents = []
+            for filename in files:
+                try:
+                    blob = github.get_blob_info(repository.project, commit.id, filename)
+                except Exception, e:
+                    raise self._get_exception(e, '%s\'s readme file' % repository.project)
+                else:
+                    contents.append((filename, blob.get('data', 0)))
+
+            if not contents:
+                continue
+
+            # keep the biggest
+            filename, content = sorted(contents, key=len)[-1]
+
+            # find the type
+            filetype = 'txt'
+            try:
+                extension = filename.split('.')[-1]
+                for ftype, extensions in README_TYPES:
+                    if extension in extensions:
+                        filetype = ftype
+                        break
+            except:
+                pass
+
+            return content, filetype
+
+        return ('', None)
+
 
 BACKENDS = { 'github': GithubBackend, }

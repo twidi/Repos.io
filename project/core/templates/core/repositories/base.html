@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load reposio_core %}
 {% block title %}"{{ repository.slug }}"{% if repository.owner %} (by {{ repository.owner.slug }}){% endif %} @{{repository.backend }} on {% endblock %}
 {% block core_content %}
     <section id="repository">
@@ -13,6 +14,18 @@
                             {% include "core/accounts/avatar.html" with account=repository.owner size=16 %}
                             {% include "core/accounts/link.html" with no_backend=1 account=repository.owner %}
                         </small>
+                        {% if repository.backend|supports:'repository_parent_fork' and repository.is_fork %}
+                            <small>
+                            {% if repository.parent_fork %}
+                                / fork of {% include "core/repositories/link.html" with repository=repository.parent_fork no_backend=1 no_owner=1 %}
+                                by
+                                {% include "core/accounts/avatar.html" with account=repository.parent_fork.owner size=16 %}
+                                {% include "core/accounts/link.html" with no_backend=1 account=repository.parent_fork.owner %}
+                            {% else %}
+                                / it's a fork but related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display.
+                            {% endif %}
+                            </small>
+                        {% endif %}
                     </h2>
                 {% endif %}
                 <p>
@@ -29,21 +42,28 @@
         {% if repository.last_fetch %}
             <ul class="tabs">
                 <li{% if subsection == 'home' %} class="active"{% endif %}><a href="{{ repository.get_absolute_url }}">Home</a></li>
-                {% if repository.followers_modified or subsection == 'followers' %}
-                    <li{% if subsection == 'followers' %} class="active"{% endif %}>
-                        <a href="{{ repository.get_followers_url }}">{{ repository.followers_count }}{% if not repository.followers_modified %}?{% endif %} followers</a>
-                    </li>
+
+                {% if repository.backend|supports:'repository_followers' %}
+                    {% if repository.followers_modified or subsection == 'followers' %}
+                        <li{% if subsection == 'followers' %} class="active"{% endif %}>
+                            <a href="{{ repository.get_followers_url }}">{{ repository.followers_count }}{% if not repository.followers_modified %}?{% endif %} followers</a>
+                        </li>
+                    {% endif %}
                 {% endif %}
-                {% if repository.contributors_modified or subsection == 'contributors' %}
-                    <li{% if subsection == 'contributors' %} class="active"{% endif %}>
-                        <a href="{{ repository.get_contributors_url }}">{% if repository.contributors_modified %}{{ repository.contributors_count }}{% else %}??{% endif %} contributors</a>
-                    </li>
+
+                {% if repository.backend|supports:'repository_contributors' %}
+                    {% if repository.contributors_modified or subsection == 'contributors' %}
+                        <li{% if subsection == 'contributors' %} class="active"{% endif %}>
+                            <a href="{{ repository.get_contributors_url }}">{% if repository.contributors_modified %}{{ repository.contributors_count }}{% else %}??{% endif %} contributors</a>
+                        </li>
+                    {% endif %}
                 {% endif %}
+
             </ul>
 
             {% block repository_content %}{% endblock %}
         {% else %}
-            <div class="alert-message warning"><p>This repository needs to be fetched once from {{ repository.backend }} before display.</p></div>
+            <div class="alert-message warning"><p>This repository needs to be fetched once from {{ repository.backend }}{% if not user.is_authenticated %} by an authenticated user {% endif %} before display.</p></div>
         {% endif %}
     </section>
 {% endblock %}

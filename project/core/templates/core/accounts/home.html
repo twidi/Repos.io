@@ -1,4 +1,5 @@
 {% extends "core/accounts/base.html" %}
+{% load reposio_core %}
 
 {% block account_content %}
 
@@ -7,33 +8,39 @@
     <section class="span11">
 
         <dl>
-            <dt>
-                {% if account.followers_modified %}
-                    <a href="{{ account.get_followers_url }}">{{ account.followers_count }} followers</a> <small>(updated on {{ account.followers_modified }})</small>
-                {% else %}
-                {{ account.official_followers_count }} followers <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
-                {% endif %}
-            </dt>
-            <dd>Followers are people who are following {{ account.slug }} to know about what he's doing on {{ account.backend }}</dd>
+            {% if account.backend|supports:'user_followers' %}
+                <dt>
+                    {% if account.followers_modified %}
+                        <a href="{{ account.get_followers_url }}">{{ account.followers_count }} followers</a> <small>(updated on {{ account.followers_modified }})</small>
+                    {% else %}
+                    {{ account.official_followers_count }} followers <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
+                    {% endif %}
+                </dt>
+                <dd>Followers are people who are following {{ account.slug }} to know about what he's doing on {{ account.backend }}</dd>
+            {% endif %}
 
-            <dt>
-                {% if account.following_modified %}
-                    <a href="{{ account.get_following_url }}">{{ account.following_count }} following</a> <small>(updated on {{ account.following_modified }})</small>
-                {% else %}
-                    {{ account.official_following_count }} following <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
-                {% endif %}
-            </dt>
-            <dd>Following are people that {{ account.slug }} follows to know what they are doing on {{ account.backend }}</dd>
+            {% if account.backend|supports:'user_following' %}
+                <dt>
+                    {% if account.following_modified %}
+                        <a href="{{ account.get_following_url }}">{{ account.following_count }} following</a> <small>(updated on {{ account.following_modified }})</small>
+                    {% else %}
+                        {{ account.official_following_count }} following <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
+                    {% endif %}
+                </dt>
+                <dd>Following are people that {{ account.slug }} follows to know what they are doing on {{ account.backend }}</dd>
+            {% endif %}
 
 
-            <dt>
-                {% if account.repositories_modified %}
-                    <a href="{{ account.get_repositories_url }}">{{ account.repositories_count }} repositories</a> <small>(updated on {{ account.repositories_modified }})</small>
-                {% else %}
-                    unknown number repositories <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
-                {% endif %}
-            </dt>
-            <dd>These repositories are the ones {{ account.slug }} ownes, or follows (or likes, stars...) on {{ account.backend }}.</dd>
+            {% if account.backend|supports:'user_repositories' %}
+                <dt>
+                    {% if account.repositories_modified %}
+                        <a href="{{ account.get_repositories_url }}">{{ account.repositories_count }} repositories</a> <small>(updated on {{ account.repositories_modified }})</small>
+                    {% else %}
+                        unknown number repositories <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
+                    {% endif %}
+                </dt>
+                <dd>These repositories are the ones {{ account.slug }} ownes, or follows (or likes, stars...) on {{ account.backend }}.</dd>
+            {% endif %}
 
         </dl>
 

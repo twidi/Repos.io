@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from core.views.decorators import check_repository
+from core.views.decorators import check_repository, check_support
 from core.views.sort import get_account_sort
 
 @check_repository
@@ -12,6 +12,7 @@ def home(request, backend, project, repository=None):
         repository = repository,
     ))
 
+@check_support('repository_followers')
 @check_repository
 def followers(request, backend, project, repository=None):
     """
@@ -33,6 +34,7 @@ def followers(request, backend, project, repository=None):
         ),
     ))
 
+@check_support('repository_contributors')
 @check_repository
 def contributors(request, backend, project, repository=None):
     """

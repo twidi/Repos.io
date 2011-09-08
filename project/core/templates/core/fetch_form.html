@@ -13,7 +13,7 @@
             {% if for_related %}
                 <input type="hidden" name="related" value="1" />
             {% endif %}
-            <button class="btn{% if for_related and not obj.last_fetch_related or not for_related and not obj.last_fetch or not for_related and fetch_type == 'repository' and is_fork and not obj.fork %} primary{% endif %}" type='submit' name='submit' value='submit' title="It will fetch {% if for_related %}followers, {% if fetch_type == 'account' %}following and repositories{% else %}and contributors{% endif %}{% else %}fresh data{% endif %} from {{ obj.backend }}">
+            <button class="btn{% if for_related and not obj.last_fetch_related or not for_related and not obj.last_fetch or not for_related and fetch_type == 'repository' and is_fork and not obj.fork %} primary{% endif %}" type='submit' name='submit' value='submit' title="It will fetch {% if for_related %}followers, {% if fetch_type == 'account' %}following and repositories{% else %}contributors and readme{% endif %}{% else %}fresh data{% endif %} from {{ obj.backend }}">
                 <strong>Fetch {% if for_related %}related{% else %}{{ fetch_type }}{% endif %} now</strong>
                 <em>(
                 {% if for_related %}

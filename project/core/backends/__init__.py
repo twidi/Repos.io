@@ -3,15 +3,55 @@ from os.path import basename
 
 from django.conf import settings
 from django.utils.importlib import import_module
+from django.utils.functional import memoize
 
 from core.exceptions import InvalidIdentifiersForProject, BackendError
+
+#https://github.com/github/markup/
+README_NAMES = ('README', 'readme',)
+README_TYPES = (
+    ('txt', ('', 'txt',)),
+    ('rest', ('rst', 'rest',)),
+    ('markdown', ('md', 'mkd', 'mkdn', 'mdown', 'markdown',)),
+    ('textile', ('textile',)),
+    ('rdoc', ('rdoc',)),
+    ('org', ('org',)),
+    ('mediawiki', ('mediawiki', 'wiki',)),
+)
 
 class BaseBackend(object):
 
     name = None
     auth_backend = None
     needed_repository_identifiers = ('slug',)
-    repository_has_owner = False
+    support = dict(
+        user_followers = False,
+        user_following = False,
+        user_repositories = False,
+        repository_owner = False,
+        repository_parent_fork = False,
+        repository_followers = False,
+        repository_contributors = False,
+        repository_readme = False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        """
+        Add 2 supports values to fetch in one shot if the backends supports
+        related for users or repositories
+        """
+        super(BaseBackend, self).__init__(*args, **kwargs)
+        self.support['user_related'] = any([self.support.get('user_%s' % s, False)
+            for s in ('followers', 'following', 'repositories')])
+        self.support['repository_related'] = any([self.support.get('repository_%s' % s, False)
+            for s in ('owner', 'fork', 'followers', 'contributors')])
+
+    def supports(self, functionnality):
+        """
+        Return True if the functionnality is supported by the backend,
+        regarding the `support` field. False by default
+        """
+        return self.support.get(functionnality, False)
 
     def get_exception(self, code, what):
         """
@@ -100,6 +140,12 @@ class BaseBackend(object):
             if not kwargs.get(identifier, False):
                 raise InvalidIdentifiersForProject(self)
 
+    def repository_readme(self):
+        """
+        Try to get a readme in the repository
+        """
+        raise NotImplementedError('Implement in subclass')
+
     @classmethod
     def enabled(cls):
         """
@@ -145,12 +191,24 @@ def get_backends():
 # load backends from defined modules
 BACKENDS, BACKENDS_BY_AUTH = get_backends()
 
-def get_backend_from_auth(auth_backend):
+def get_backend_from_auth(auth_backend_name):
     """
-    Return the backend to use for a specified auth backend
+    Return a valid backend to use for a specified auth_backend, None in other case
     """
-    return BACKENDS_BY_AUTH.get(auth_backend, None)
+    backend_class = BACKENDS_BY_AUTH.get(auth_backend_name, None)
+    if not backend_class:
+        return None
+    return get_backend(backend_class.name)
+get_backend_from_auth.__cache = {}
+get_backend = memoize(get_backend_from_auth, get_backend_from_auth.__cache, 1)
 
-def get_backend(name, *args, **kwargs):
-    """Return auth backend instance *if* it's registered, None in other case"""
-    return BACKENDS.get(name, lambda *args, **kwargs: None)(*args, **kwargs)
+def get_backend(name):
+    """
+    Return a valid backend based on its name, None in other case
+    """
+    backend_class = BACKENDS_BY_AUTH.get(name, None)
+    if not backend_class:
+        return None
+    return backend_class()
+get_backend.__cache = {}
+get_backend = memoize(get_backend, get_backend.__cache, 1)
