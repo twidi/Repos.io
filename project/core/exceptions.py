@@ -54,6 +54,12 @@ class BackendError(CoreException):
 
         return BackendError(message=None, code=None)
 
+class MultipleBackendError(BackendError):
+    def __init__(self, messages):
+        super(MultipleBackendError, self).__init__(
+            'Many errors occured : ' + ', '.join(messages))
+        self.messages = messages
+
 class BackendNotFoundError(BackendError):
     def __init__(self, backend_name, what):
         super(BackendNotFoundError, self).__init__(
