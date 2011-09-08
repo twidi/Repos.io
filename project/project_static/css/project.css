@@ -247,3 +247,8 @@ body#repository-home section.readme pre {
     line-height: 1.1em;
     font-size: 11px;
 }
+
+/* Account repositories */
+body#user-repositories p.row span:last-child {
+    text-align: right;
+}

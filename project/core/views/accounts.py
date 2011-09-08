@@ -65,10 +65,18 @@ def repositories(request, backend, slug, account=None):
     """
 
     sort_key = request.GET.get('sort_by', 'name')
-    repository_has_owner = account.get_backend().supports('repository_owner')
-    sort = get_repository_sort(sort_key, repository_has_owner)
+    repository_supports_owner = account.get_backend().supports('repository_owner')
+    sort = get_repository_sort(sort_key, repository_supports_owner)
 
     sorted_repositories = account.repositories.order_by(sort['db_sort']).select_related('owner')
+
+    if repository_supports_owner:
+        owner_only = request.GET.get('owner-only', False) == 'y'
+    else:
+        owner_only = False
+
+    if owner_only:
+        sorted_repositories = sorted_repositories.filter(owner=account)
 
     return render(request, 'core/accounts/repositories.html', dict(
         account = account,
@@ -77,6 +85,6 @@ def repositories(request, backend, slug, account=None):
             key = sort['key'],
             reverse = sort['reverse'],
         ),
-        with_owners = repository_has_owner,
+        owner_only = 'y' if owner_only else False,
     ))
 
