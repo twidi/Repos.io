@@ -22,7 +22,7 @@ class GithubBackend(BaseBackend):
         repository_fork = True,
         repository_followers = True,
         repository_contributors = True,
-        repository_readme = True,
+        repository_readme = False,
     ))
 
     def __init__(self, *args, **kwargs):

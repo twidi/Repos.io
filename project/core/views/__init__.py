@@ -5,7 +5,7 @@ from django.http import HttpResponseNotAllowed
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
-from core.backends import BACKENDS
+from core.backends import get_backend
 from core.utils import slugify
 from core.models import Account, Repository
 from core.exceptions import BackendError, MultipleBackendError
@@ -55,23 +55,32 @@ def fetch(request):
     Try to fetch an object or its related objects
     """
     try:
+        related = 'related' in request.POST
+
         otype = request.POST['type']
         if otype not in ('account', 'repository'):
             raise
+
         id = int(request.POST['id'])
-        backend = request.POST['backend']
-        if backend not in BACKENDS:
+
+        backend = get_backend(request.POST['backend'] or None)
+        if not backend:
             raise
+
+        # check if you can manage related for this type for this backend
+        if related and not backend.supports(
+                '%s_related' % ('user' if otype == 'account' else otype)):
+            raise
+
         if otype == 'account':
             slug = request.POST['slug']
-            obj = Account.objects.get(id=id, backend=backend, slug=slug)
+            obj = Account.objects.get(id=id, backend=backend.name, slug=slug)
         else:
             project = request.POST['project']
-            obj = Repository.objects.get(id=id, backend=backend, project=project)
+            obj = Repository.objects.get(id=id, backend=backend.name, project=project)
     except:
         return HttpResponseNotAllowed('Vilain :)')
     else:
-        related = 'related' in request.POST
 
         if related:
             if obj.fetch_related_allowed():

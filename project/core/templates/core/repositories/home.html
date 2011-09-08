@@ -1,4 +1,5 @@
 {% extends "core/repositories/base.html" %}
+{% load reposio_core %}
 
 {% block repository_content %}
 
@@ -12,23 +13,27 @@
         {% endif %}
 
         <dl>
-            <dt>
-                {% if repository.followers_modified %}
-                <a href="{{ repository.get_followers_url }}">{{ repository.followers_count }} followers</a> <small>(updated on {{ repository.followers_modified }})</small>
-                {% else %}
-                    {{ repository.official_followers_count }} followers <small>(related{% if not user.is_authenticated %} by an authenticated user {% endif %} must be fetched before display)</small>
-                {% endif %}
-            </dt>
-            <dd>Followers are people who are following {{ repository.slug }} to have news on this repository on {{ account.backend }}</dd>
+            {% if repository.backend|supports:'repository_followers' %}
+                <dt>
+                    {% if repository.followers_modified %}
+                    <a href="{{ repository.get_followers_url }}">{{ repository.followers_count }} followers</a> <small>(updated on {{ repository.followers_modified }})</small>
+                    {% else %}
+                        {{ repository.official_followers_count }} followers <small>(related{% if not user.is_authenticated %} by an authenticated user {% endif %} must be fetched before display)</small>
+                    {% endif %}
+                </dt>
+                <dd>Followers are people who are following {{ repository.slug }} to have news on this repository on {{ account.backend }}</dd>
+            {% endif %}
 
-            <dt>
-                {% if repository.contributors_modified %}
-                    <a href="{{ repository.get_contributors_url }}">{{ repository.contributors_count }} contributors</a> <small>(updated on {{ repository.contributors_modified }})</small>
-                {% else %}
-                    unknown number of contributors <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
-                {% endif %}
-            </dt>
-            <dd>Contributors are all people who, sometimes, even just one time, worked on {{ repository.slug }} on {{ repository.backend }}</dd>
+            {% if repository.backend|supports:'repository_contributors' %}
+                <dt>
+                    {% if repository.contributors_modified %}
+                        <a href="{{ repository.get_contributors_url }}">{{ repository.contributors_count }} contributors</a> <small>(updated on {{ repository.contributors_modified }})</small>
+                    {% else %}
+                        unknown number of contributors <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
+                    {% endif %}
+                </dt>
+                <dd>Contributors are all people who, sometimes, even just one time, worked on {{ repository.slug }} on {{ repository.backend }}</dd>
+            {% endif %}
 
         </dl>
 

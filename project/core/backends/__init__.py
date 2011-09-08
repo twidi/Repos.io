@@ -14,7 +14,7 @@ class BaseBackend(object):
     needed_repository_identifiers = ('slug',)
     support = dict(
         user_followers = False,
-        user_followings = False,
+        user_following = False,
         user_repositories = False,
         repository_owner = False,
         repository_fork = False,
@@ -22,6 +22,17 @@ class BaseBackend(object):
         repository_contributors = False,
         repository_readme = False,
     )
+
+    def __init__(self, *args, **kwargs):
+        """
+        Add 2 supports values to fetch in one shot if the backends supports
+        related for users or repositories
+        """
+        super(BaseBackend, self).__init__(*args, **kwargs)
+        self.support['user_related'] = any([self.support.get('user_%s' % s, False)
+            for s in ('followers', 'following', 'repositories')])
+        self.support['repository_related'] = any([self.support.get('repository_%s' % s, False)
+            for s in ('owner', 'fork', 'followers', 'contributors')])
 
     def supports(self, functionnality):
         """

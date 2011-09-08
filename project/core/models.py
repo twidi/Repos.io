@@ -177,6 +177,8 @@ class SyncableModel(TimeStampedModel):
         last = None
         backend = self.get_backend()
         for name, with_count, with_modified in self.related_operations:
+            if not with_modified:
+                continue
             if not backend.supports(self.backend_prefix + name):
                 continue
             date = getattr(self, '%s_modified' % name)
