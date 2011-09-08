@@ -89,6 +89,9 @@ table.zebra-striped th.sortable.header:after {
     right: 10px;
     margin: -4px 0 0;
 }
+table.zebra-striped th.sortable.header.reverse:after {
+    border-width: 0 4px 4px;
+}
 table.zebra-striped th.sortable.header.headerSortDown:after {
     border-width: 0 4px 4px;
 }
