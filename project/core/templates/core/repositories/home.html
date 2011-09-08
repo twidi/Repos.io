@@ -49,7 +49,7 @@
     <section class="readme">
         {% if repository.readme_modified %}
             {% if repository.readme %}
-                Readme :
+                Readme : <small>(updated on {{ repository.readme_modified }})</small>
                 <pre>{{ repository.readme }}</pre>
             {% else %}
                 No readme.
