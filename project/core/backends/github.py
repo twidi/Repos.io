@@ -1,5 +1,6 @@
 from github2.client import Github
 from github2.users import User
+from github2.request import HttpError
 
 from django.conf import settings
 
@@ -25,6 +26,15 @@ class GithubBackend(BaseBackend):
         Return backend enabled status by checking basic settings
         """
         return all(hasattr(settings, name) for name in ('GITHUB_APP_ID', 'GITHUB_API_SECRET'))
+
+    def _get_exception(self, exception, object_type, object_name, access_token=None):
+        """
+        Return an internal exception (BackendError)
+        """
+        if isinstance(exception, HttpError):
+            return self.get_exception(exception.code, object_type, object_name)
+        else:
+            return self.get_exception(None, object_type, object_name)
 
     def create_github_instance(self, *args, **kwargs):
         """
@@ -56,7 +66,10 @@ class GithubBackend(BaseBackend):
         github = self.github(access_token)
 
         # get user data fromgithub
-        guser = github.users.show(account.slug)
+        try:
+            guser = github.users.show(account.slug)
+        except Exception, e:
+            raise self._get_exception(e, 'account', account.slug, access_token)
 
         # associate github user and account
         rmap = self.user_map(guser)
@@ -103,7 +116,10 @@ class GithubBackend(BaseBackend):
         github = self.github(access_token)
 
         # get users data from github
-        gusers = github.users.following(account.slug)
+        try:
+            gusers = github.users.following(account.slug)
+        except Exception, e:
+            raise self._get_exception(e, 'account', account.slug, access_token)
 
         result = []
 
@@ -120,7 +136,10 @@ class GithubBackend(BaseBackend):
         github = self.github(access_token)
 
         # get users data from github
-        gusers = github.users.followers(account.slug)
+        try:
+            gusers = github.users.followers(account.slug)
+        except Exception, e:
+            raise self._get_exception(e, 'account', account.slug, access_token)
 
         result = []
 
@@ -138,7 +157,10 @@ class GithubBackend(BaseBackend):
         github = self.github(access_token)
 
         # get repositories data from github
-        grepos = github.repos.watching(account.slug)
+        try:
+            grepos = github.repos.watching(account.slug)
+        except Exception, e:
+            raise self._get_exception(e, 'account', account.slug, access_token)
 
         result = []
 
@@ -175,7 +197,10 @@ class GithubBackend(BaseBackend):
 
         # get repository data fromgithub
         project = repository.get_project()
-        grepo = github.repos.show(project)
+        try:
+            grepo = github.repos.show(project)
+        except Exception, e:
+            raise self._get_exception(e, 'repository', repository.project, access_token)
 
         # associate github repo to core one
         rmap = self.repository_map(grepo)
@@ -224,7 +249,10 @@ class GithubBackend(BaseBackend):
         github = self.github(access_token)
 
         # get users data from github
-        gusers = github.repos.watchers(repository.project)
+        try:
+            gusers = github.repos.watchers(repository.project)
+        except Exception, e:
+            raise self._get_exception(e, 'repository', repository.project, access_token)
 
         result = []
 
@@ -244,7 +272,10 @@ class GithubBackend(BaseBackend):
         github = self.github(access_token)
 
         # get users data from github
-        gusers = github.repos.list_contributors(repository.project)
+        try:
+            gusers = github.repos.list_contributors(repository.project)
+        except Exception, e:
+            raise self._get_exception(e, 'repository', repository.project, access_token)
 
         result = []
 
