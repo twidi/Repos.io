@@ -48,6 +48,7 @@ class SyncableModel(TimeStampedModel):
     last_fetch = models.DateTimeField(blank=True, null=True)
 
     # Fetch operations
+    backend_prefix = ''
     related_operations = (
         # name, with count, with modified
     )
@@ -80,7 +81,6 @@ class SyncableModel(TimeStampedModel):
         if not hasattr(self, '_backend'):
             self._backend = get_backend(self.backend)
         return self._backend
-        self.save()
 
     def get_new_status(self):
         """
@@ -175,8 +175,9 @@ class SyncableModel(TimeStampedModel):
         Get the last related modified date
         """
         last = None
+        backend = self.get_backend()
         for name, with_count, with_modified in self.related_operations:
-            if not with_modified:
+            if not backend.supports(self.backend_prefix + name):
                 continue
             date = getattr(self, '%s_modified' % name)
             if last is None or date > last:
@@ -189,6 +190,8 @@ class SyncableModel(TimeStampedModel):
         Return True if a new fetch of a related is allowed(if not too recent)
         """
         if operation in [op[0] for op in self.related_operations if op[2]]:
+            if not self.get_backend().supports(self.backend_prefix + operation):
+                return False
             date = getattr(self, '%s_modified' % operation)
             if not date or date < datetime.now() - self.MIN_FETCH_RELATED_DELTA:
                 return True
@@ -205,10 +208,11 @@ class SyncableModel(TimeStampedModel):
         for operation in self.related_operations:
             if not self.fetch_related_allowed_for(operation[0]):
                 continue
-            operation = getattr(self, 'fetch_%s' % operation[0])
+            action = getattr(self, 'fetch_%s' % operation[0])
 
             try:
-                if operation():
+                print "%s : update %s" % (self, operation[0])
+                if action():
                     done += 1
             except BackendError, e:
                 exceptions.append(e)
@@ -312,6 +316,7 @@ class Account(SyncableModel):
     objects = AccountManager()
 
     # Fetch operations
+    backend_prefix = 'user_'
     related_operations = (
         # name, with count, with modified
         ('following', True, True),
@@ -748,16 +753,23 @@ class Repository(SyncableModel):
     contributors_count = models.PositiveIntegerField(blank=True, null=True)
     contributors_modified = models.DateTimeField(blank=True, null=True)
 
+    # more about the content of the reopsitory
+    default_branch = models.CharField(max_length=255, blank=True, null=True)
+    readme = models.TextField(blank=True, null=True)
+    readme_modified = models.DateTimeField(blank=True, null=True)
+
     # The default manager
     objects = RepositoryManager()
 
     # Fetch operations
+    backend_prefix = 'repository_'
     related_operations = (
         # name, with count, with modified
         ('owner', False, False),
         ('parent_fork', False, False),
         ('followers', True, True),
         ('contributors', True, True),
+    #    ('readme', False, True),
     )
 
 

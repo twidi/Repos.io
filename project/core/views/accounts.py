@@ -62,7 +62,7 @@ def repositories(request, backend, slug, account=None):
     """
 
     sort_key = request.GET.get('sort_by', 'name')
-    repository_has_owner = account.get_backend().repository_has_owner
+    repository_has_owner = account.get_backend().supports('repository_owner')
     sort = get_repository_sort(sort_key, repository_has_owner)
 
     sorted_repositories = account.repositories.order_by(sort['db_sort']).select_related('owner')

@@ -1,3 +1,5 @@
+from copy import copy
+
 from github2.client import Github
 from github2.users import User
 from github2.request import HttpError
@@ -11,7 +13,17 @@ class GithubBackend(BaseBackend):
     name = 'github'
     auth_backend = 'github'
     needed_repository_identifiers = ('slug', 'official_owner',)
-    repository_has_owner = True
+    support = copy(BaseBackend.support)
+    support.update(dict(
+        user_followers = True,
+        user_following = True,
+        user_repositories = True,
+        repository_owner = True,
+        repository_fork = True,
+        repository_followers = True,
+        repository_contributors = True,
+        repository_readme = True,
+    ))
 
     def __init__(self, *args, **kwargs):
         """
@@ -229,6 +241,7 @@ class GithubBackend(BaseBackend):
             private = 'private',
             official_created = 'created_at',
             official_modified = 'pushed_at',
+            default_branch = 'master_branch',
         )
 
         result = {}

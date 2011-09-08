@@ -11,7 +11,23 @@ class BaseBackend(object):
     name = None
     auth_backend = None
     needed_repository_identifiers = ('slug',)
-    repository_has_owner = False
+    support = dict(
+        user_followers = False,
+        user_followings = False,
+        user_repositories = False,
+        repository_owner = False,
+        repository_fork = False,
+        repository_followers = False,
+        repository_contributors = False,
+        repository_readme = False,
+    )
+
+    def supports(self, functionnality):
+        """
+        Return True if the functionnality is supported by the backend,
+        regarding the `support` field. False by default
+        """
+        return self.support.get(functionnality, False)
 
     def get_exception(self, code, what):
         """
