@@ -35,103 +35,46 @@ class BackendError(CoreException):
         self.code = code
 
     @staticmethod
-    def make_for(backend_name, code=None, object_type=None, object_name=None):
+    def make_for(backend_name, code=None, what=None):
 
         if code == 401:
-            if object_type == 'account':
-                return BackendAccountUnauthorizedError(backend_name, object_name)
-            elif object_type == 'repository':
-                return BackendRepositoryUnauthorizedError(backend_name, object_name)
-            return BackendUnauthorizedError()
+            return BackendUnauthorizedError(backend_name, what)
 
         if code == 403:
-            if object_type == 'account':
-                return BackendAccountForbiddenError(backend_name, object_name)
-            elif object_type == 'repository':
-                return BackendRepositoryForbiddenError(backend_name, object_name)
-            return BackendForbiddenError()
+            return BackendForbiddenError(backend_name, what)
 
         if code == 404:
-            if object_type == 'account':
-                return BackendAccountNotFoundError(backend_name, object_name)
-            elif object_type == 'repository':
-                return BackendRepositoryNotFoundError(backend_name, object_name)
-            return BackendNotFoundError()
+            return BackendNotFoundError(backend_name, what)
 
         elif code >= 400 and code < 500:
-            return BackendAccessError(code=code)
+            return BackendAccessError(code, backend_name, what)
 
         elif code >= 500:
-            return BackendInternalError(code=code)
+            return BackendInternalError(code, backend_name, what)
 
         return BackendError(message=None, code=None)
 
 class BackendNotFoundError(BackendError):
-    def __init__(self, message=None):
+    def __init__(self, backend_name, what):
         super(BackendNotFoundError, self).__init__(
-            message or 'The wanted object was not found', 404)
-
-class BackendAccountNotFoundError(BackendNotFoundError):
-    def __init__(self, backend_name, account_name):
-        super(BackendAccountNotFoundError, self).__init__(
-            '`%s` account not found on %s' % (
-                account_name, backend_name)
-        )
-
-class BackendRepositoryNotFoundError(BackendNotFoundError):
-    def __init__(self, backend_name, repository_name):
-        super(BackendRepositoryNotFoundError, self).__init__(
-            '`%s` repository not found on %s' % (
-                repository_name, backend_name)
-        )
+            '%s cannot be found on %s' % (what, backend_name), 404)
 
 class BackendAccessError(BackendError):
-    def __init__(self, message=None, code=None):
+    def __init__(self, code, backend_name, what):
         super(BackendAccessError, self).__init__(
-            message or 'The wanted access cannot be done', code)
-    pass
+            '%s cannot be accessed on %s' % (what, backend_name), code)
 
 class BackendForbiddenError(BackendAccessError):
-    def __init__(self, message=None):
-        super(BackendForbiddenError, self).__init__(
-            message or 'The wanted access is forbidden', 403)
+    def __init__(self, backend_name, what):
+        super(BackendForbiddenError, self).__init__(403, backend_name, what)
 
-class BackendAccountForbiddenError(BackendForbiddenError):
-    def __init__(self, backend_name, account_name):
-        super(BackendAccountForbiddenError, self).__init__(
-            '`%s` access if forbidden by %s' % (
-                account_name, backend_name)
-        )
-
-class BackendRepositoryForbiddenError(BackendForbiddenError):
-    def __init__(self, backend_name, repository_name):
-        super(BackendRepositoryForbiddenError, self).__init__(
-            '`%s` access if forbidden by %s' % (
-                repository_name, backend_name)
-        )
 
 class BackendUnauthorizedError(BackendAccessError):
-    def __init__(self, message=None):
-        super(BackendUnauthorizedError, self).__init__(
-            message or 'The wanted access is not authorized', 401)
-
-class BackendAccountUnauthorizedError(BackendUnauthorizedError):
-    def __init__(self, backend_name, account_name):
-        super(BackendAccountUnauthorizedError, self).__init__(
-            '`%s` access not authorized by %s' % (
-                account_name, backend_name)
-        )
-
-class BackendRepositoryUnauthorizedError(BackendUnauthorizedError):
-    def __init__(self, backend_name, repository_name):
-        super(BackendRepositoryUnauthorizedError, self).__init__(
-            '`%s` access if not authorized by %s' % (
-                repository_name, backend_name)
-        )
+    def __init__(self, backend_name, what):
+        super(BackendUnauthorizedError, self).__init__(401, backend_name, what)
 
 class BackendInternalError(BackendError):
-    def __init__(self, message=None, code=None):
+    def __init__(self, code, backend_name, what):
         super(BackendError, self).__init__(
-            message or 'The bakend encountered an internal error, preventing us to accomplish your request',
-            code)
+            '%s cannot be accessed because %s encountered an internal error' % (what, backend_name), code)
 

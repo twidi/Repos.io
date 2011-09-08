@@ -13,11 +13,11 @@ class BaseBackend(object):
     needed_repository_identifiers = ('slug',)
     repository_has_owner = False
 
-    def get_exception(self, code, object_type, object_name):
+    def get_exception(self, code, what):
         """
         Return an internal exception (BackendError)
         """
-        return BackendError.make_for(self.name, code, object_type, object_name)
+        return BackendError.make_for(self.name, code, what)
 
     def user_map(self, user):
         """
