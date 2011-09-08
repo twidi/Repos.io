@@ -225,7 +225,7 @@ class SyncableModel(TimeStampedModel):
                 continue
             field = getattr(self, param)
             if not callable(field) and field != value:
-                print "%s : update %s from [%s] to [%s]" % (self, param, getattr(self,param), value)
+                #print "%s : update %s from [%s] to [%s]" % (self, param, getattr(self,param), value)
                 setattr(self, param, value)
                 updated += 1
         if updated:
