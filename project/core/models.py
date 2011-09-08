@@ -191,12 +191,20 @@ class SyncableModel(TimeStampedModel):
         """
         Return True if a new fetch of a related is allowed(if not too recent)
         """
-        if operation in [op[0] for op in self.related_operations if op[2]]:
-            if not self.get_backend().supports(self.backend_prefix + operation):
-                return False
-            date = getattr(self, '%s_modified' % operation)
-            if not date or date < datetime.now() - self.MIN_FETCH_RELATED_DELTA:
-                return True
+        try:
+            name, with_count, with_modified = [op for op in self.related_operations if op[0] == operation][0]
+        except:
+            return False
+
+        if not with_modified:
+            return True
+
+        if not self.get_backend().supports(self.backend_prefix + operation):
+            return False
+        date = getattr(self, '%s_modified' % operation)
+        if not date or date < datetime.now() - self.MIN_FETCH_RELATED_DELTA:
+            return True
+
         return False
 
     def fetch_related(self, limit=None):
@@ -213,7 +221,7 @@ class SyncableModel(TimeStampedModel):
             action = getattr(self, 'fetch_%s' % operation[0])
 
             try:
-                print "%s : update %s" % (self, operation[0])
+                #print "%s : update %s" % (self, operation[0])
                 if action():
                     done += 1
             except BackendError, e:

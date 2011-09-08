@@ -14,6 +14,18 @@
                             {% include "core/accounts/avatar.html" with account=repository.owner size=16 %}
                             {% include "core/accounts/link.html" with no_backend=1 account=repository.owner %}
                         </small>
+                        {% if repository.backend|supports:'repository_parent_fork' and repository.is_fork %}
+                            <small>
+                            {% if repository.parent_fork %}
+                                / fork of {% include "core/repositories/link.html" with repository=repository.parent_fork no_backend=1 no_owner=1 %}
+                                by
+                                {% include "core/accounts/avatar.html" with account=repository.parent_fork.owner size=16 %}
+                                {% include "core/accounts/link.html" with no_backend=1 account=repository.parent_fork.owner %}
+                            {% else %}
+                                / it's a fork but related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display.
+                            {% endif %}
+                            </small>
+                        {% endif %}
                     </h2>
                 {% endif %}
                 <p>
@@ -51,7 +63,7 @@
 
             {% block repository_content %}{% endblock %}
         {% else %}
-            <div class="alert-message warning"><p>This repository needs to be fetched once from {{ repository.backend }} before display.</p></div>
+            <div class="alert-message warning"><p>This repository needs to be fetched once from {{ repository.backend }}{% if not user.is_authenticated %} by an authenticated user {% endif %} before display.</p></div>
         {% endif %}
     </section>
 {% endblock %}
