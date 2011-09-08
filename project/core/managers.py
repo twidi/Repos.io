@@ -53,7 +53,10 @@ class AccountManager(SyncableModelManager):
         If defaults is given, it's content will be used to create the new Account
         """
         account = self.get_for_slug(backend, slug)
-        if not account:
+        if account:
+            if defaults:
+                account.update_many_fields(**defaults)
+        else:
             defaults = copy(defaults)
             allowed_fields = self.model._meta.get_all_field_names()
             defaults = dict((key, value) for key, value in defaults.items()
@@ -112,6 +115,9 @@ class RepositoryManager(SyncableModelManager):
             defaults['backend'] = backend.name
 
             repository = self.model(**defaults)
+        else:
+            if defaults:
+                repository.update_many_fields(**defaults)
 
         return repository
 

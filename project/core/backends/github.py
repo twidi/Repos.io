@@ -76,6 +76,8 @@ class GithubBackend(BaseBackend):
             homepage = 'blog',
             avatar = 'avatar_url',
             official_created = 'created_at',
+            official_followers_count = 'followers_count',
+            official_following_count = 'following_count',
         )
 
         result = {}
@@ -84,9 +86,6 @@ class GithubBackend(BaseBackend):
             value = getattr(user, backend_key, None)
             if value is not None:
                 result[internal_key] = value
-
-        result['official_followers_count'] = getattr(user, 'followers_count', 0) or 0
-        result['official_following_count'] = getattr(user, 'following_count', 0) or 0
 
         if 'avatar' not in result and getattr(user, 'gravatar_id', None):
                 result['avatar'] = 'http://www.gravatar.com/avatar/%s' % user.gravatar_id

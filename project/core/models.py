@@ -199,8 +199,6 @@ class SyncableModel(TimeStampedModel):
         it, but limit the fetch to the given limit (default 1)
         Returns the number of operations done
         """
-        if not self.fetch_related_needed():
-            return 0
         done = 0
         for operation in self.related_operations:
             if not self.fetch_related_allowed_for(operation[0]):
@@ -213,6 +211,26 @@ class SyncableModel(TimeStampedModel):
         if done:
             self.save()
         return done
+
+    def update_many_fields(self, **params):
+        """
+        Update many fields on the object using ones
+        found in `params`
+        """
+        if not params:
+            return
+        updated = 0
+        for param, value in params.items():
+            if not hasattr(self, param):
+                continue
+            field = getattr(self, param)
+            if not callable(field) and field != value:
+                print "%s : update %s from [%s] to [%s]" % (self, param, getattr(self,param), value)
+                setattr(self, param, value)
+                updated += 1
+        if updated:
+            self.save()
+        return updated
 
 
 class Account(SyncableModel):
