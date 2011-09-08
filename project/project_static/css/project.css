@@ -240,3 +240,10 @@ body#repository-home dd {
 body#repository-home .row:last-child section:last-child {
     text-align: center;
 }
+body#repository-home section.readme {
+    margin-top: -15px;
+}
+body#repository-home section.readme pre {
+    line-height: 1.1em;
+    font-size: 11px;
+}

@@ -9,7 +9,7 @@
 
         {% if repository.description %}
             Description :
-            <blockquote>{{ repository.description }}</blockquote>
+            <pre>{{ repository.description }}</pre>
         {% endif %}
 
         <dl>
@@ -44,5 +44,20 @@
     </section>
 
 </div>
+
+{% if repository.backend|supports:'repository_readme' %}
+    <section class="readme">
+        {% if repository.readme_modified %}
+            {% if repository.readme %}
+                Readme :
+                <pre>{{ repository.readme }}</pre>
+            {% else %}
+                No readme.
+            {% endif %}
+        {% else %}
+            Reame : <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
+        {% endif %}
+    </section>
+{% endif %}
 
 {% endblock repository_content %}

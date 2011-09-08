@@ -354,6 +354,9 @@ class Account(SyncableModel):
         """
         Fetch the accounts followed by this account
         """
+        if not self.get_backend().supports('user_following'):
+            return False
+
         # get all previous following
         old_following = dict((a.slug, a) for a in self.following.all())
 
@@ -447,6 +450,9 @@ class Account(SyncableModel):
         """
         Fetch the accounts following this account
         """
+        if not self.get_backend().supports('user_followers'):
+            return False
+
         # get all previous followers
         old_followers = dict((a.slug, a) for a in self.followers.all())
 
@@ -538,6 +544,9 @@ class Account(SyncableModel):
         """
         Fetch the repositories owned/watched by this account
         """
+        if not self.get_backend().supports('user_repositories'):
+            return False
+
         # get all previous repositories
         old_repositories = dict((r.project, r) for r in self.repositories.all())
 
@@ -758,6 +767,7 @@ class Repository(SyncableModel):
     # more about the content of the reopsitory
     default_branch = models.CharField(max_length=255, blank=True, null=True)
     readme = models.TextField(blank=True, null=True)
+    readme_type = models.CharField(max_length=10, blank=True, null=True)
     readme_modified = models.DateTimeField(blank=True, null=True)
 
     # The default manager
@@ -771,7 +781,7 @@ class Repository(SyncableModel):
         ('parent_fork', False, False),
         ('followers', True, True),
         ('contributors', True, True),
-    #    ('readme', False, True),
+        ('readme', False, True),
     )
 
 
@@ -852,6 +862,9 @@ class Repository(SyncableModel):
         """
         Create or update the repository's owner
         """
+        if not self.get_backend().supports('repository_owner'):
+            return False
+
         if not self.official_owner:
             if self.owner_id:
                 self.owner = None
@@ -884,6 +897,9 @@ class Repository(SyncableModel):
         Create of update the parent fork, only if needed and if we have the
         parent fork's name
         """
+        if not self.get_backend().supports('repository_parent_fork'):
+            return False
+
         if not (self.is_fork and self.official_fork_of):
             if self.parent_fork_id:
                 self.parent_fork = None
@@ -915,6 +931,9 @@ class Repository(SyncableModel):
         """
         Fetch the accounts following this repository
         """
+        if not self.get_backend().supports('repository_followers'):
+            return False
+
         # get all previous followers
         old_followers = dict((a.slug, a) for a in self.followers.all())
 
@@ -1006,6 +1025,9 @@ class Repository(SyncableModel):
         """
         Fetch the accounts following this repository
         """
+        if not self.get_backend().supports('repository_contributors'):
+            return False
+
         # get all previous contributors
         old_contributors = dict((a.slug, a) for a in self.contributors.all())
 
@@ -1133,5 +1155,27 @@ class Repository(SyncableModel):
         if not hasattr(self, '_contributors_slugs'):
             self._contributors_slugs = [f.slug for f in self.contributors.all()]
         return self._contributors_slugs
+
+    def fetch_readme(self):
+        """
+        Try to get a readme in the repository
+        """
+        if not self.get_backend().supports('repository_readme'):
+            return False
+
+        readme = self.get_backend().repository_readme(self)
+
+        if readme is not None:
+            if isinstance(readme, (list, tuple)):
+                readme_type = readme[1]
+                readme = readme[0]
+            else:
+                readme_type = 'txt'
+
+            self.readme = readme
+            self.readme_type = readme_type
+            self.readme_modified = datetime.now()
+            self.save()
+        return True
 
 from core.signals import *

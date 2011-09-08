@@ -7,6 +7,18 @@ from django.utils.functional import memoize
 
 from core.exceptions import InvalidIdentifiersForProject, BackendError
 
+#https://github.com/github/markup/
+README_NAMES = ('README', 'readme',)
+README_TYPES = (
+    ('txt', ('', 'txt',)),
+    ('rest', ('rst', 'rest',)),
+    ('markdown', ('md', 'mkd', 'mkdn', 'mdown', 'markdown',)),
+    ('textile', ('textile',)),
+    ('rdoc', ('rdoc',)),
+    ('org', ('org',)),
+    ('mediawiki', ('mediawiki', 'wiki',)),
+)
+
 class BaseBackend(object):
 
     name = None
@@ -17,7 +29,7 @@ class BaseBackend(object):
         user_following = False,
         user_repositories = False,
         repository_owner = False,
-        repository_fork = False,
+        repository_parent_fork = False,
         repository_followers = False,
         repository_contributors = False,
         repository_readme = False,
@@ -127,6 +139,12 @@ class BaseBackend(object):
         for identifier in self.needed_repository_identifiers:
             if not kwargs.get(identifier, False):
                 raise InvalidIdentifiersForProject(self)
+
+    def repository_readme(self):
+        """
+        Try to get a readme in the repository
+        """
+        raise NotImplementedError('Implement in subclass')
 
     @classmethod
     def enabled(cls):
