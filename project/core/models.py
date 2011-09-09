@@ -42,7 +42,7 @@ class SyncableModel(TimeStampedModel):
     backend = models.CharField(max_length=30, choices=BACKENDS_CHOICES)
 
     # A status field, using STATUS
-    status = StatusField(max_length=10)
+    status = StatusField(max_length=15)
 
     # Date of last own full fetch
     last_fetch = models.DateTimeField(blank=True, null=True)
