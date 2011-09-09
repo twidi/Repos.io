@@ -256,7 +256,7 @@ body#user-home .row:last-child section:last-child {
 body#repository-home dd {
     margin-bottom: 20px;
 }
-body#repository-home .row:last-child section:last-child {
+body#repository-home section#repository .row section:last-child {
     text-align: center;
 }
 body#repository-home section.readme {
