@@ -10,4 +10,5 @@ pip-log.txt
 *.vim
 *.sqlite
 settings_rules.py
+dump*.json
 
