@@ -1,0 +1,15 @@
+{% with repository=object STATIC_URL=object.haystack_context.STATIC_URL %}
+    <tr>
+        <td>
+            {% include "core/repositories/logo.html" %}
+            <strong>{% include "core/repositories/link.html" with no_owner=1 %}</strong>
+            {% if repository.description %}<blockquote>{{ repository.description }}</blockquote>{% endif %}
+        </td>
+        <td>
+            {% include "core/accounts/avatar.html" with account=repository.owner size=16 %}
+            {% include "core/accounts/link.html" with no_backend=1 account=repository.owner %}
+        </td>
+        <td>{% if repository.official_modified %}{{ repository.official_modified }}{% else %}-{% endif %}</td>
+    </tr>
+{% endwith %}
+

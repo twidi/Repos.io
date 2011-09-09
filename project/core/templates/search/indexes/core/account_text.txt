@@ -1,0 +1,3 @@
+{{ object.slug }}
+{{ object.slug_sort }}
+{{ object.name }}

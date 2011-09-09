@@ -261,6 +261,15 @@ class SyncableModel(TimeStampedModel):
             self.save()
         return updated
 
+    def haystack_context(self):
+        """
+        Return a dict haystack can use to render a template for this object,
+        as it does not, obviously, handle request and no context processors
+        """
+        return dict(
+            STATIC_URL = settings.STATIC_URL,
+        )
+
 
 class Account(SyncableModel):
     """

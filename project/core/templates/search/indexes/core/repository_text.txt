@@ -1,0 +1,13 @@
+{{ object.slug}}
+{{ object.slug }}
+{{ object.slug }}
+{{ object.slug }}
+{{ object.slug_sort }}
+{{ object.slug_sort }}
+{{ object.slug_sort }}
+{{ object.name }}
+{{ object.name }}
+{{ object.name }}
+{{ object.description }}
+{{ object.description }}
+{{ object.readme }}
