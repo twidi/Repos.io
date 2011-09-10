@@ -7,6 +7,7 @@ class AccountIndex(SearchIndex):
     slug = CharField(model_attr='slug')
     slug_sort = CharField(model_attr='slug_sort')
     name = CharField(model_attr='name', null=True)
+    renderer = CharField(use_template=True, indexed=False)
 site.register(Account, AccountIndex)
 
 class RepositoryIndex(SearchIndex):
@@ -14,6 +15,7 @@ class RepositoryIndex(SearchIndex):
     slug = CharField(model_attr='slug')
     slug_sort = CharField(model_attr='slug_sort')
     name = CharField(model_attr='name', null=True)
+    project = CharField(model_attr='project')
     description = CharField(model_attr='description', null=True)
     readme = CharField(model_attr='readme', null=True)
     renderer = CharField(use_template=True, indexed=False)

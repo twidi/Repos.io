@@ -1,0 +1,35 @@
+{% extends 'search/base.html' %}
+
+{% block search_content %}
+
+    {% if query %}
+
+        {% if page.paginator.count %}
+            <h2>{{ page.paginator.count }} results for <em>{{ query }}</em></h2>
+            <table class='zebra-striped accounts'>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Links</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for account in page.object_list %}
+                        {{ account.renderer|safe }}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        {%else %}
+            <h2>No results found for <em>{{ query }}</em></h2>
+        {% endif %}
+
+        {% if page.has_previous or page.has_next %}
+            <div>{{ page.render }}</div>
+        {% endif %}
+
+    {% endif %}
+
+{% endblock %}
+
+

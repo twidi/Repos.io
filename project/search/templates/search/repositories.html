@@ -1,16 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'search/base.html' %}
 
-{% block content %}
-    {% url search as url_search %}
-
-    <h1>Search repositories</h1>
-
-    <section>
-        <form method="get" action="." class="search_big">
-            <input class="xlInput" type="text" name="q" value="{{ query }}" />
-            <input class="btn primary" type="submit" value="Search" />
-        </form>
-        {% if query %}
+{% block search_suggestions %}
+    {% if query %}
         <p>
             Suggestions :
             {% for search in most_popular|slice:":5" %}
@@ -19,10 +10,10 @@
             {% endfor %}
             <span> - <a href="{{ url_search }}">En voir plus</a></span>
         </p>
-        {% endif %}
-    </section>
+    {% endif %}
+{% endblock %}
 
-    <hr />
+{% block search_content %}
 
     {% if query %}
 

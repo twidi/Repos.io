@@ -1,0 +1,11 @@
+{% with account=object STATIC_URL=object.haystack_context.STATIC_URL %}
+    <tr>
+        <td>
+            {% include "core/accounts/avatar.html" %}
+            {% include "core/accounts/link.html" %}
+        </td>
+        <td>
+            {% include "core/accounts/links.html" %}
+        </td>
+    </tr>
+{% endwith %}
