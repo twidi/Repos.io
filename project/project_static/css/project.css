@@ -29,6 +29,12 @@ small {
     cursor: default;
 }
 
+td small a {
+    color: #999;
+}
+td small a:hover {
+    color: #999;
+}
 /* Do not visually "select" elements in topbar's sub-menu when their "parent" is selected */
 .topbar li.active li a {
     background-color: transparent;

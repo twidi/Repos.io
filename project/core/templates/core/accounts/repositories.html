@@ -28,7 +28,7 @@
                     {% if account.backend|supports:'repository_owner' and not owner_only  %}
                         {% include "core/sort_th.html" with color="blue" key="owner" name="Owner" param1_key="owner-only" param1_value=owner_only %}
                     {% endif %}
-                    {% include "core/sort_th.html" with color="green" key="updated" name="Update" default_reverse=1 param1_key="owner-only" param1_value=owner_only %}
+                    {% include "core/sort_th.html" with color="green" key="updated" name="Updated" default_reverse=1 param1_key="owner-only" param1_value=owner_only %}
                 </tr>
             </thead>
             <tbody>
@@ -37,6 +37,18 @@
                     <td>
                         {% include "core/repositories/logo.html" %}</strong>
                         <strong>{% include "core/repositories/link.html" with no_backend=1 no_owner=1 %}</strong>
+                        {% if repository.backend|supports:"repository_parent_fork" and repository.is_fork %}
+                        <small>/
+                            {% if repository.parent_fork %}
+                                Fork of
+                                {% include "core/repositories/link.html" with no_backend=1 no_owner=1 repository=repository.parent_fork %}
+                                by
+                                {% include "core/accounts/link.html" with no_backend=1 account=repository.parent_fork.owner %}
+                            {% else %}
+                                It's a fork
+                            {% endif %}
+                        </small>
+                        {% endif %}
                         {% if repository.description %}<blockquote>{{ repository.description }}</blockquote>{% endif %}
                     </td>
                     {% if account.backend|supports:'repository_owner' and not owner_only  %}
