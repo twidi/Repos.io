@@ -4,7 +4,7 @@
     {% if current_page.has_previous %}
         <li class="prev"><a href="?{{ current_page.previous_page_number.querystring }}">&larr; {% trans "previous" %}</a></li>
     {% else %}
-        <li class="disabled prev"><a href='#'>&lsaquo;&lsaquo; {% trans "previous" %}</a></li>
+        <li class="disabled prev"><a href='#'>&larr; {% trans "previous" %}</a></li>
     {% endif %}
     {% for page in current_page.pages %}
         {% if page %}
@@ -20,7 +20,7 @@
     {% if current_page.has_next %}
         <li class="next"><a href="?{{ current_page.next_page_number.querystring }}">{% trans "next" %} &rarr;</a></li>
     {% else %}
-        <li class="disabled next"><a href='#'>{% trans "next" %} &rsaquo;&rsaquo;</a></li>
+        <li class="disabled next"><a href='#'>{% trans "next" %} &rarr;</a></li>
     {% endif %}
 </ul>
 </div>
