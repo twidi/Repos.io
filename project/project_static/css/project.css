@@ -20,12 +20,28 @@ small {
     margin-bottom: 5px;
 }
 
+.pagination ul {
+    display: table;
+    margin: 0 auto;
+    float: none;
+}
+.pagination .active a, .pagination .disabled a {
+    cursor: default;
+}
+
 /* Do not visually "select" elements in topbar's sub-menu when their "parent" is selected */
 .topbar li.active li a {
     background-color: transparent;
 }
 .topbar li.active li.active a {
     background-color: rgba(0, 0, 0, 0.5)
+}
+.topbar form {
+    left: 50%;
+    width: 350px;
+    position: absolute;
+    margin-left: -175px;
+    float: none;
 }
 
 /* first level section */
@@ -240,7 +256,7 @@ body#user-home .row:last-child section:last-child {
 body#repository-home dd {
     margin-bottom: 20px;
 }
-body#repository-home .row:last-child section:last-child {
+body#repository-home section#repository .row section:last-child {
     text-align: center;
 }
 body#repository-home section.readme {

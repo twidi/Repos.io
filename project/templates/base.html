@@ -25,6 +25,11 @@
                 <li><a href="http://github.com/twidi/Repos.io/">About</a></li>
             </ul>
 
+            <form method="get" action="{% url search %}">
+                <input type="text" name="q" value="{{ query }}" />
+                <input type="submit" value="Search" />
+            </form>
+
             <ul class="nav secondary-nav">
 
                 {% if user.is_authenticated %}

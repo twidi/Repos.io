@@ -4,6 +4,8 @@ django==1.3
 django-extensions
 -e git+git://github.com/twidi/django-model-utils.git#egg=django-model-utils
 -e git+git://github.com/twidi/django-globals.git#egg=django-globals
+#django-pure-pagination ( bug if % in querystring : https://github.com/jamespacileo/django-pure-pagination/pull/6)
+-e git+git://github.com/twidi/django-pure-pagination.git#egg=django-pure-pagination
 
 # python tools
 debug
@@ -16,7 +18,10 @@ docutils
 -e git+git://github.com/twidi/python-github2.git#egg=python-github2
 
 # django apps
--e git+git://github.com/twidi/django-favorites.git#egg=django-favorites
+haystack
+#saved_searches (we need more recent version)
+-e git+git://github.com/twidi/saved_searches.git#egg=saved_searches
+#-e git+git://github.com/twidi/django-favorites.git#egg=django-favorites
 
 # registration/providers
 #django-social-auth (a bug in the github implementation : https://github.com/omab/django-social-auth/pull/135 )

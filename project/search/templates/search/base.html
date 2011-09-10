@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% url search as url_search %}
+    {% url search_accounts as url_search_accounts %}
+
+    <h1>Search</h1>
+
+        <form method="get" action="." class="search_big">
+            <input class="xlInput" type="text" name="q" value="{{ query }}" />
+            <input class="btn primary" type="submit" value="Search" />
+        </form>
+
+    {% block search_suggestions %}{% endblock %}
+
+    <ul class="tabs">
+        <li{% if subsection == 'repositories' %} class="active"{% endif %}><a href="{{ url_search }}?q={{ query }}">Search for repositories</a></li>
+        <li{% if subsection == 'accounts' %} class="active"{% endif %}><a href="{{ url_search_accounts }}?q={{ query }}">Search for accounts</a></li>
+    </ul>
+
+    {% block search_content %}{% endblock %}
+
+{% endblock %}

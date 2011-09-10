@@ -12,6 +12,13 @@ def design(request):
     if request.path == '/':
         section = 'home'
 
+    elif request.path.startswith('/search/'):
+        section = 'search'
+        if request.path.startswith('/search/users/'):
+            subsection = 'accounts'
+        else:
+            subsection = 'repositories'
+
     elif request.path.startswith('/accounts/'):
         section = 'accounts'
         try:

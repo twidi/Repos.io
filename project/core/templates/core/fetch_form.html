@@ -26,6 +26,10 @@
             </button>
         </form>
     {% else %}
-        {% if not for_related or obj.last_fetch %}<em class='fetch-date'>Last fetch{% if for_related %} of related{% endif %} on {% if for_related %}{{ obj.last_fetch_related|default:'never' }}{% else %}{{ obj.last_fetch|default:'never' }}{% endif %}</em>{% endif %}
+        {% if for_related and not obj.last_fetch %}
+            <em>A first fetch is needed before fetching related</em>
+        {% else %}
+            {% if not for_related or obj.last_fetch %}<em class='fetch-date'>Last fetch{% if for_related %} of related{% endif %} on {% if for_related %}{{ obj.last_fetch_related|default:'never' }}{% else %}{{ obj.last_fetch|default:'never' }}{% endif %}</em>{% endif %}
+        {% endif %}
     {% endif %}
 {% endif %}

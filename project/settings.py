@@ -139,10 +139,14 @@ INSTALLED_APPS = (
     'django_extensions',
     'social_auth',
     'django_globals',
+    'haystack',
+    'saved_searches',
+    'pure_pagination',
 
     # ours
     'core',
     'accounts',
+    'search',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -189,6 +193,12 @@ LOGIN_ERROR_URL = '/accounts/login/'
 
 # enabled site backends
 CORE_ENABLED_BACKENDS = ('github', )
+
+# haystack
+HAYSTACK_SITECONF = 'project.search_sites'
+HAYSTACK_SEARCH_ENGINE = 'whoosh'
+# whoosh
+HAYSTACK_WHOOSH_PATH = os.path.join(PROJECT_PATH, 'whoosh')
 
 # metasettings
 try:
