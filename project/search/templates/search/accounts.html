@@ -9,8 +9,10 @@
             <table class='zebra-striped accounts'>
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Links</th>
+                        {% if page.paginator.count == 1 %}
+                            {% include "core/sort_th.html" with color="orange" key="name" name="Name" param1_key="q" param1_value=query %}
+                            <th>Links</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
