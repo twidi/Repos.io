@@ -37,6 +37,9 @@ class CoreSearchView(PurePaginationSearchView):
         super(CoreSearchView, self).__init__(*args, **kwargs)
 
     def get_sort(self):
+        """
+        Prepare (with validiti check) sorting key
+        """
         if not hasattr(self.request, '_haystack_sort'):
             self.request._haystack_sort = None
             if self.sort_map:
@@ -50,18 +53,23 @@ class CoreSearchView(PurePaginationSearchView):
         return self._haystack_sort
 
     def get_results(self):
+        """
+        Limit to a model, and sort if needed
+        """
         results = super(CoreSearchView, self).get_results()
 
         queryset = results.models(self.model)
 
         sort = self.get_sort()
-        print sort
         if sort and sort['db_sort']:
             queryset = queryset.order_by(sort['db_sort'])
 
         return queryset
 
     def extra_context(self):
+        """
+        Add sorting infos in context
+        """
         context = {}
         context.update(super(CoreSearchView, self).extra_context())
         context['sort'] = self.get_sort()
