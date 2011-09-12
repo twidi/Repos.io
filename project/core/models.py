@@ -82,12 +82,12 @@ class SyncableModel(TimeStampedModel):
             self._backend = get_backend(self.backend)
         return self._backend
 
-    def get_new_status(self):
+    def get_new_status(self, for_save=False):
         """
         Return the status to be saved
         """
         # no id, object is in creating mode
-        if not self.id:
+        if not self.id and not for_save:
             return self.STATUS.creating
 
         # Never fetched of fetched "long" time ago => fetch needed
@@ -110,19 +110,12 @@ class SyncableModel(TimeStampedModel):
         # else, default ok
         return self.STATUS.ok
 
-    def update_status(self):
-        """
-        Simply get and save the current status (can be updated because of datetime delta)
-        """
-        self.status = self.get_new_status()
-        self.save()
-
     def save(self, *args, **kwargs):
         """
         Save is forbidden while in the backend...
         Also update the status before saving
         """
-        self.status = self.get_new_status()
+        self.status = self.get_new_status(for_save=True)
         super(SyncableModel, self).save(*args, **kwargs)
 
     def fetch_needed(self):
@@ -237,7 +230,7 @@ class SyncableModel(TimeStampedModel):
             if len(exceptions) == 1:
                 raise exceptions[0]
             else:
-                raise MultipleBackendError([e.message for e in exceptions])
+                raise MultipleBackendError([str(e) for e in exceptions])
 
         return done
 
@@ -809,11 +802,11 @@ class Repository(SyncableModel):
     def __unicode__(self):
         return u'%s' % self.get_project()
 
-    def get_new_status(self):
+    def get_new_status(self, for_save=False):
         """
         Return the status to be saved
         """
-        default = super(Repository, self).get_new_status()
+        default = super(Repository, self).get_new_status(for_save=for_save)
         if default != self.STATUS.ok:
             return default
 
