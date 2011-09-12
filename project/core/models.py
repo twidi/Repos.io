@@ -859,6 +859,8 @@ class Repository(SyncableModel):
 
         self.save()
 
+        return True
+
     def save(self, *args, **kwargs):
         """
         Update the project and sortable fields
