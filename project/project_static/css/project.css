@@ -277,3 +277,32 @@ body#repository-home section.readme pre {
 body#user-repositories p.row span:last-child {
     text-align: right;
 }
+
+/* Notes */
+#note-edit form {
+    padding: 0;
+    margin: 0;
+}
+#note-edit form .modal-body {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+#note-edit form textarea {
+    width: 510px;
+}
+#note-button p {
+    margin-top: -20px;
+    margin-bottom: 15px;
+}
+#note {
+    margin-bottom: -10px;
+}
+#note > a:nth-child(2) {
+    float: right;
+}
+#note > div.well {
+    padding: 9px;
+}
+#note > div.well > p:last-child {
+    margin-bottom: 0;
+}

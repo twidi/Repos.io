@@ -2,15 +2,25 @@ from django.shortcuts import render
 
 from core.views.decorators import check_account, check_support
 from core.views.sort import get_repository_sort, get_account_sort
+from user_notes.forms import NoteForm
 
 @check_account
 def home(request, backend, slug, account=None):
     """
     Home page of an account
     """
-    return render(request, 'core/accounts/home.html', dict(
+    note = account.get_user_note()
+
+    context = dict(
+        note = note,
         account = account,
-    ))
+    )
+
+    if 'edit_note' in request.GET:
+        context['note_form'] = NoteForm(instance=note) if note else NoteForm(noted_object=account)
+
+
+    return render(request, 'core/accounts/home.html', context)
 
 
 @check_support('user_followers')

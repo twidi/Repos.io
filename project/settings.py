@@ -142,11 +142,13 @@ INSTALLED_APPS = (
     'haystack',
     'saved_searches',
     'pure_pagination',
+    'notes',
 
     # ours
     'core',
     'accounts',
     'search',
+    'user_notes',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -199,6 +201,9 @@ HAYSTACK_SITECONF = 'project.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'whoosh'
 # whoosh
 HAYSTACK_WHOOSH_PATH = os.path.join(PROJECT_PATH, 'whoosh')
+
+# notes
+NOTES_ALLOWED_MODELS = ('core.account', 'core.repository',)
 
 # metasettings
 try:

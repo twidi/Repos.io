@@ -14,6 +14,8 @@ from core.managers import AccountManager, RepositoryManager
 from core.utils import slugify
 from core.exceptions import BackendError, MultipleBackendError
 
+from user_notes.views import get_user_note_for_object
+
 BACKENDS_CHOICES = Choices(*BACKENDS.keys())
 
 class SyncableModel(TimeStampedModel):
@@ -269,6 +271,12 @@ class SyncableModel(TimeStampedModel):
         return dict(
             STATIC_URL = settings.STATIC_URL,
         )
+
+    def get_user_note(self):
+        """
+        Return the note for the current user
+        """
+        return get_user_note_for_object(self)
 
 
 class Account(SyncableModel):
