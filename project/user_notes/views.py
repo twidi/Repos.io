@@ -8,7 +8,7 @@ from django.http import HttpResponseNotAllowed
 
 from notes.models import Note
 
-from user_notes.forms import NoteForm
+from user_notes.forms import NoteForm, NoteDeleteForm
 
 def get_user_note_for_object(obj):
     """
@@ -42,5 +42,24 @@ def save(request):
         if not noted_object:
             return HttpResponseNotAllowed('Vilain :)')
         messages.error(request, 'We were unable to save your note !')
+
+    return redirect(noted_object)
+
+@require_POST
+@login_required
+def delete(request):
+    """
+    Delete a note for the current user
+    """
+    form = NoteDeleteForm(request.POST)
+    if form.is_valid():
+        noted_object = form.get_noted_object()
+        form.save()
+        messages.success(request, 'Your private note was deleted')
+    else:
+        noted_object = form.get_noted_object()
+        if not noted_object:
+            return HttpResponseNotAllowed('Vilain :)')
+        messages.error(request, 'We were unable to delete note !')
 
     return redirect(noted_object)

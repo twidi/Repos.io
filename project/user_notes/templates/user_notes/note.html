@@ -3,7 +3,7 @@
     <div class="span-two-thirds">
         {% if note_form %}
             <section id="note-edit" class="modal">
-            <form action="{% url note_save %}" method="POST" class="form-stacked">{% csrf_token %}
+            <form action="{% url note_save %}" method="POST" id="note-form" class="form-stacked">{% csrf_token %}
                     <header class="modal-header">
                         <h3>{% if note %}Edit your private note{% else %}Add a private note{% endif %}</h3>
                         <a class="close" href=".">&times;</a>
@@ -14,11 +14,17 @@
                         <a class="btn secondary" href=".">Cancel</a>
                     </footer>
                 </form>
+                {% if note_delete_form %}
+                    <form action="{% url note_delete %}" method="POST" id="note-delete-form">{% csrf_token %}
+                        {{ note_delete_form.as_p }}
+                        <input class="btn error" type="submit" name="submit" value="Delete your note" />
+                    </form>
+                {% endif %}
             </section>
         {% else %}
             {% if note %}
                 <section id="note">
-                    Your <strong>private</strong> note <a href="./?edit_note" title="Edit your private note"><small>edit</small></a>
+                    Your <strong>private</strong> note <a href="./?edit_note" title="Edit your private note (you'll be able to delete it too)"><small>edit</small></a>
                     <div class="sticky taped">{{ note.rendered_content|safe }}</div>
                 </section>
             {% else %}

@@ -290,6 +290,12 @@ body#user-repositories p.row span:last-child {
 #note-edit form textarea {
     width: 510px;
 }
+#note-edit form#note-delete-form {
+    position: absolute;
+    display: inline-block;
+    bottom: 15px;
+    left: 20px;
+}
 #note-button p {
     margin-top: -20px;
     margin-bottom: 15px;

@@ -1,8 +1,10 @@
 from django.shortcuts import render
+from django.contrib import messages
+from django.shortcuts import redirect
 
 from core.views.decorators import check_account, check_support
 from core.views.sort import get_repository_sort, get_account_sort
-from user_notes.forms import NoteForm
+from user_notes.forms import NoteForm, NoteDeleteForm
 
 @check_account
 def home(request, backend, slug, account=None):
@@ -17,7 +19,13 @@ def home(request, backend, slug, account=None):
     )
 
     if 'edit_note' in request.GET:
+        if not (request.user and request.user.is_authenticated()):
+            messages.error(request, 'You must bo logged in to add/edit/delete your notes')
+            return redirect(account)
+
         context['note_form'] = NoteForm(instance=note) if note else NoteForm(noted_object=account)
+        if note:
+            context['note_delete_form'] = NoteDeleteForm(instance=note)
 
 
     return render(request, 'core/accounts/home.html', context)
