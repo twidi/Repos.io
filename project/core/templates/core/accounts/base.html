@@ -17,7 +17,9 @@
                 {% include "core/accounts/fetch_form.html" %}{% include "core/accounts/fetch_form.html" with for_related=1 %}
             </div>
         </header>
+
         {% if subsection == 'home' %}{% include "user_notes/note.html" with obj=account %}{% endif %}
+
         {% if account.last_fetch %}
             <ul class="tabs">
                 <li{% if subsection == 'home' %} class="active"{% endif %}><a href="{{ account.get_absolute_url }}">Home</a></li>
