@@ -1,0 +1,3 @@
+{% with repository=object %}
+    {% if repository.official_modified %}{{ repository.official_modified }}{% else %}-{% endif %}
+{% endwith %}

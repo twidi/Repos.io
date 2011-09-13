@@ -1,38 +1,41 @@
 {% extends "core/repositories/base.html" %}
+{% load user_notes_tags %}
 {% block title %}Followers of {{ block.super }}{% endblock %}
 {% block repository_content %}
 
     {% if repository.followers_modified %}
 
         {% if sorted_followers %}
+            {% prepare_notes sorted_followers %}
 
-        <p>{{ repository.slug }} (by {{ repository.owner.slug }}) is followed by {{ repository.followers_count }} people : <small>(last fetch on {{ repository.followers_modified }})</small></p>
+            <p>{{ repository.slug }} (by {{ repository.owner.slug }}) is followed by {{ repository.followers_count }} people : <small>(last fetch on {{ repository.followers_modified }})</small></p>
 
-        <table class='zebra-striped accounts with_owner'>
-            <thead>
-                <tr>
-                    {% include "core/sort_th.html" with color="orange" key="name" name="Name" %}
-                    <th class="blue">Owner</th>
-                    <th class="purple">Contributor</th>
-                    <th class="green">Links</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for follower in sorted_followers %}
-                <tr>
-                    <td>
-                        {% include "core/accounts/avatar.html" with account=follower %}
-                        {% include "core/accounts/link.html" with no_backend=1 account=follower %}
-                    </td>
-                    {% if follower.id = repository.owner.id %}<td title="{{ follower.slug }} is the owner of {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
-                    {% if follower.slug in repository.contributors_slugs %}<td title="{{ follower.slug }} is/was a contributor of {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
-                    <td>
-                        {% include "core/accounts/links.html" with account=follower %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            <table class='zebra-striped accounts with_extras'>
+                <thead>
+                    <tr>
+                        {% include "core/sort_th.html" with color="orange" key="name" name="Name" %}
+                        <th class="blue">Owner</th>
+                        <th class="purple">Contributor</th>
+                        <th class="green">Links</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for follower in sorted_followers %}
+                    <tr>
+                        <td>
+                            {% include "core/accounts/avatar.html" with account=follower %}
+                            {% include "core/accounts/link.html" with no_backend=1 account=follower %}
+                            {% include "core/list_extra.html" with obj=follower %}
+                        </td>
+                        {% if follower.id = repository.owner.id %}<td title="{{ follower.slug }} is the owner of {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
+                        {% if follower.slug in repository.contributors_slugs %}<td title="{{ follower.slug }} is/was a contributor of {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
+                        <td>
+                            {% include "core/accounts/links.html" with account=follower %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
 
         {% else %}
             <p>{{ repository.slug }} doesn't have any follower</p>

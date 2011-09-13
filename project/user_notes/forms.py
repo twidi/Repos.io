@@ -1,11 +1,9 @@
 from django import forms
-from django.conf import settings
 
 from django_globals import globals
 
 from notes.models import Note, Topic
-
-ALLOWED_MODELS = settings.NOTES_ALLOWED_MODELS
+from user_notes.models import ALLOWED_MODELS
 
 class NoteBaseForm(forms.ModelForm):
     """

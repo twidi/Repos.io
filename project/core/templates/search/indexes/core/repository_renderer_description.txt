@@ -1,0 +1,3 @@
+{% with repository=object %}
+    {% if repository.description %}<blockquote>{{ repository.description }}</blockquote>{% endif %}
+{% endwith %}

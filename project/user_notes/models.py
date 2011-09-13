@@ -1,3 +1,3 @@
-from django.db import models
+from django.conf import settings
 
-# Create your models here.
+ALLOWED_MODELS = settings.NOTES_ALLOWED_MODELS

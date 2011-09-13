@@ -138,6 +138,16 @@ table.zebra-striped th.purple.header:after {
   border-color: #7a43b6 transparent;
 }
 
+/* Tables with an extra div info in the last column */
+table.with_extras div.extra {
+    float: right;
+    margin: 0 5px;
+}
+table.repositories.with_extras div.extra,
+table.accounts.with_extras div.extra {
+    margin-top: 8px;
+}
+
 
 /* Style repositories table */
 table.repositories blockquote {

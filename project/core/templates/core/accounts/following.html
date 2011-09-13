@@ -1,36 +1,39 @@
 {% extends "core/accounts/base.html" %}
+{% load user_notes_tags %}
 {% block title %}Following of {{ block.super }}{% endblock %}
 {% block account_content %}
 
     {% if account.following_modified %}
 
         {% if sorted_following %}
+            {% prepare_notes sorted_following %}
 
-        <p>{{ account.slug }} follows {{ account.following_count }} people : <small>(last fetch on {{ account.following_modified }})</small></p>
+            <p>{{ account.slug }} follows {{ account.following_count }} people : <small>(last fetch on {{ account.following_modified }})</small></p>
 
-        <table class='zebra-striped accounts'>
-            <thead>
-                <tr>
-                    {% include "core/sort_th.html" with color="orange" key="name" name="Name" %}
-                    <th class="blue">Reciprocity</th>
-                    <th class="green">Links</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for following in sorted_following %}
-                <tr>
-                    <td>
-                        {% include "core/accounts/avatar.html" with account=following %}
-                        {% include "core/accounts/link.html" with no_backend=1 account=following %}
-                    </td>
-                    {% if following.slug in account.followers_slugs %}<td title="{{ following.slug }} follows {{ account.slug }} too !">&check;</td>{% else %}<td></td>{% endif %}
-                    <td>
-                        {% include "core/accounts/links.html" with account=following %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+            <table class='zebra-striped accounts with_extras'>
+                <thead>
+                    <tr>
+                        {% include "core/sort_th.html" with color="orange" key="name" name="Name" %}
+                        <th class="blue">Reciprocity</th>
+                        <th class="green">Links</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for following in sorted_following %}
+                    <tr>
+                        <td>
+                            {% include "core/accounts/avatar.html" with account=following %}
+                            {% include "core/accounts/link.html" with no_backend=1 account=following %}
+                            {% include "core/list_extra.html" with obj=following %}
+                        </td>
+                        {% if following.slug in account.followers_slugs %}<td title="{{ following.slug }} follows {{ account.slug }} too !">&check;</td>{% else %}<td></td>{% endif %}
+                        <td>
+                            {% include "core/accounts/links.html" with account=following %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
 
         {% else %}
             <p>{{ account.slug }} doesn't follow anyone</p>

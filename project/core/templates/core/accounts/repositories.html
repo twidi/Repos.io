@@ -1,4 +1,5 @@
 {% extends "core/accounts/base.html" %}
+{% load user_notes_tags %}
 {% load reposio_core %}
 {% block title %}Repositories of {{ block.super }}{% endblock %}
 {% block account_content %}
@@ -6,62 +7,64 @@
     {% if account.repositories_modified %}
 
         {% if sorted_repositories %}
+            {% prepare_notes sorted_repositories %}
 
-        <p class="row">
-            <span class="span10">Here are the {{ sorted_repositories|length }} repositories {% if owner_only %}<strong>owned</strong>{% else %}followed/owned{% endif %} by {{ account.slug }}: <small>(last fetch on {{ account.repositories_modified }})</small></span>
+            <p class="row">
+                <span class="span10">Here are the {{ sorted_repositories|length }} repositories {% if owner_only %}<strong>owned</strong>{% else %}followed/owned{% endif %} by {{ account.slug }}: <small>(last fetch on {{ account.repositories_modified }})</small></span>
 
-            <span class="span6">
-                {% if account.backend|supports:'repository_owner' %}
-                    {% if owner_only %}
-                    <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}" class="btn error">Return to all repositories</a>
-                    {% else %}
-                        <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}&amp;owner-only=y" class="btn success">See only ones owned by {{ account.slug }}</a>
-                    {% endif %}
-                {% endif %}
-            </span>
-        </p>
-
-        <table class='zebra-striped repositories'>
-            <thead>
-                <tr>
-                    {% include "core/sort_th.html" with color="orange" key="name" name="Name" param1_key="owner-only" param1_value=owner_only %}
-                    {% if account.backend|supports:'repository_owner' and not owner_only  %}
-                        {% include "core/sort_th.html" with color="blue" key="owner" name="Owner" param1_key="owner-only" param1_value=owner_only %}
-                    {% endif %}
-                    {% include "core/sort_th.html" with color="green" key="updated" name="Updated" default_reverse=1 param1_key="owner-only" param1_value=owner_only %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for repository in sorted_repositories %}
-                <tr>
-                    <td>
-                        {% include "core/repositories/logo.html" %}</strong>
-                        <strong>{% include "core/repositories/link.html" with no_backend=1 no_owner=1 %}</strong>
-                        {% if repository.backend|supports:"repository_parent_fork" and repository.is_fork %}
-                        <small>/
-                            {% if repository.parent_fork %}
-                                Fork of
-                                {% include "core/repositories/link.html" with no_backend=1 no_owner=1 repository=repository.parent_fork %}
-                                by
-                                {% include "core/accounts/link.html" with no_backend=1 account=repository.parent_fork.owner %}
-                            {% else %}
-                                It's a fork
-                            {% endif %}
-                        </small>
+                <span class="span6">
+                    {% if account.backend|supports:'repository_owner' %}
+                        {% if owner_only %}
+                        <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}" class="btn error">Return to all repositories</a>
+                        {% else %}
+                            <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}&amp;owner-only=y" class="btn success">See only ones owned by {{ account.slug }}</a>
                         {% endif %}
-                        {% if repository.description %}<blockquote>{{ repository.description }}</blockquote>{% endif %}
-                    </td>
-                    {% if account.backend|supports:'repository_owner' and not owner_only  %}
-                        <td>
-                            {% include "core/accounts/avatar.html" with account=repository.owner size=16 %}
-                            {% include "core/accounts/link.html" with no_backend=1 account=repository.owner %}
-                        </td>
                     {% endif %}
-                    <td>{% if repository.official_modified %}{{ repository.official_modified }}{% else %}-{% endif %}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </span>
+            </p>
+
+            <table class='zebra-striped repositories with_extras'>
+                <thead>
+                    <tr>
+                        {% include "core/sort_th.html" with color="orange" key="name" name="Name" param1_key="owner-only" param1_value=owner_only %}
+                        {% if account.backend|supports:'repository_owner' and not owner_only  %}
+                            {% include "core/sort_th.html" with color="blue" key="owner" name="Owner" param1_key="owner-only" param1_value=owner_only %}
+                        {% endif %}
+                        {% include "core/sort_th.html" with color="green" key="updated" name="Updated" default_reverse=1 param1_key="owner-only" param1_value=owner_only %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for repository in sorted_repositories %}
+                    <tr>
+                        <td>
+                            {% include "core/repositories/logo.html" %}</strong>
+                            <strong>{% include "core/repositories/link.html" with no_backend=1 no_owner=1 %}</strong>
+                            {% if repository.backend|supports:"repository_parent_fork" and repository.is_fork %}
+                            <small>/
+                                {% if repository.parent_fork %}
+                                    Fork of
+                                    {% include "core/repositories/link.html" with no_backend=1 no_owner=1 repository=repository.parent_fork %}
+                                    by
+                                    {% include "core/accounts/link.html" with no_backend=1 account=repository.parent_fork.owner %}
+                                {% else %}
+                                    It's a fork
+                                {% endif %}
+                            </small>
+                            {% endif %}
+                            {% include "core/list_extra.html" with obj=repository %}
+                            {% if repository.description %}<blockquote>{{ repository.description }}</blockquote>{% endif %}
+                        </td>
+                        {% if account.backend|supports:'repository_owner' and not owner_only  %}
+                            <td>
+                                {% include "core/accounts/avatar.html" with account=repository.owner size=16 %}
+                                {% include "core/accounts/link.html" with no_backend=1 account=repository.owner %}
+                            </td>
+                        {% endif %}
+                        <td>{% if repository.official_modified %}{{ repository.official_modified }}{% else %}-{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
 
         {% else %}
             <p>{{ account.slug }} doesn't watch/own any repository</p>

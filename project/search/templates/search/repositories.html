@@ -1,4 +1,5 @@
 {% extends 'search/base.html' %}
+{% load user_notes_tags %}
 {% block title %}Search for "{{ query }}" in repositories on {% endblock %}
 {% block search_suggestions %}
     {% if query %}
@@ -18,8 +19,9 @@
     {% if query %}
 
         {% if page.paginator.count %}
+            {% prepare_notes page.object_list %}
             <h2>{{ page.paginator.count }} results for <em>{{ query }}</em></h2>
-            <table class='zebra-striped repositories'>
+            <table class='zebra-striped repositories with_extras'>
                 <thead>
                     <tr>
                         {% if page.paginator.count == 1 %}
@@ -35,7 +37,19 @@
                 </thead>
                 <tbody>
                     {% for repository in page.object_list %}
-                        {{ repository.renderer|safe }}
+                        <tr>
+                            <td>
+                                {{ repository.renderer_main|safe }}
+                                {% include "core/list_extra.html" with obj=repository %}
+                                {{ repository.renderer_description|safe }}
+                            </td>
+                            <td>
+                                {{ repository.renderer_owner|safe }}
+                            </td>
+                            <td>
+                                {{ repository.renderer_updated|safe }}
+                            </td>
+                        </tr>
                     {% endfor %}
                 </tbody>
             </table>
