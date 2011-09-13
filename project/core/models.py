@@ -223,7 +223,7 @@ class SyncableModel(TimeStampedModel):
                     params['update_related_objects'] = update_related_objects
                 if action(**params):
                     done += 1
-            except:
+            except Exception, e:
                 exceptions.append(e)
 
             if limit and done >= limit:
@@ -996,7 +996,7 @@ class Repository(SyncableModel):
             new_followers = {}
 
         # get and save new followings
-        followers_list = self.get_backend().repository_followers(self)
+        followers_list = self.get_backend().repository_followers(self, access_token=access_token)
         count = 0
         for gaccount in followers_list:
             account = self.add_follower(gaccount, False, update_related_objects)
@@ -1097,7 +1097,7 @@ class Repository(SyncableModel):
             new_contributors = {}
 
         # get and save new followings
-        contributors_list = self.get_backend().repository_contributors(self)
+        contributors_list = self.get_backend().repository_contributors(self, access_token=access_token)
         count = 0
         for gaccount in contributors_list:
             account = self.add_contributor(gaccount, False, update_related_objects)

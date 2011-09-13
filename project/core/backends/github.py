@@ -305,16 +305,20 @@ class GithubBackend(BaseBackend):
     def repository_readme(self, repository, access_token=None):
         """
         Try to get a readme in the repository
+        # WARNING: It seems that an access token cannot be used to get list of
+        commits or a commit's detail (raise a 401)
         """
         # get/create the github instance
-        github = self.github(access_token)
+        github = github_anonymous = self.github()
+        if access_token:
+            github = self.github(access_token)
 
         # try with each name
         commits = None
         for name in README_NAMES:
             # we start by getting the last commit id for a file starting with this name
             try:
-                commits = github.commits.list(
+                commits = github_anonymous.commits.list(
                     project = repository.project,
                     branch = repository.default_branch or 'master',
                     file = '%s*' % name
@@ -337,7 +341,7 @@ class GithubBackend(BaseBackend):
 
             # get more information about this commit
             try:
-                commit_infos = github.commits.show(repository.project, commits[0].id)
+                commit_infos = github_anonymous.commits.show(repository.project, commits[0].id)
             except Exception, e:
                 raise self._get_exception(e, '%s\'s commits' % repository.project)
 
