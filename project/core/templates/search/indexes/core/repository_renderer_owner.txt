@@ -1,0 +1,5 @@
+{% with repository=object STATIC_URL=object.haystack_context.STATIC_URL %}
+    {% include "core/accounts/avatar.html" with account=repository.owner size=16 %}
+    {% include "core/accounts/link.html" with no_backend=1 account=repository.owner %}
+{% endwith %}
+

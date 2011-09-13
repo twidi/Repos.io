@@ -138,6 +138,16 @@ table.zebra-striped th.purple.header:after {
   border-color: #7a43b6 transparent;
 }
 
+/* Tables with an extra div info in the last column */
+table.with_extras div.extra {
+    float: right;
+    margin: 0 5px;
+}
+table.repositories.with_extras div.extra,
+table.accounts.with_extras div.extra {
+    margin-top: 8px;
+}
+
 
 /* Style repositories table */
 table.repositories blockquote {
@@ -262,7 +272,7 @@ body#user-home .row:last-child section:last-child {
 body#repository-home dd {
     margin-bottom: 20px;
 }
-body#repository-home section#repository .row section:last-child {
+body#repository-home #repository-main section:last-child {
     text-align: center;
 }
 body#repository-home section.readme {
@@ -277,3 +287,73 @@ body#repository-home section.readme pre {
 body#user-repositories p.row span:last-child {
     text-align: right;
 }
+
+/* Notes */
+#note-edit form {
+    padding: 0;
+    margin: 0;
+}
+#note-edit form .modal-body {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+#note-edit form textarea {
+    width: 510px;
+}
+#note-edit form#note-delete-form {
+    position: absolute;
+    display: inline-block;
+    bottom: 15px;
+    left: 20px;
+}
+#note-button p {
+    margin-top: -20px;
+    margin-bottom: 15px;
+}
+#note {
+    margin-bottom: -10px;
+}
+#note > a:nth-child(2) {
+    float: right;
+    position: relative;
+    top: 3px;
+    right: 1px;
+}
+#note > .sticky {
+    text-align: left;
+    margin-top: 2px;
+}
+#note > .sticky > p:last-child {
+    margin-bottom: 0;
+}
+.sticky {
+    -webkit-box-shadow: #DDD 0px 1px 2px;
+    position: relative;
+    background-color: #FFFFB7;
+    border-color: #DEE184;
+    text-align: center;
+    margin: 25px 0px;
+    padding: 20px 15px 15px;
+    -webkit-box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
+    -moz-box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
+    box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
+}
+.sticky.taped:after {
+    display: block;
+    content: "";
+    position: absolute;
+    width: 110px;
+    height: 30px;
+    top: -21px;
+    left: 240px;
+    border: 1px solid #fff;
+    background: rgba(254, 254, 254, .6);
+    -webkit-box-shadow: 0px 0 3px rgba(0,0,0,0.1);
+    -moz-box-shadow: 0px 0 3px rgba(0,0,0,0.1);
+    box-shadow: 0px 0 3px rgba(0,0,0,0.1);
+    -webkit-transform: rotate(2deg);
+    -moz-transform: rotate(2deg);
+    -o-transform: rotate(2deg);
+    transform: rotate(2deg);
+}
+

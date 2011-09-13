@@ -19,7 +19,8 @@ class CoreIndex(SearchIndex):
     slug_sort = CharField()
     name = CharField(model_attr='name', null=True)
     modified = DateTimeField(model_attr='modified')
-    renderer = CharField(use_template=True, indexed=False)
+    renderer_main = CharField(use_template=True, indexed=False)
+    get_absolute_url = CharField(model_attr='get_absolute_url', indexed=False)
 
     def get_updated_field(self):
         """
@@ -54,7 +55,7 @@ class CoreIndex(SearchIndex):
             return datetime.min
 
 class AccountIndex(CoreIndex):
-    pass
+    renderer_links = CharField(use_template=True, indexed=False)
 
 site.register(Account, AccountIndex)
 
@@ -62,6 +63,9 @@ class RepositoryIndex(CoreIndex):
     project = CharField(model_attr='project')
     description = CharField(model_attr='description', null=True)
     readme = CharField(model_attr='readme', null=True)
+    renderer_description = CharField(use_template=True, indexed=False)
+    renderer_owner = CharField(use_template=True, indexed=False)
+    renderer_updated = CharField(use_template=True, indexed=False)
 
     if not IS_WHOOSH:
         owner_slug_sort = CharField(null=True)

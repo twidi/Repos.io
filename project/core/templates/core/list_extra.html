@@ -1,0 +1,6 @@
+{% if obj.has_note %}
+<div class="extra">
+    <a href="{{ obj.get_absolute_url }}"><img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" title="You have a private note !" /></a>
+</div>
+{% endif %}
+

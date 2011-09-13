@@ -22,6 +22,9 @@ haystack
 #saved_searches (we need more recent version)
 -e git+git://github.com/twidi/saved_searches.git#egg=saved_searches
 #-e git+git://github.com/twidi/django-favorites.git#egg=django-favorites
+django-markup-mixin
+django-notes
+
 
 # registration/providers
 #django-social-auth (a bug in the github implementation : https://github.com/omab/django-social-auth/pull/135 )
