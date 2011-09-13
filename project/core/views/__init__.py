@@ -82,10 +82,18 @@ def fetch(request):
         return HttpResponseNotAllowed('Vilain :)')
     else:
 
+        # find a access token
+        access_token = None
+        accounts = request.user.accounts.filter(backend=backend.name, access_token__isnull=False)
+        for account in accounts:
+            if account.access_token:
+                access_token = account.access_token
+                break
+
         if related:
             if obj.fetch_related_allowed():
                 try:
-                    obj.fetch_related()
+                    obj.fetch_related(access_token=access_token)
                 except MultipleBackendError, e:
                     for message in e.messages:
                         messages.error(request, message)
@@ -94,18 +102,18 @@ def fetch(request):
                 else:
                     messages.success(request, 'Fetch of related is successfull !')
             else:
-                messages.error(request, 'Fetch of related is not allowed (maybe the last one is too recent')
+                messages.error(request, 'Fetch of related is not allowed (maybe the last one is too recent)')
 
         else:
             if obj.fetch_allowed():
                 try:
-                    obj.fetch()
+                    obj.fetch(access_token=access_token)
                 except BackendError, e:
                     messages.error(request, e.message)
                 else:
                     messages.success(request, 'Fetch of this %s is successfull !' % otype)
             else:
-                messages.error(request, 'Fetch is not allowed (maybe the last one is too recent')
+                messages.error(request, 'Fetch is not allowed (maybe the last one is too recent)')
 
     redirect_url = request.POST.get('next', '/')
     if not redirect_url.startswith('/'):

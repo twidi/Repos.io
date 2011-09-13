@@ -12,7 +12,7 @@ from model_utils.fields import StatusField
 from core.backends import BACKENDS, get_backend
 from core.managers import AccountManager, RepositoryManager
 from core.utils import slugify
-from core.exceptions import BackendError, MultipleBackendError
+from core.exceptions import MultipleBackendError
 
 BACKENDS_CHOICES = Choices(*BACKENDS.keys())
 
@@ -135,7 +135,7 @@ class SyncableModel(TimeStampedModel):
         """
         return bool(not self.last_fetch or self.last_fetch < datetime.now() - self.MIN_FETCH_DELTA)
 
-    def fetch(self):
+    def fetch(self, access_token=None):
         """
         Fetch data from the provider (need to be implemented in subclass)
         """
@@ -200,7 +200,7 @@ class SyncableModel(TimeStampedModel):
 
         return False
 
-    def fetch_related(self, limit=None, update_related_objects=True):
+    def fetch_related(self, limit=None, update_related_objects=True, access_token=None):
         """
         If the object has some related content that need to be fetched, do
         it, but limit the fetch to the given limit (default 1)
@@ -214,12 +214,12 @@ class SyncableModel(TimeStampedModel):
             action = getattr(self, 'fetch_%s' % name)
 
             try:
-                #print "%s : update %s" % (self, name)
+                params = dict(
+                    access_token = access_token
+                )
                 if with_count:
-                    ope_done = action(update_related_objects=update_related_objects)
-                else:
-                    ope_done = action()
-                if ope_done:
+                    params['update_related_objects'] = update_related_objects
+                if action(**params):
                     done += 1
             except:
                 exceptions.append(e)
@@ -251,7 +251,6 @@ class SyncableModel(TimeStampedModel):
                 continue
             field = getattr(self, param)
             if not callable(field) and field != value:
-                #print "%s : update %s from [%s] to [%s]" % (self, param, getattr(self,param), value)
                 setattr(self, param, value)
                 updated += 1
         if updated:
@@ -343,14 +342,14 @@ class Account(SyncableModel):
     class Meta:
         unique_together = (('backend', 'slug'),)
 
-    def fetch(self):
+    def fetch(self, access_token=None):
         """
         Fetch data from the provider
         """
-        if not super(Account, self).fetch():
+        if not super(Account, self).fetch(access_token=access_token):
             return False
 
-        self.get_backend().user_fetch(self)
+        self.get_backend().user_fetch(self, access_token=access_token)
         self.last_fetch = datetime.now()
 
         self.save()
@@ -364,7 +363,7 @@ class Account(SyncableModel):
             self.slug_sort = slugify(self.slug)
         super(Account, self).save(*args, **kwargs)
 
-    def fetch_following(self, update_related_objects=True):
+    def fetch_following(self, update_related_objects=True, access_token=None):
         """
         Fetch the accounts followed by this account
         """
@@ -382,7 +381,7 @@ class Account(SyncableModel):
             new_following = {}
 
         # get and save new followings
-        following_list = self.get_backend().user_following(self)
+        following_list = self.get_backend().user_following(self, access_token=access_token)
         count = 0
         for gaccount in following_list:
             account = self.add_following(gaccount, False, update_related_objects)
@@ -471,7 +470,7 @@ class Account(SyncableModel):
         if save:
             self.save()
 
-    def fetch_followers(self, update_related_objects=True):
+    def fetch_followers(self, update_related_objects=True, access_token=None):
         """
         Fetch the accounts following this account
         """
@@ -489,7 +488,7 @@ class Account(SyncableModel):
             new_followers = {}
 
         # get and save new followings
-        followers_list = self.get_backend().user_followers(self)
+        followers_list = self.get_backend().user_followers(self, access_token=access_token)
         count = 0
         for gaccount in followers_list:
             account = self.add_follower(gaccount, False, update_related_objects)
@@ -576,7 +575,7 @@ class Account(SyncableModel):
         if save:
             self.save()
 
-    def fetch_repositories(self, update_related_objects=True):
+    def fetch_repositories(self, update_related_objects=True, access_token=None):
         """
         Fetch the repositories owned/watched by this account
         """
@@ -590,7 +589,7 @@ class Account(SyncableModel):
             new_repositories = {}
 
         # get and save new repositories
-        repositories_list = self.get_backend().user_repositories(self)
+        repositories_list = self.get_backend().user_repositories(self, access_token=access_token)
         count = 0
         for grepo in repositories_list:
             repository = self.add_repository(grepo, False, update_related_objects)
@@ -865,14 +864,14 @@ class Repository(SyncableModel):
         """
         return self.project or self.get_backend().repository_project(self)
 
-    def fetch(self):
+    def fetch(self, access_token=None):
         """
         Fetch data from the provider
         """
-        if not super(Repository, self).fetch():
+        if not super(Repository, self).fetch(access_token=access_token):
             return False
 
-        self.get_backend().repository_fetch(self)
+        self.get_backend().repository_fetch(self, access_token=access_token)
         self.last_fetch = datetime.now()
 
         self.save()
@@ -901,7 +900,7 @@ class Repository(SyncableModel):
 
         super(Repository, self).save(*args, **kwargs)
 
-    def fetch_owner(self):
+    def fetch_owner(self, access_token=None):
         """
         Create or update the repository's owner
         """
@@ -924,18 +923,17 @@ class Repository(SyncableModel):
             owner = self.owner
 
         if owner.fetch_needed():
-            owner.fetch()
+            owner.fetch(access_token=access_token)
             fetched = True
 
         if save_needed:
             if not self.owner_id:
                 self.owner = owner
-            self.save()
-            self.followers.add(self.owner)
+            self.add_follower(owner, True, True)
 
         return fetched
 
-    def fetch_parent_fork(self):
+    def fetch_parent_fork(self, access_token=None):
         """
         Create of update the parent fork, only if needed and if we have the
         parent fork's name
@@ -960,7 +958,7 @@ class Repository(SyncableModel):
             parent_fork = self.parent_fork
 
         if parent_fork.fetch_needed():
-            parent_fork.fetch()
+            parent_fork.fetch(access_token=access_token)
             fetched = True
 
         if save_needed:
@@ -970,7 +968,7 @@ class Repository(SyncableModel):
 
         return fetched
 
-    def fetch_followers(self, update_related_objects=True):
+    def fetch_followers(self, update_related_objects=True, access_token=None):
         """
         Fetch the accounts following this repository
         """
@@ -1075,7 +1073,7 @@ class Repository(SyncableModel):
         if save:
             self.save()
 
-    def fetch_contributors(self, update_related_objects=True):
+    def fetch_contributors(self, update_related_objects=True, access_token=None):
         """
         Fetch the accounts following this repository
         """
@@ -1216,14 +1214,14 @@ class Repository(SyncableModel):
             self._contributors_slugs = [f.slug for f in self.contributors.all()]
         return self._contributors_slugs
 
-    def fetch_readme(self):
+    def fetch_readme(self, access_token=None):
         """
         Try to get a readme in the repository
         """
         if not self.get_backend().supports('repository_readme'):
             return False
 
-        readme = self.get_backend().repository_readme(self)
+        readme = self.get_backend().repository_readme(self, access_token=access_token)
 
         if readme is not None:
             if isinstance(readme, (list, tuple)):
