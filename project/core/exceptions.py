@@ -66,18 +66,20 @@ class BackendNotFoundError(BackendError):
             '%s cannot be found on %s' % (what, backend_name), 404)
 
 class BackendAccessError(BackendError):
-    def __init__(self, code, backend_name, what):
+    def __init__(self, code, message, backend_name, what):
         super(BackendAccessError, self).__init__(
-            '%s cannot be accessed on %s' % (what, backend_name), code)
+            '%s cannot be accessed on %s: %s' % (what, backend_name, message), code)
 
 class BackendForbiddenError(BackendAccessError):
     def __init__(self, backend_name, what):
-        super(BackendForbiddenError, self).__init__(403, backend_name, what)
+        super(BackendForbiddenError, self).__init__(
+                403, 'access forbidden', backend_name, what)
 
 
 class BackendUnauthorizedError(BackendAccessError):
     def __init__(self, backend_name, what):
-        super(BackendUnauthorizedError, self).__init__(401, backend_name, what)
+        super(BackendUnauthorizedError, self).__init__(
+                401, 'unauthorized access', backend_name, what)
 
 class BackendInternalError(BackendError):
     def __init__(self, code, backend_name, what):
