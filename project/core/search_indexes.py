@@ -22,7 +22,7 @@ class CoreIndex(SearchIndex):
     modified = DateTimeField(model_attr='modified')
     renderer_main = CharField(use_template=True, indexed=False)
     get_absolute_url = CharField(model_attr='get_absolute_url', indexed=False)
-    score = IntegerField(model_attr='score', indexed=False)
+    internal_score = IntegerField(model_attr='score', indexed=False)
 
     def get_updated_field(self):
         """
@@ -40,13 +40,15 @@ class CoreIndex(SearchIndex):
     def prepare_slug_sort(self, obj):
         return self._prepare_slug_sort(obj.slug_sort)
 
-    def prepare(self, obj):
-        """
-        Use the object's score to calculate the boost
-        """
-        data = super(SearchIndex, self).prepare(obj)
-        data['boost'] = math.log10(max(obj.score, 5) / 5.0) / 2.5 + 0.7
-        return data
+    # boost doesn't work in whoosh
+    if not IS_WHOOSH:
+        def prepare(self, obj):
+            """
+            Use the object's score to calculate the boost
+            """
+            data = super(CoreIndex, self).prepare(obj)
+            data['boost'] = math.log10(max(obj.score, 5) / 5.0) / 2.5 + 0.7
+            return data
 
     # WHOOSH HACK : every sort fields must be filled for EVERY entries  for sorting in whoosh !
     # https://github.com/toastdriven/django-haystack/issues/418#issuecomment-2065707
@@ -63,6 +65,12 @@ class CoreIndex(SearchIndex):
             if getattr(obj, 'official_modified', False):
                 return obj.official_modified
             return datetime.min
+
+    # limit index to 1000 objects in debug mode
+    if settings.DEBUG:
+        def index_queryset(self):
+            qs = super(CoreIndex, self).index_queryset()
+            return qs.filter(id__lt=1001)
 
 class AccountIndex(CoreIndex):
     """

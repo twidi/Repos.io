@@ -61,7 +61,6 @@ class SyncableModel(TimeStampedModel):
     class Meta:
         abstract = True
 
-
     def __unicode__(self):
         return u'%s' % self.slug
 
