@@ -1,4 +1,5 @@
 from datetime import datetime
+import math
 
 from django.conf import settings
 
@@ -21,6 +22,7 @@ class CoreIndex(SearchIndex):
     modified = DateTimeField(model_attr='modified')
     renderer_main = CharField(use_template=True, indexed=False)
     get_absolute_url = CharField(model_attr='get_absolute_url', indexed=False)
+    score = IntegerField(model_attr='score', indexed=False)
 
     def get_updated_field(self):
         """
@@ -38,7 +40,15 @@ class CoreIndex(SearchIndex):
     def prepare_slug_sort(self, obj):
         return self._prepare_slug_sort(obj.slug_sort)
 
-    # HACK : every sort fields must be filled for EVERY entries  for sorting in whoosh !
+    def prepare(self, obj):
+        """
+        Use the object's score to calculate the boost
+        """
+        data = super(SearchIndex, self).prepare(obj)
+        data['boost'] = math.log10(max(obj.score, 5) / 5.0) / 2.5 + 0.7
+        return data
+
+    # WHOOSH HACK : every sort fields must be filled for EVERY entries  for sorting in whoosh !
     # https://github.com/toastdriven/django-haystack/issues/418#issuecomment-2065707
     if IS_WHOOSH:
         owner_slug_sort = CharField(null=True)
@@ -55,11 +65,17 @@ class CoreIndex(SearchIndex):
             return datetime.min
 
 class AccountIndex(CoreIndex):
+    """
+    Search index for Account objects
+    """
     renderer_links = CharField(use_template=True, indexed=False)
 
 site.register(Account, AccountIndex)
 
 class RepositoryIndex(CoreIndex):
+    """
+    Search index for Repository objects
+    """
     project = CharField(model_attr='project')
     description = CharField(model_attr='description', null=True)
     readme = CharField(model_attr='readme', null=True)

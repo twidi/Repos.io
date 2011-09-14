@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from copy import copy
-import math
 
 from django.db import models
 from django.contrib.auth.models import User
