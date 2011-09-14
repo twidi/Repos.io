@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from copy import copy
+import math
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -48,6 +49,9 @@ class SyncableModel(TimeStampedModel):
 
     # Date of last own full fetch
     last_fetch = models.DateTimeField(blank=True, null=True, db_index=True)
+
+    # Store a score for this object
+    score = models.PositiveIntegerField(default=0, db_index=True)
 
     # Fetch operations
     backend_prefix = ''
@@ -274,6 +278,29 @@ class SyncableModel(TimeStampedModel):
         """
         return get_user_note_for_object(self)
 
+    def compute_score(self):
+        """
+        Compute the current score for the object
+        """
+        parts = {}
+        if self.homepage:
+            parts['homepage'] = 3
+        if self.official_created:
+            delta = datetime.now() - self.official_created
+            parts['official_created'] = min(int(round(delta.days/30.0))-1, 50)
+        if self.last_fetch:
+            parts['last_fetch'] = 5
+
+        return int(sum(parts.values()))
+
+    def update_score(self, save=True):
+        """
+        Update the score and save it
+        """
+        self.score = self.compute_score()
+        if save:
+            self.save()
+
 
 class Account(SyncableModel):
     """
@@ -303,8 +330,6 @@ class Account(SyncableModel):
     avatar = models.URLField(max_length=255, blank=True, null=True)
     # The account's homeage
     homepage = models.URLField(max_length=255, blank=True, null=True)
-    # Since when this account exists on the provider
-    since = models.DateField(blank=True, null=True)
     # Is this account private ?
     private = models.NullBooleanField(blank=True, null=True, db_index=True)
     # Account dates
@@ -742,6 +767,37 @@ class Account(SyncableModel):
         if not hasattr(self, '_followers_slugs'):
             self._followers_slugs = [f.slug for f in self.followers.all()]
         return self._followers_slugs
+
+    def compute_score(self):
+        """
+        Compute the current score for this account
+        """
+        score = super(Account, self).compute_score()
+
+        parts = {}
+        # basic scores
+        if self.name != self.slug:
+            parts['name'] = 3
+        if self.user_id:
+            parts['user'] = 5
+        # popularity
+        if self.official_followers_count or self.followers_count:
+            parts['followers'] = min(max(self.official_followers_count, self.followers_count), 50)
+        # contents
+        if self.repositories_count:
+            all_repositories = self.own_repositories.all()
+            nb_own = all_repositories.count()
+            nb_forks = all_repositories.filter(is_fork=True).count()
+            nb_real_own = nb_own - nb_forks
+            parts['repositories'] = min(nb_real_own / 3 + nb_forks / 4, 30)
+
+            # popularity of its repositories
+            parts['repositories_score'] = 0
+            for repository in all_repositories:
+                parts['repositories_score'] += repository.compute_popularity() / 5.0
+
+        score += sum(parts.values())
+        return int(round(score))
 
 class Repository(SyncableModel):
     """
@@ -1245,5 +1301,42 @@ class Repository(SyncableModel):
             self.readme_modified = datetime.now()
             self.save()
         return True
+
+    def compute_popularity(self):
+        """
+        Compute the popularity of the repository, used to compute it's total
+        score, and also to compute it's owner's score
+        """
+        score = 0
+
+        if self.official_followers_count or self.followers_count:
+            score += min(max(self.official_followers_count, self.followers_count), 50) / 2.0
+
+        if self.official_forks_count:
+            score += min(self.official_forks_count, 50) / 3.0
+
+        if self.is_fork:
+            score = score / 1.5
+
+        return min(score, 30)
+
+    def compute_score(self):
+        """
+        Compute the current score for this repository
+        """
+        score = super(Repository, self).compute_score()
+        parts = {}
+        # basic scores
+        if self.description:
+            parts['description'] = 5
+        if self.readme:
+            parts['reame'] = 5
+        if self.owner_id:
+            parts['owner'] = (self.owner.score or self.owner.compute_score()) / 10.0
+
+        parts['popularity'] = self.compute_popularity()
+
+        score += sum(parts.values())
+        return int(round(score))
 
 from core.signals import *
