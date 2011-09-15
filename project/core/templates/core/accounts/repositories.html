@@ -52,7 +52,7 @@
                                 {% endif %}
                             </small>
                             {% endif %}
-                            {% include "core/score.html" with obj=repository max_width=200 %}
+                            {% include "core/score.html" with obj=repository max_width=200 ratio=2 %}
                             {% if repository.description %}<blockquote>{{ repository.description }}</blockquote>{% endif %}
                         </td>
                         {% if account.backend|supports:'repository_owner' and not owner_only  %}

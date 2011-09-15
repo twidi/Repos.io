@@ -61,13 +61,16 @@ td small a:hover {
     float: left;
     margin-right: 10px;
 }
+#container > section header .score {
+    margin: 2px 0;
+}
 #container > section header h1 {
     margin-bottom: 0;
     margin-left: 90px;
 }
 #container > section header h1~h2 {
     line-height: 16px;
-    margin: -2px 0 8px 90px;
+    margin: 0 0 8px 90px;
 }
 #container > section header h1~p {
     margin: 3px 3px 3px 90px;

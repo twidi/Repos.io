@@ -41,7 +41,7 @@
                             <td>
                                 {% include "core/list_extra.html" with obj=repository %}
                                 {{ repository.renderer_main|safe }}
-                                {% include "core/score.html" with obj=repository score=repository.internal_score max_width=200 %}
+                                {% include "core/score.html" with obj=repository score=repository.internal_score max_score=200 ratio=2 %}
                                 {{ repository.renderer_description|safe }}
                             </td>
                             <td>
