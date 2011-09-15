@@ -318,9 +318,9 @@ class Account(SyncableModel):
     # Basic informations
 
     # The slug for this account (text identifier for the provider : login, username...)
-    slug = models.SlugField(max_length=255)
+    slug = models.SlugField(max_length=255, db_index=True)
     # The same, adapted for sorting
-    slug_sort = models.SlugField(max_length=255)
+    slug_sort = models.SlugField(max_length=255, db_index=True)
     # The fullname
     name = models.CharField(max_length=255, blank=True, null=True)
     # The backend url
@@ -817,9 +817,9 @@ class Repository(SyncableModel):
     # Basic informations
 
     # The slug for this repository (text identifier for the provider)
-    slug = models.SlugField(max_length=255)
+    slug = models.SlugField(max_length=255, db_index=True)
     # The same, adapted for sorting
-    slug_sort = models.CharField(max_length=255, blank=True, null=True)
+    slug_sort = models.CharField(max_length=255, blank=True, null=True, db_index=True)
     # The fullname of this repository
     name = models.CharField(max_length=255, blank=True, null=True)
     # The web url for this repository

@@ -72,7 +72,7 @@ class AccountManager(SyncableModelManager):
         If not found, return None
         """
         try:
-            return self.get(backend=backend, slug=slug)
+            return self.get(backend__iexact=backend, slug__iexact=slug)
         except:
             return None
 
@@ -104,7 +104,7 @@ class RepositoryManager(SyncableModelManager):
         backend.assert_valid_repository_identifiers(**defaults)
 
         try:
-            identifiers = dict((key, defaults.get(key, None))
+            identifiers = dict((key+'__iexact', defaults.get(key, None))
                 for key in backend.needed_repository_identifiers)
             repository = self.get(**identifiers)
         except self.model.DoesNotExist:
