@@ -1,0 +1,5 @@
+{% with obj_score=score|default:obj.score %}
+{% if obj_score and obj_score >= min_score|default:10 %}
+    <div class="score" style="width:{% if obj_score > max_width|default:100 %}{{ max_width|default:100 }}{% else %}{{ obj_score }}{% endif %}px;{% if height %}height:{{ height }}px;{% endif %}" title="Score: {{ obj_score }}"></div>
+{% endif %}
+{% endwith %}

@@ -39,8 +39,9 @@
                     {% for repository in page.object_list %}
                         <tr>
                             <td>
-                                {{ repository.renderer_main|safe }}
                                 {% include "core/list_extra.html" with obj=repository %}
+                                {{ repository.renderer_main|safe }}
+                                {% include "core/score.html" with obj=repository score=repository.internal_score max_width=200 %}
                                 {{ repository.renderer_description|safe }}
                             </td>
                             <td>
