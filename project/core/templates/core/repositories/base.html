@@ -8,6 +8,7 @@
             <div class="span-two-thirds">
                 {% include "core/repositories/logo.html" with size=80 %}
                 <h1>{% include "core/repositories/link.html" with no_owner=1 %}</h1>
+                {% include "core/score.html" with obj=repository max_score=125 ratio=4 %}
                 {% if repository.owner %}
                     <h2>
                         <small>

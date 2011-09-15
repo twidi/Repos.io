@@ -1,5 +1,6 @@
 from django.http import Http404
 
+from haystack.forms import SearchForm
 from pure_pagination import Paginator, InvalidPage
 from saved_searches.views import SavedSearchView as BaseSearchView
 from saved_searches.models import SavedSearch
@@ -34,6 +35,7 @@ class CoreSearchView(PurePaginationSearchView):
         Set a "search key" for theses searches to be used for more recents/popular
         """
         kwargs['search_key'] = self.search_key
+        kwargs['form_class'] = SearchForm
         super(CoreSearchView, self).__init__(*args, **kwargs)
 
     def get_sort(self):

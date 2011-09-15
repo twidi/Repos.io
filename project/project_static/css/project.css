@@ -61,13 +61,16 @@ td small a:hover {
     float: left;
     margin-right: 10px;
 }
+#container > section header .score {
+    margin: 2px 0;
+}
 #container > section header h1 {
     margin-bottom: 0;
     margin-left: 90px;
 }
 #container > section header h1~h2 {
     line-height: 16px;
-    margin: -2px 0 8px 90px;
+    margin: 0 0 8px 90px;
 }
 #container > section header h1~p {
     margin: 3px 3px 3px 90px;
@@ -147,11 +150,29 @@ table.repositories.with_extras div.extra,
 table.accounts.with_extras div.extra {
     margin-top: 8px;
 }
+/* Scores */
+.score {
+    background-color: #e0e0e0;
+    height: 1px;
+    overflow: hidden;
+}
+table.repositories .score,
+table.accounts .score {
+    position: relative;
+    margin-left: 36px;
+}
+table.repositories .score {
+    top: 3px;
+    margin-bottom: 10px;
+}
+table.accounts .score {
+    top: -6px;
+}
 
 
 /* Style repositories table */
 table.repositories blockquote {
-    margin: 5px 0 0;
+    margin: 5px 26px 0 0;
 }
 table.repositories td:first-child img {
     float: left;
@@ -183,6 +204,7 @@ table.accounts.with_owner td:nth-child(3) {
 table.accounts td:first-child {
     padding: 5px 10px 5px 5px;
     height: 30px;
+    min-width: 160px;
 }
 table.accounts td:first-child img {
     vertical-align: middle;

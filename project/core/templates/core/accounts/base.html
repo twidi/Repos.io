@@ -7,6 +7,7 @@
             <div class="span-two-thirds">
                 {% include "core/accounts/avatar.html" with size=80 %}
                 <h1> {% include "core/accounts/link.html" %}</h1>
+                {% include "core/score.html" with obj=account max_score=250 ratio=2 %}
                 <p>
                     {{ account.name|default:account.slug }}
                     {% include "core/accounts/links.html" %}
