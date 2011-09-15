@@ -16,6 +16,8 @@ def prepare_notes(objects):
     All objects must be from the same content_type
     """
     try:
+        if not (globals.user and globals.user.is_authenticated()):
+            raise
         obj = objects[0]
 
         if isinstance(obj, SearchResult):
@@ -40,7 +42,6 @@ def prepare_notes(objects):
             dict_objects[obj_id].has_note = True
 
         return ''
-    except Exception, e:
-        raise e
+    except:
         return ''
 

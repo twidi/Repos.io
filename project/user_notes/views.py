@@ -16,7 +16,7 @@ def get_user_note_for_object(obj):
     A user can only have one note by object
     """
     user = globals.user
-    if not user:
+    if not (user and user.is_authenticated()):
         return None
 
     obj_type = ContentType.objects.get_for_model(obj)
