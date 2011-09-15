@@ -198,9 +198,9 @@ CORE_ENABLED_BACKENDS = ('github', )
 
 # haystack
 HAYSTACK_SITECONF = 'project.search_sites'
-HAYSTACK_SEARCH_ENGINE = 'whoosh'
-# whoosh
-HAYSTACK_WHOOSH_PATH = os.path.join(PROJECT_PATH, 'whoosh')
+HAYSTACK_SEARCH_ENGINE = 'solr'
+# solr
+HAYSTACK_SOLR_URL = 'http://url/to/solr'
 
 # notes
 NOTES_ALLOWED_MODELS = ('core.account', 'core.repository',)

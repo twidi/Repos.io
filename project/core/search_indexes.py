@@ -8,8 +8,6 @@ from haystack import site
 
 from core.models import Account, Repository
 
-IS_WHOOSH = getattr(settings, 'HAYSTACK_SEARCH_ENGINE', None) == 'whoosh'
-
 class CoreIndex(SearchIndex):
     """
     Base search index, used for core models
@@ -40,31 +38,13 @@ class CoreIndex(SearchIndex):
     def prepare_slug_sort(self, obj):
         return self._prepare_slug_sort(obj.slug_sort)
 
-    # boost doesn't work in whoosh
-    if not IS_WHOOSH:
-        def prepare(self, obj):
-            """
-            Use the object's score to calculate the boost
-            """
-            data = super(CoreIndex, self).prepare(obj)
-            data['boost'] = math.log10(max(obj.score, 5) / 5.0) / 2.5 + 0.7
-            return data
-
-    # WHOOSH HACK : every sort fields must be filled for EVERY entries  for sorting in whoosh !
-    # https://github.com/toastdriven/django-haystack/issues/418#issuecomment-2065707
-    if IS_WHOOSH:
-        owner_slug_sort = CharField(null=True)
-        official_modified_sort = DateTimeField(null=True)
-
-        def prepare_owner_slug_sort(self, obj):
-            if getattr(obj, 'owner_id', False):
-                return self._prepare_slug_sort(obj.owner.slug_sort)
-            return '__no_owner__'
-
-        def prepare_official_modified_sort(self, obj):
-            if getattr(obj, 'official_modified', False):
-                return obj.official_modified
-            return datetime.min
+    def prepare(self, obj):
+        """
+        Use the object's score to calculate the boost
+        """
+        data = super(CoreIndex, self).prepare(obj)
+        data['boost'] = math.log10(max(obj.score, 5) / 5.0) / 2.5 + 0.7
+        return data
 
     # limit index to 1000 objects in debug mode
     if settings.DEBUG:
@@ -90,14 +70,12 @@ class RepositoryIndex(CoreIndex):
     renderer_description = CharField(use_template=True, indexed=False)
     renderer_owner = CharField(use_template=True, indexed=False)
     renderer_updated = CharField(use_template=True, indexed=False)
+    owner_slug_sort = CharField(null=True)
+    official_modified_sort = DateTimeField(model_attr='official_modified', null=True)
 
-    if not IS_WHOOSH:
-        owner_slug_sort = CharField(null=True)
-        official_modified_sort = DateTimeField(model_attr='official_modified', null=True)
-
-        def prepare_owner_slug_sort(self, obj):
-            if obj.owner_id:
-                return self._prepare_slug_sort(obj.owner.slug_sort)
-            return None
+    def prepare_owner_slug_sort(self, obj):
+        if obj.owner_id:
+            return self._prepare_slug_sort(obj.owner.slug_sort)
+        return None
 
 site.register(Repository, RepositoryIndex)
