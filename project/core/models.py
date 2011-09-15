@@ -52,6 +52,19 @@ class SyncableModel(TimeStampedModel):
     # Store a score for this object
     score = models.PositiveIntegerField(default=0, db_index=True)
 
+    # object's fields
+
+    # The slug for this object (text identifier for the provider)
+    slug = models.SlugField(max_length=255, db_index=True)
+    # for speed search in get_or_new
+    slug_lower = models.SlugField(max_length=255, db_index=True)
+    # The same, adapted for sorting
+    slug_sort = models.CharField(max_length=255, blank=True, null=True, db_index=True)
+    # The fullname
+    name = models.CharField(max_length=255, blank=True, null=True)
+    # The web url
+    url = models.URLField(max_length=255, blank=True, null=True)
+
     # Fetch operations
     backend_prefix = ''
     related_operations = (
@@ -317,14 +330,6 @@ class Account(SyncableModel):
 
     # Basic informations
 
-    # The slug for this account (text identifier for the provider : login, username...)
-    slug = models.SlugField(max_length=255, db_index=True)
-    # The same, adapted for sorting
-    slug_sort = models.SlugField(max_length=255, db_index=True)
-    # The fullname
-    name = models.CharField(max_length=255, blank=True, null=True)
-    # The backend url
-    url = models.URLField(max_length=255, blank=True, null=True)
     # The avatar url
     avatar = models.URLField(max_length=255, blank=True, null=True)
     # The account's homeage
@@ -372,7 +377,10 @@ class Account(SyncableModel):
     )
 
     class Meta:
-        unique_together = (('backend', 'slug'),)
+        unique_together = (
+            ('backend', 'slug'),
+            ('backend', 'slug_lower')
+        )
 
     def fetch(self, access_token=None):
         """
@@ -393,6 +401,7 @@ class Account(SyncableModel):
         """
         if self.slug:
             self.slug_sort = slugify(self.slug)
+            self.slug_lower = self.slug.lower()
         super(Account, self).save(*args, **kwargs)
 
     def fetch_following(self, update_related_objects=True, access_token=None):
@@ -816,14 +825,6 @@ class Repository(SyncableModel):
 
     # Basic informations
 
-    # The slug for this repository (text identifier for the provider)
-    slug = models.SlugField(max_length=255, db_index=True)
-    # The same, adapted for sorting
-    slug_sort = models.CharField(max_length=255, blank=True, null=True, db_index=True)
-    # The fullname of this repository
-    name = models.CharField(max_length=255, blank=True, null=True)
-    # The web url for this repository
-    url = models.URLField(max_length=255, blank=True, null=True)
     # The description of this repository
     description = models.TextField(blank=True, null=True)
     # The project's logo url
@@ -844,6 +845,8 @@ class Repository(SyncableModel):
 
     # The owner's "slug" of this project, from the backend
     official_owner = models.CharField(max_length=255, blank=True, null=True)
+    # for speed search in get_or_new
+    official_owner_lower = models.CharField(max_length=255, blank=True, null=True)
     # The Account object whom own this Repository
     owner = models.ForeignKey(Account, related_name='own_repositories', blank=True, null=True, on_delete=models.SET_NULL)
 
@@ -890,11 +893,6 @@ class Repository(SyncableModel):
         ('contributors', True, True),
         ('readme', False, True),
     )
-
-
-    class Meta:
-        unique_together = (('backend', 'official_owner', 'slug'),)
-
 
     def __unicode__(self):
         return u'%s' % self.get_project()
@@ -953,17 +951,19 @@ class Repository(SyncableModel):
 
         if self.slug:
             self.slug_sort = slugify(self.slug)
+            self.slug_lower = self.slug.lower()
 
-        # auto-create a Account object for owner if one
-        # is needed but not exists
-        if self.official_owner and not self.owner_id:
-            owner = Account.objects.get_or_new(
-                self.backend,
-                self.official_owner
-            )
-            if owner.is_new():
-                owner.save()
-            self.owner = owner
+        if self.official_owner:
+            self.official_owner_lower = self.official_owner.lower()
+            # auto-create a Account object for owner if one is needed but not exists
+            if not self.owner_id:
+                owner = Account.objects.get_or_new(
+                    self.backend,
+                    self.official_owner
+                )
+                if owner.is_new():
+                    owner.save()
+                self.owner = owner
 
         super(Repository, self).save(*args, **kwargs)
 
