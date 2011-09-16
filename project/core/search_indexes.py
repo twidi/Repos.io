@@ -1,5 +1,5 @@
-from datetime import datetime
 import math
+import re
 
 from django.conf import settings
 
@@ -7,6 +7,8 @@ from haystack.indexes import *
 from haystack import site
 
 from core.models import Account, Repository
+
+SLUG_SORT_RE = re.compile(r'[^a-z]')
 
 class CoreIndex(SearchIndex):
     """
@@ -30,10 +32,10 @@ class CoreIndex(SearchIndex):
 
     def _prepare_slug_sort(self, slug):
         """
-        Replace `-` characters by `_` to have one entire worl instead of many
+        Remove everything but letters, to have one entire worl instead of many
         in search engines, better for correct sorting
         """
-        return slug.replace('-', '_')
+        return SLUG_SORT_RE.sub('a', slug.replace('-', ''))
 
     def prepare_slug_sort(self, obj):
         return self._prepare_slug_sort(obj.slug_sort)
