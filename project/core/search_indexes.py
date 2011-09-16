@@ -49,7 +49,7 @@ class CoreIndex(SearchIndex):
         return data
 
     # limit index to 1000 objects in debug mode
-    if settings.DEBUG:
+    if settings.DEBUG and not getattr(settings, 'FULL_INDEX_IN_DEBUG', False):
         def index_queryset(self):
             qs = super(CoreIndex, self).index_queryset()
             return qs.filter(id__lt=1001)
