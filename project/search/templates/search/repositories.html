@@ -24,15 +24,9 @@
             <table class='zebra-striped repositories with_extras'>
                 <thead>
                     <tr>
-                        {% if page.paginator.count == 1 %}
-                            <th>Name</th>
-                            <th>Owner</th>
-                            <th>Updated</th>
-                        {% else %}
-                            {% include "core/sort_th.html" with color="orange" key="name" name="Name" param1_key="q" param1_value=query %}
-                            {% include "core/sort_th.html" with color="blue" key="owner" name="Owner" param1_key="q" param1_value=query %}
-                            {% include "core/sort_th.html" with color="green" key="updated" name="Updated" default_reverse=1 param1_key="q" param1_value=query %}
-                        {% endif %}
+                        {% include "core/sort_th.html" with color="orange" key="name" name="Name" param1_key="q" param1_value=query %}
+                        {% include "core/sort_th.html" with color="blue" key="owner" name="Owner" param1_key="q" param1_value=query %}
+                        {% include "core/sort_th.html" with color="green" key="updated" name="Updated" default_reverse=1 param1_key="q" param1_value=query %}
                     </tr>
                 </thead>
                 <tbody>
