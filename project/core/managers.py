@@ -106,7 +106,7 @@ class RepositoryManager(SyncableModelManager):
         try:
             identifiers = dict((key, defaults[key].lower())
                 for key in backend.needed_repository_identifiers)
-            repository = self.get(backend=backend, **identifiers)
+            repository = self.get(backend=backend.name, **identifiers)
         except self.model.DoesNotExist:
             # remove empty defaults
             allowed_fields = self.model._meta.get_all_field_names()
