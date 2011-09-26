@@ -61,16 +61,16 @@
     </div>
 </div>
 
-{% if messages %}
-    <ul id="messages" class="container">
-        {% for message in messages %}
-        <li class="alert-message {% if message.tags %}{{ message.tags }}{% else %}info{% endif %}"><a href='#' class='close'>&times;</a><p>{{ message }}</p></li>
-        {% endfor %}
-    </ul>
-{% endif %}
-
 <div id="container" class="container">
+    {% if messages %}
+        <ul id="messages" class="unstyled">
+            {% for message in messages %}
+            <li class="alert-message {% if message.tags %}{{ message.tags }}{% else %}info{% endif %}"><a href='#' class='close'>&times;</a><p>{{ message }}</p></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 
-{% block content %}{% endblock %}
-
+    <div id="content"{% if messages %} class="with_messages"{% endif %}>
+        {% block content %}{% endblock %}
+    </div>
 </div></body></html>
