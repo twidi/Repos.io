@@ -266,6 +266,9 @@ table.repositories blockquote {
 table.repositories td:first-child img {
     float: left;
     margin-right: 5px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
 }
 table.repositories td:first-child blockquote {
     margin-left: 37px;
@@ -275,6 +278,9 @@ table.repositories td:nth-child(2) {
 }
 table.repositories td:nth-child(2) img {
     vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
 }
 table.repositories td:nth-child(3) {
     white-space: nowrap;
@@ -297,6 +303,9 @@ table.accounts td:first-child {
 }
 table.accounts td:first-child img {
     vertical-align: middle;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
 }
 
 /* Home */
@@ -333,6 +342,9 @@ body#home table td {
 }
 body#home table td:first-child img {
     vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
 }
 
 /* Login page */
@@ -361,6 +373,9 @@ body#accounts-manage .row:nth-child(2) section:first-child table tr:first-child 
 }
 body#accounts-manage table td:first-child img {
     vertical-align: middle;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
 }
 body#accounts-manage .row:nth-child(2) section:nth-child(2) p:nth-child(3) {
     text-align: center;
