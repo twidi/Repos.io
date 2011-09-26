@@ -1,12 +1,87 @@
 from django.http import Http404
 
 from haystack.forms import SearchForm
+from haystack.query import SQ, SearchQuerySet, EmptySearchQuerySet
 from pure_pagination import Paginator, InvalidPage
 from saved_searches.views import SavedSearchView as BaseSearchView
 from saved_searches.models import SavedSearch
 
 from core.models import Account, Repository
 from utils.sort import prepare_sort
+
+def parse_keywords(query_string):
+    """
+    Take a query string (think browser) and parse it to have a list of keywords.
+    If many words are between two double-quotes, they are considered as one
+    keyword.
+    """
+    qs = SearchQuerySet()
+    keywords = []
+    # Pull out anything wrapped in quotes and do an exact match on it.
+    open_quote_position = None
+    non_exact_query = query_string
+    for offset, char in enumerate(query_string):
+        if char == '"':
+            if open_quote_position != None:
+                current_match = non_exact_query[open_quote_position + 1:offset]
+                if current_match:
+                    keywords.append(qs.query.clean(current_match))
+                non_exact_query = non_exact_query.replace('"%s"' % current_match, '', 1)
+                open_quote_position = None
+            else:
+                open_quote_position = offset
+    # Pseudo-tokenize the rest of the query.
+    keywords += non_exact_query.split()
+
+    return keywords
+
+    result = []
+    print keywords
+    for keyword in keywords:
+        result.append(qs.query.clean(keyword))
+
+    return result
+
+def make_query(fields, keywords, queryset=None):
+    """
+    Create the query for haystack for searching in `fields ` for documents
+    with `keywords`. All keywords are ANDed, and if a keyword starts with a "-"
+    all document with it will be excluded.
+    """
+    if not keywords or not fields:
+        return EmptySearchQuerySet()
+
+    if not queryset:
+        queryset = SearchQuerySet()
+
+    q = None
+    for field in fields:
+        q_field = None
+        for keyword in keywords:
+            exclude = False
+            if keyword.startswith('-') and len(keyword) > 1:
+                exclude = True
+                keyword = keyword[1:]
+
+            q_tmp = SQ(**{field: queryset.query.clean(keyword)})
+
+            if exclude:
+                q_tmp = ~ q_tmp
+
+            if q_field:
+                q_field = q_field & q_tmp
+            else:
+                q_field = q_tmp
+
+        if q:
+            q = q | q_field
+        else:
+            q = q_field
+
+    if q:
+        return queryset.filter(q)
+    else:
+        return queryset
 
 class PurePaginationSearchView(BaseSearchView):
 
@@ -58,15 +133,21 @@ class CoreSearchView(PurePaginationSearchView):
         """
         Limit to a model, and sort if needed
         """
-        results = super(CoreSearchView, self).get_results()
+        query = self.get_query()
+        if query:
+            keywords = parse_keywords(self.get_query())
+            queryset = make_query(self.search_fields, keywords)
+            print str(queryset.query)
 
-        queryset = results.models(self.model)
+            queryset = queryset.models(self.model)
 
-        sort = self.get_sort()
-        if sort and sort['db_sort']:
-            queryset = queryset.order_by(sort['db_sort'])
+            sort = self.get_sort()
+            if sort and sort['db_sort']:
+                queryset = queryset.order_by(sort['db_sort'])
 
-        return queryset
+            return queryset
+        else:
+            return EmptySearchQuerySet()
 
     def extra_context(self):
         """
@@ -92,6 +173,7 @@ class RepositorySearchView(CoreSearchView):
         owner = 'owner_slug_sort',
         updated = 'official_modified_sort',
     )
+    search_fields = ('project', 'slug', 'slug_sort', 'name', 'description', 'readme',)
 
     def extra_context(self):
         """
@@ -121,3 +203,4 @@ class AccountSearchView(CoreSearchView):
     sort_map = dict(
         name = 'slug_sort',
     )
+    search_fields = ('slug', 'slug_sort', 'name', )

@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from copy import copy
+import math
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -217,7 +218,7 @@ class SyncableModel(TimeStampedModel):
 
         return False
 
-    def fetch_related(self, limit=None, update_related_objects=True, access_token=None):
+    def fetch_related(self, limit=None, update_related_objects=True, access_token=None, ignore=None):
         """
         If the object has some related content that need to be fetched, do
         it, but limit the fetch to the given limit (default 1)
@@ -225,7 +226,11 @@ class SyncableModel(TimeStampedModel):
         """
         done = 0
         exceptions = []
+        if ignore is None:
+            ignore = []
         for name, with_count, with_modified in self.related_operations:
+            if name in ignore:
+                continue
             if not self.fetch_related_allowed_for(name):
                 continue
             action = getattr(self, 'fetch_%s' % name)
@@ -296,9 +301,6 @@ class SyncableModel(TimeStampedModel):
         parts = {}
         if self.homepage:
             parts['homepage'] = 3
-        if self.official_created:
-            delta = datetime.now() - self.official_created
-            parts['official_created'] = min(delta.days/30.0, 48)/3
         if self.last_fetch:
             parts['last_fetch'] = 5
 
@@ -312,6 +314,15 @@ class SyncableModel(TimeStampedModel):
         self.score = self.compute_score()
         if save:
             self.save()
+
+    def score_to_boost(self, force_compute=False):
+        """
+        Transform the score in a "boost" value usable by haystack
+        """
+        score = self.score
+        if force_compute or not score:
+            score = self.compute_score
+        return score/100.0
 
 
 class Account(SyncableModel):
@@ -788,26 +799,35 @@ class Account(SyncableModel):
             parts['name'] = 3
         if self.user_id:
             parts['user'] = 5
+        if self.official_created:
+            parts['life_time'] = ((datetime.now() - self.official_created).days) / 40.0
         # popularity
         if self.official_followers_count or self.followers_count:
-            parts['followers'] = min(max(self.official_followers_count, self.followers_count), 50)
+            parts['followers'] = min(max(self.official_followers_count, self.followers_count) / 5.0, 100)
         # contents
         if self.repositories_count:
             all_repositories = self.own_repositories.all()
             nb_own = all_repositories.count()
             nb_forks = all_repositories.filter(is_fork=True).count()
             nb_real_own = nb_own - nb_forks
-            parts['repositories'] = min(nb_real_own / 2 + nb_forks / 4, 30)
+            parts['repositories'] = (nb_real_own + nb_forks / 2) / 2
 
             # popularity of its repositories
             parts['repositories_score'] = 0
             for repository in all_repositories:
                 parts['repositories_score'] += repository.compute_popularity()
-            parts['repositories_score'] = parts['repositories_score'] / 5.0
+            parts['repositories_score'] = min(parts['repositories_score'] / 10.0, 100)
 
         #print parts
         score += sum(parts.values())
         return int(round(score))
+
+    def score_to_boost(self, force_compute=False):
+        """
+        Transform the score in a "boost" value usable by haystack
+        """
+        score = super(Account, self).score_to_boost(force_compute=force_compute)
+        return math.log10(max(score*100, 5) / 2.0) - 0.3
 
 class Repository(SyncableModel):
     """
@@ -1311,17 +1331,26 @@ class Repository(SyncableModel):
         parts = {}
 
         if self.official_followers_count or self.followers_count:
-            parts['followers'] = min(max(self.official_followers_count, self.followers_count), 50) / 2.0
+            parts['followers'] = max(self.official_followers_count, self.followers_count) / 10.0
 
         if self.official_forks_count:
-            parts['forks'] = min(self.official_forks_count, 50) / 3.0
+            parts['forks'] = self.official_forks_count / 5.0
 
-        #print parts
+        if self.official_modified:
+            parts['life_time'] = ((self.official_modified - self.official_created).days) / 10.0
+            parts['zombie'] = ((datetime.now() - self.official_modified).days) / -20.0
+            if parts['zombie'] + parts['life_time'] < 0:
+                del parts['life_time']
+                del parts['zombie']
+        else:
+            parts['born_dead'] = -20
+
+        #print self.project, parts
         score = sum(parts.values())
         if self.is_fork:
             score = score / 1.5
 
-        return min(score, 50)
+        return min(score, 200)
 
     def compute_score(self):
         """
@@ -1338,12 +1367,19 @@ class Repository(SyncableModel):
         if self.readme:
             parts['readme'] = 5 / divider
         if self.owner_id:
-            parts['owner'] = (self.owner.score or self.owner.compute_score()) / 10.0 / divider
+            parts['owner'] = (self.owner.score or self.owner.compute_score()) / 20.0 / divider
 
         parts['popularity'] = self.compute_popularity()
 
         #print parts
         score += sum(parts.values())
         return int(round(score))
+
+    def score_to_boost(self, force_compute=False):
+        """
+        Transform the score in a "boost" value usable by haystack
+        """
+        score = super(Repository, self).score_to_boost(force_compute=force_compute)
+        return math.log1p(max(score*100, 5) / 5.0) - 0.6
 
 from core.signals import *
