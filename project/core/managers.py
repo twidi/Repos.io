@@ -106,6 +106,12 @@ class RepositoryManager(SyncableModelManager):
         try:
             identifiers = dict((key, defaults[key].lower())
                 for key in backend.needed_repository_identifiers)
+            if 'slug' in identifiers and 'slug_lower' not in identifiers:
+                identifiers['slug_lower'] = identifiers['slug']
+                del identifiers['slug']
+            if 'official_owner' in identifiers and 'official_owner_lower' not in identifiers:
+                identifiers['official_owner_lower'] = identifiers['official_owner']
+                del identifiers['official_owner']
             repository = self.get(backend=backend.name, **identifiers)
         except self.model.DoesNotExist:
             # remove empty defaults
