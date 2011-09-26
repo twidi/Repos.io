@@ -218,7 +218,7 @@ class SyncableModel(TimeStampedModel):
 
         return False
 
-    def fetch_related(self, limit=None, update_related_objects=True, access_token=None):
+    def fetch_related(self, limit=None, update_related_objects=True, access_token=None, ignore=None):
         """
         If the object has some related content that need to be fetched, do
         it, but limit the fetch to the given limit (default 1)
@@ -226,7 +226,11 @@ class SyncableModel(TimeStampedModel):
         """
         done = 0
         exceptions = []
+        if ignore is None:
+            ignore = []
         for name, with_count, with_modified in self.related_operations:
+            if name in ignore:
+                continue
             if not self.fetch_related_allowed_for(name):
                 continue
             action = getattr(self, 'fetch_%s' % name)
