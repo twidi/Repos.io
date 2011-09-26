@@ -1,4 +1,3 @@
-import math
 import re
 
 from django.conf import settings
@@ -15,10 +14,10 @@ class CoreIndex(SearchIndex):
     Base search index, used for core models
     """
     text = CharField(document=True, use_template=True)
-    slug = CharField(model_attr='slug')
+    slug = CharField(model_attr='slug', boost=2)
     slug_normalized = CharField(model_attr='slug_sort')
     slug_sort = CharField()
-    name = CharField(model_attr='name', null=True)
+    name = CharField(model_attr='name', null=True, boost=1.5)
     modified = DateTimeField(model_attr='modified')
     renderer_main = CharField(use_template=True, indexed=False)
     get_absolute_url = CharField(model_attr='get_absolute_url', indexed=False)
@@ -45,7 +44,7 @@ class CoreIndex(SearchIndex):
         Use the object's score to calculate the boost
         """
         data = super(CoreIndex, self).prepare(obj)
-        data['boost'] = math.log10(max(obj.score, 5) / 5.0) / 2.5 + 0.7
+        data['boost'] = obj.score_to_boost()
         return data
 
     # limit index to 1000 objects in debug mode
@@ -66,9 +65,9 @@ class RepositoryIndex(CoreIndex):
     """
     Search index for Repository objects
     """
-    project = CharField(model_attr='project')
+    project = CharField(model_attr='project', boost=2.5)
     description = CharField(model_attr='description', null=True)
-    readme = CharField(model_attr='readme', null=True)
+    readme = CharField(model_attr='readme', null=True, boost=0.5)
     renderer_description = CharField(use_template=True, indexed=False)
     renderer_owner = CharField(use_template=True, indexed=False)
     renderer_updated = CharField(use_template=True, indexed=False)
