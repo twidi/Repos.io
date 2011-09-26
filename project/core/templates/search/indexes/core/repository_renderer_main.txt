@@ -2,14 +2,13 @@
     {% include "core/repositories/logo.html" %}
     <strong>{% include "core/repositories/link.html" with no_owner=1 %}</strong>
     {% if repository.backend|supports:"repository_parent_fork" and repository.is_fork %}
-    <small>/
+    <small>
+        / <span class="label warning">Fork</span>
         {% if repository.parent_fork %}
-            Fork of
+            of
             {% include "core/repositories/link.html" with no_backend=1 no_owner=1 repository=repository.parent_fork %}
             by
             {% include "core/accounts/link.html" with no_backend=1 account=repository.parent_fork.owner %}
-        {% else %}
-            It's a fork
         {% endif %}
     </small>
     {% endif %}

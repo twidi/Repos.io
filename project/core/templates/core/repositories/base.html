@@ -18,14 +18,15 @@
                         </small>
                         {% if repository.backend|supports:'repository_parent_fork' and repository.is_fork %}
                             <small>
-                            {% if repository.parent_fork %}
-                                / fork of {% include "core/repositories/link.html" with repository=repository.parent_fork no_backend=1 no_owner=1 %}
-                                by
-                                {% include "core/accounts/avatar.html" with account=repository.parent_fork.owner size=16 %}
-                                {% include "core/accounts/link.html" with no_backend=1 account=repository.parent_fork.owner %}
-                            {% else %}
-                                / it's a fork but related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display.
-                            {% endif %}
+                                /
+                                {% if repository.parent_fork %}
+                                <span class="label warning">Fork</span> of {% include "core/repositories/link.html" with repository=repository.parent_fork no_backend=1 no_owner=1 %}
+                                    by
+                                    {% include "core/accounts/avatar.html" with account=repository.parent_fork.owner size=16 %}
+                                    {% include "core/accounts/link.html" with no_backend=1 account=repository.parent_fork.owner %}
+                                {% else %}
+                                    it's a <span class="label warning">fork</span> but related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display.
+                                {% endif %}
                             </small>
                         {% endif %}
                     </h2>
