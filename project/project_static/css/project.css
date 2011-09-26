@@ -29,12 +29,40 @@ small {
     cursor: default;
 }
 
+section.row {
+    margin-bottom: 18px;
+}
+
+/* use small color in tables */
 td small a {
     color: #999;
 }
 td small a:hover {
     color: #999;
 }
+
+/* Revert table style to boostrap 1.2 */
+table {
+    border: none;
+}
+table th {
+    border-bottom-width: 2px;
+}
+table th + th, table td + td {
+    border-left: none;
+}
+table tr + tr td {
+    border-top: none;
+}
+table tr td {
+    border-bottom: 1px solid #DDDDDD;
+}
+.zebra-striped .headerSortUp, .zebra-striped .headerSortDown {
+    -webkit-border-radius: 3px 3px 0 0;
+    -moz-border-radius: 3px 3px 0 0;
+    border-radius: 3px 3px 0 0;
+}
+
 /* Do not visually "select" elements in topbar's sub-menu when their "parent" is selected */
 .topbar li.active li a {
     background-color: transparent;
