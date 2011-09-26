@@ -56,6 +56,10 @@ section.row {
     margin-bottom: 18px;
 }
 
+.nav .dropdown li img {
+    vertical-align: middle;
+}
+
 .modal .modal-header {
     background: #222;
     color: #fff;

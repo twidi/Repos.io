@@ -40,7 +40,9 @@
                                 <a href="{% url accounts_manage %}" class="dropdown-toggle">Your accounts</a>
                                 <ul class="dropdown-menu">
                                     {% for an_account in accounts %}
-                                    <li{% if section == 'user' and account.id == an_account.id %} class="active"{% endif %}>{% include "core/accounts/link.html" with account=an_account%}</li>
+                                    <li{% if section == 'user' and account.id == an_account.id %} class="active"{% endif %}>
+                                        {% include "core/accounts/link.html" with account=an_account with_avatar=1 avatar_size=16 %}
+                                    </li>
                                     {% endfor %}
                                     <li class="divider"></li>
                                     <li{% if section == 'accounts'%} class="active"{% endif %}><a href="{% url accounts_manage %}">Manage</a></li>
