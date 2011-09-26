@@ -1,6 +1,6 @@
 {% extends 'search/base.html' %}
 {% load user_notes_tags %}
-{% block title %}Search for "{{ query }}" in repositories on {% endblock %}
+{% block title %}Search for {% if query %}"{{ query }}" in {% endif %}repositories on {% endblock %}
 {% block search_suggestions %}
     {% if query %}
         <p>
