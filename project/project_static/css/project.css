@@ -168,10 +168,12 @@ table tr td {
     display: block;
 }
 .fetch-form {
-    margin-bottom: 0;
-}
-.fetch-form:first-child, .fetch-date:first-child {
     margin-bottom: 10px;
+}
+.fetch-form button {
+    display: block;
+    width: 100%;
+    text-align: left;
 }
 .fetch-form button em {
     font-size: smaller;
