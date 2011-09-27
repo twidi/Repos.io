@@ -131,6 +131,6 @@ def repositories(request, backend, slug, account=None):
         ),
         owner_only = 'y' if owner_only else False,
         hide_forks = 'y' if hide_forks else False,
-        query = query,
+        query = query or "",
     ))
 
