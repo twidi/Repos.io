@@ -84,6 +84,7 @@ def repositories(request, backend, slug, account=None):
 
     sort_key = request.GET.get('sort_by', 'name')
     repository_supports_owner = account.get_backend().supports('repository_owner')
+    repository_supports_parent_fork = account.get_backend().supports('repository_parent_fork')
     sort = get_repository_sort(sort_key, repository_supports_owner)
 
     sorted_repositories = account.repositories.order_by(sort['db_sort']).select_related('owner')
@@ -96,6 +97,14 @@ def repositories(request, backend, slug, account=None):
     if owner_only:
         sorted_repositories = sorted_repositories.filter(owner=account)
 
+    if repository_supports_parent_fork:
+        hide_forks = request.GET.get('hide-forks', False) == 'y'
+    else:
+        hide_forks = False
+
+    if hide_forks:
+        sorted_repositories = sorted_repositories.exclude(is_fork=True)
+
     return render(request, 'core/accounts/repositories.html', dict(
         account = account,
         sorted_repositories = sorted_repositories,
@@ -104,5 +113,6 @@ def repositories(request, backend, slug, account=None):
             reverse = sort['reverse'],
         ),
         owner_only = 'y' if owner_only else False,
+        hide_forks = 'y' if hide_forks else False,
     ))
 

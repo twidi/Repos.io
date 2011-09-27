@@ -13,11 +13,18 @@
                 <span class="span10">Here are the {{ sorted_repositories|length }} repositories {% if owner_only %}<strong>owned</strong>{% else %}followed/owned{% endif %} by {{ account.slug }}: <small>(last fetch on {{ account.repositories_modified }})</small></span>
 
                 <span class="span6">
+                    {% if account.backend|supports:'repository_parent_fork' %}
+                        {% if hide_forks %}
+                        <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}" class="btn error">Show forks</a>
+                        {% else %}
+                            <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}&amp;hide-forks=y{% if owner_only %}&amp;owner-only=y{% endif %}" class="btn success">Hide forks</a>
+                        {% endif %}
+                    {% endif %}
                     {% if account.backend|supports:'repository_owner' %}
                         {% if owner_only %}
-                        <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}" class="btn error">Return to all repositories</a>
+                        <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if hide_forks %}&amp;hide-forks=y{% endif %}" class="btn error">Show ones from all owners</a>
                         {% else %}
-                            <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}&amp;owner-only=y" class="btn success">See only ones owned by {{ account.slug }}</a>
+                            <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}&amp;owner-only=y{% if hide_forks %}&amp;hide-forks=y{% endif %}" class="btn success">See only ones owned by {{ account.slug }}</a>
                         {% endif %}
                     {% endif %}
                 </span>
