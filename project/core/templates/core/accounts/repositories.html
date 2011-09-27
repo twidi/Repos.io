@@ -9,28 +9,42 @@
         {% if sorted_repositories %}
             {% prepare_notes sorted_repositories %}
 
-            <p class="row">
-                <span class="span10">Here are the {{ sorted_repositories|length }} repositories {% if owner_only %}<strong>owned</strong>{% else %}followed/owned{% endif %} by {{ account.slug }}: <small>(last fetch on {{ account.repositories_modified }})</small></span>
+            <div class="row">
+                <span class="span7">Here are the {{ sorted_repositories|length }} repositories {% if owner_only %}<strong>owned</strong>{% else %}followed/owned{% endif %} by {{ account.slug }}: <br /><small>(last fetch on {{ account.repositories_modified }})</small></span>
 
-                <span class="span6">
+                <span class="span9">
+                    <form id="list-filter" method="get" action=".">
+                        <input type="text" name="q" class="small" value="{{ query }}" />
+                        <button class="btn" type="submit">Filter</button>
+                        {% if sort.key %}<input type="hidden" name="sort_by" value="{% if sort.reverse %}-{% endif %}{{ sort.key }}" />{% endif %}
+                        {% if owner_only %}<input type="hidden" name="owner-only" value="y" />{% endif %}
+                        {% if hide_forks %}<input type="hidden" name="hide-forks" value="y" />{% endif %}
+                    </form>
+                    {% if account.backend|supports:'repository_parent_fork' %}
+                        {% if hide_forks %}
+                        <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn error">Show forks</a>
+                        {% else %}
+                            <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}&amp;hide-forks=y{% if owner_only %}&amp;owner-only=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn success">Hide forks</a>
+                        {% endif %}
+                    {% endif %}
                     {% if account.backend|supports:'repository_owner' %}
                         {% if owner_only %}
-                        <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}" class="btn error">Return to all repositories</a>
+                        <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if hide_forks %}&amp;hide-forks=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn error">Show ones from all owners</a>
                         {% else %}
-                            <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}&amp;owner-only=y" class="btn success">See only ones owned by {{ account.slug }}</a>
+                            <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}&amp;owner-only=y{% if hide_forks %}&amp;hide-forks=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn success">See only ones owned by {{ account.slug }}</a>
                         {% endif %}
                     {% endif %}
                 </span>
-            </p>
+            </div>
 
             <table class='zebra-striped repositories with_extras'>
                 <thead>
                     <tr>
-                        {% include "core/sort_th.html" with color="orange" key="name" name="Name" param1_key="owner-only" param1_value=owner_only %}
+                        {% include "core/sort_th.html" with color="orange" key="name" name="Name" param1_key="owner-only" param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key=q param3_value=query %}
                         {% if account.backend|supports:'repository_owner' and not owner_only  %}
-                            {% include "core/sort_th.html" with color="blue" key="owner" name="Owner" param1_key="owner-only" param1_value=owner_only %}
+                            {% include "core/sort_th.html" with color="blue" key="owner" name="Owner" param1_key="owner-only" param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key=q param3_value=query %}
                         {% endif %}
-                        {% include "core/sort_th.html" with color="green" key="updated" name="Updated" default_reverse=1 param1_key="owner-only" param1_value=owner_only %}
+                        {% include "core/sort_th.html" with color="green" key="updated" name="Updated" default_reverse=1 param1_key="owner-only" param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key=q param3_value=query %}
                     </tr>
                 </thead>
                 <tbody>

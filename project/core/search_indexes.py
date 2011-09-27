@@ -73,6 +73,8 @@ class RepositoryIndex(CoreIndex):
     renderer_updated = CharField(use_template=True, indexed=False)
     owner_slug_sort = CharField(null=True)
     official_modified_sort = DateTimeField(model_attr='official_modified', null=True)
+    owner_id = IntegerField(model_attr='owner_id', null=True)
+    is_fork = BooleanField(model_attr='is_fork', null=True)
 
     def prepare_owner_slug_sort(self, obj):
         if obj.owner_id:

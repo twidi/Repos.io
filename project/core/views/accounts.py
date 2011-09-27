@@ -5,6 +5,7 @@ from django.shortcuts import redirect
 from core.views.decorators import check_account, check_support
 from core.views.sort import get_repository_sort, get_account_sort
 from user_notes.forms import NoteForm, NoteDeleteForm
+from search.views import parse_keywords, make_query, RepositorySearchView
 
 @check_account
 def home(request, backend, slug, account=None):
@@ -84,6 +85,7 @@ def repositories(request, backend, slug, account=None):
 
     sort_key = request.GET.get('sort_by', 'name')
     repository_supports_owner = account.get_backend().supports('repository_owner')
+    repository_supports_parent_fork = account.get_backend().supports('repository_parent_fork')
     sort = get_repository_sort(sort_key, repository_supports_owner)
 
     sorted_repositories = account.repositories.order_by(sort['db_sort']).select_related('owner')
@@ -96,6 +98,30 @@ def repositories(request, backend, slug, account=None):
     if owner_only:
         sorted_repositories = sorted_repositories.filter(owner=account)
 
+    if repository_supports_parent_fork:
+        hide_forks = request.GET.get('hide-forks', False) == 'y'
+    else:
+        hide_forks = False
+
+    if hide_forks:
+        sorted_repositories = sorted_repositories.exclude(is_fork=True)
+
+    query = request.GET.get('q')
+    if query:
+        keywords = parse_keywords(query)
+        search_queryset = make_query(RepositorySearchView.search_fields, keywords)
+        search_queryset = search_queryset.models(RepositorySearchView.model)
+        if owner_only:
+            search_queryset = search_queryset.filter(owner_id=account.id)
+        if hide_forks:
+            search_queryset = search_queryset.exclude(is_fork=True)
+        # It's certainly not the best way to do it but.... :(
+        sorted_ids = [r.id for r in sorted_repositories]
+        if sorted_ids:
+            search_queryset = search_queryset.filter(django_id__in=sorted_ids)
+            found_ids = [int(r.pk) for r in search_queryset]
+            sorted_repositories = [r for r in sorted_repositories if r.id in found_ids]
+
     return render(request, 'core/accounts/repositories.html', dict(
         account = account,
         sorted_repositories = sorted_repositories,
@@ -104,5 +130,7 @@ def repositories(request, backend, slug, account=None):
             reverse = sort['reverse'],
         ),
         owner_only = 'y' if owner_only else False,
+        hide_forks = 'y' if hide_forks else False,
+        query = query,
     ))
 
