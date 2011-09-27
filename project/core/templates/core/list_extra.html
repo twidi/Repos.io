@@ -1,6 +1,6 @@
 {% if obj.has_note %}
 <div class="extra">
-    <a href="{{ obj.get_absolute_url }}"><img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" title="You have a private note !" /></a>
+    <a href="{{ obj.get_absolute_url }}" class="rel_popover" data-popover-title="Your private note" title="You have a private note !"><img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" /><div>{{ obj.rendered_note|safe }}</div></a>
 </div>
 {% endif %}
 

@@ -5,8 +5,8 @@
             <section id="note-edit" class="modal">
             <form action="{% url note_save %}" method="POST" id="note-form" class="form-stacked">{% csrf_token %}
                     <header class="modal-header">
-                        <h3>{% if note %}Edit your private note{% else %}Add a private note{% endif %}</h3>
                         <a class="close" href=".">&times;</a>
+                        <h3>{% if note %}Edit your private note{% else %}Add a private note{% endif %}</h3>
                     </header>
                     <section class="modal-body">{{ note_form.as_p }}</section>
                     <footer class="modal-footer">

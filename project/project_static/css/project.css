@@ -1,6 +1,29 @@
 /* Topbar's height and a little more */
+html, body {
+    background: #eee;
+}
+
 body {
-    padding-top: 50px;
+    padding-top: 40px;
+}
+
+#content {
+    margin: 20px -20px;
+    padding: 20px;
+    background-color: white;
+    -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    -webkit-border-radius: 0 0 6px 6px;
+    -moz-border-radius: 0 0 6px 6px;
+    border-radius: 0 0 6px 6px;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+}
+
+#content.with_messages {
+    margin-top: 0;
 }
 
 small {
@@ -13,8 +36,12 @@ small {
     margin-left: -5px;
 }
 
+a.rel_popover div {
+    display: none;
+}
+
 #messages {
-    margin-bottom: 15px;
+    margin: 20px -20px 15px;
 }
 #messages .alert-message {
     margin-bottom: 5px;
@@ -29,12 +56,60 @@ small {
     cursor: default;
 }
 
+section.row {
+    margin-bottom: 18px;
+}
+
+.nav .dropdown li img {
+    vertical-align: middle;
+}
+
+.modal .modal-header {
+    background: #222;
+    color: #fff;
+    border: solid black 1px;
+    border-bottom: none;
+    -webkit-border-radius: 5px 5px 0 0;
+    -moz-border-radius: 5px 5px 0 0;
+    border-radius: 5px 5px 0 0;
+    -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.modal .modal-header h3, .modal .modal-header a {
+    color: #fff;
+}
+
+/* use small color in tables */
 td small a {
     color: #999;
 }
 td small a:hover {
     color: #999;
 }
+
+/* Revert table style to boostrap 1.2 */
+table {
+    border: none;
+}
+table th {
+    border-bottom-width: 2px;
+}
+table th + th, table td + td {
+    border-left: none;
+}
+table tr + tr td {
+    border-top: none;
+}
+table tr td {
+    border-bottom: 1px solid #DDDDDD;
+}
+.zebra-striped .headerSortUp, .zebra-striped .headerSortDown {
+    -webkit-border-radius: 3px 3px 0 0;
+    -moz-border-radius: 3px 3px 0 0;
+    border-radius: 3px 3px 0 0;
+}
+
 /* Do not visually "select" elements in topbar's sub-menu when their "parent" is selected */
 .topbar li.active li a {
     background-color: transparent;
@@ -50,29 +125,49 @@ td small a:hover {
     float: none;
 }
 
-/* first level section */
-#container > section header {
-    margin-bottom: 20px;
+.main_header {
+    background: #f5f5f5;
+    margin: -20px -20px 20px;
+    padding: 20px 20px 10px;
+    border-bottom: 1px solid #DDDDDD;
+    -webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    -moz-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    -webkit-border-radius: 6px 6px 0 0;
+    -moz-border-radius: 6px 6px 0 0;
+    border-radius: 6px 6px 0 0;
 }
-#container > section header img {
+.main_header h1:last-child {
+    margin-bottom: 10px;
+}
+
+/* first level section */
+#content > section > header {
+    padding-left: 0;
+    padding-right: 0;
+}
+#content > section > header img {
     vertical-align: middle;
 }
-#container > section header > div > a > img {
+#content > section > header > div > a > img {
     float: left;
     margin-right: 10px;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
 }
-#container > section header .score {
+#content > section > header .score {
     margin: 2px 0;
 }
-#container > section header h1 {
+#content > section > header h1 {
     margin-bottom: 0;
     margin-left: 90px;
 }
-#container > section header h1~h2 {
+#content > section > header h1~h2 {
     line-height: 16px;
     margin: 0 0 8px 90px;
 }
-#container > section header h1~p {
+#content > section > header h1~p {
     margin: 3px 3px 3px 90px;
 }
 
@@ -81,10 +176,12 @@ td small a:hover {
     display: block;
 }
 .fetch-form {
-    margin-bottom: 0;
-}
-.fetch-form:first-child, .fetch-date:first-child {
     margin-bottom: 10px;
+}
+.fetch-form button {
+    display: block;
+    width: 100%;
+    text-align: left;
 }
 .fetch-form button em {
     font-size: smaller;
@@ -177,6 +274,9 @@ table.repositories blockquote {
 table.repositories td:first-child img {
     float: left;
     margin-right: 5px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
 }
 table.repositories td:first-child blockquote {
     margin-left: 37px;
@@ -186,6 +286,9 @@ table.repositories td:nth-child(2) {
 }
 table.repositories td:nth-child(2) img {
     vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
 }
 table.repositories td:nth-child(3) {
     white-space: nowrap;
@@ -208,6 +311,9 @@ table.accounts td:first-child {
 }
 table.accounts td:first-child img {
     vertical-align: middle;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
 }
 
 /* Home */
@@ -244,6 +350,9 @@ body#home table td {
 }
 body#home table td:first-child img {
     vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
 }
 
 /* Login page */
@@ -272,6 +381,9 @@ body#accounts-manage .row:nth-child(2) section:first-child table tr:first-child 
 }
 body#accounts-manage table td:first-child img {
     vertical-align: middle;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
 }
 body#accounts-manage .row:nth-child(2) section:nth-child(2) p:nth-child(3) {
     text-align: center;
@@ -297,9 +409,6 @@ body#repository-home dd {
 body#repository-home #repository-main section:last-child {
     text-align: center;
 }
-body#repository-home section.readme {
-    margin-top: -15px;
-}
 body#repository-home section.readme pre {
     line-height: 1.1em;
     font-size: 11px;
@@ -316,7 +425,6 @@ body#user-repositories p.row span:last-child {
     margin: 0;
 }
 #note-edit form .modal-body {
-    padding-top: 0;
     padding-bottom: 0;
 }
 #note-edit form textarea {

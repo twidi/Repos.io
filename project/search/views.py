@@ -36,7 +36,6 @@ def parse_keywords(query_string):
     return keywords
 
     result = []
-    print keywords
     for keyword in keywords:
         result.append(qs.query.clean(keyword))
 
@@ -137,7 +136,6 @@ class CoreSearchView(PurePaginationSearchView):
         if query:
             keywords = parse_keywords(self.get_query())
             queryset = make_query(self.search_fields, keywords)
-            print str(queryset.query)
 
             queryset = queryset.models(self.model)
 

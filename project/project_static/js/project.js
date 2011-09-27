@@ -1,15 +1,12 @@
-$(document).ready(function(){
-
-    $("body").bind("click", function (e) {
-        $('.dropdown-toggle, .menu').parent("li").removeClass("open");
+$(document).ready(function() {
+    $.fn.popover.defaults = $.extend($.fn.popover.defaults, {
+        html: true,
+        title: 'data-popover-title',
+        content: function() {
+            return $(this).children('div').html();
+        }
     });
-    $(".dropdown-toggle, .menu").click(function (e) {
-        var $li = $(this).parent("li").toggleClass('open');
-        return false;
+    $('a.rel_popover').popover({
+        offset: 10
     });
-    $('.alert-message .close').click(function(e) {
-        $(this).parent().hide()
-        e.preventDefault();
-    });
-
 });
