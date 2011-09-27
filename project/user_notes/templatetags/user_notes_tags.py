@@ -32,14 +32,15 @@ def prepare_notes(objects):
 
         dict_objects = dict((obj.pk, obj) for obj in objects)
 
-        ids_with_note = Note.objects.filter(
+        notes = Note.objects.filter(
                 content_type = content_type,
                 author = globals.user,
                 object_id__in=dict_objects.keys()
-                ).values_list('object_id', flat=True)
+                ).values_list('object_id', 'rendered_content')
 
-        for obj_id in list(ids_with_note):
-            dict_objects[obj_id].has_note = True
+        for note in notes:
+            dict_objects[note[0]].has_note = True
+            dict_objects[note[0]].rendered_note = note[1]
 
         return ''
     except:
