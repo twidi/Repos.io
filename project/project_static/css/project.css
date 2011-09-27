@@ -488,3 +488,10 @@ body#user-repositories p.row span:last-child {
     transform: rotate(2deg);
 }
 
+/* List filter */
+form#list-filter {
+    display: inline-block;
+    margin-right: 15px;
+}
+form#list-filter:last-child {
+    margin-right: 0;

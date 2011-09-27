@@ -110,6 +110,8 @@
 
     <field name="name" type="text" indexed="true" stored="true" multiValued="false" />
 
+    <field name="owner_id" type="slong" indexed="true" stored="true" multiValued="false" />
+
     <field name="text" type="text" indexed="true" stored="true" multiValued="false" />
 
     <field name="get_absolute_url" type="string" indexed="false" stored="true" multiValued="false" />
@@ -135,6 +137,8 @@
     <field name="renderer_main" type="string" indexed="false" stored="true" multiValued="false" />
 
     <field name="renderer_owner" type="string" indexed="false" stored="true" multiValued="false" />
+
+    <field name="is_fork" type="boolean" indexed="true" stored="true" multiValued="false" />
 
     <field name="slug" type="text" indexed="true" stored="true" multiValued="false" />
 

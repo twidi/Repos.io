@@ -5,6 +5,7 @@ from django.shortcuts import redirect
 from core.views.decorators import check_account, check_support
 from core.views.sort import get_repository_sort, get_account_sort
 from user_notes.forms import NoteForm, NoteDeleteForm
+from search.views import parse_keywords, make_query, RepositorySearchView
 
 @check_account
 def home(request, backend, slug, account=None):
@@ -105,6 +106,22 @@ def repositories(request, backend, slug, account=None):
     if hide_forks:
         sorted_repositories = sorted_repositories.exclude(is_fork=True)
 
+    query = request.GET.get('q')
+    if query:
+        keywords = parse_keywords(query)
+        search_queryset = make_query(RepositorySearchView.search_fields, keywords)
+        search_queryset = search_queryset.models(RepositorySearchView.model)
+        if owner_only:
+            search_queryset = search_queryset.filter(owner_id=account.id)
+        if hide_forks:
+            search_queryset = search_queryset.exclude(is_fork=True)
+        # It's certainly not the best way to do it but.... :(
+        sorted_ids = [r.id for r in sorted_repositories]
+        if sorted_ids:
+            search_queryset = search_queryset.filter(django_id__in=sorted_ids)
+            found_ids = [int(r.pk) for r in search_queryset]
+            sorted_repositories = [r for r in sorted_repositories if r.id in found_ids]
+
     return render(request, 'core/accounts/repositories.html', dict(
         account = account,
         sorted_repositories = sorted_repositories,
@@ -114,5 +131,6 @@ def repositories(request, backend, slug, account=None):
         ),
         owner_only = 'y' if owner_only else False,
         hide_forks = 'y' if hide_forks else False,
+        query = query,
     ))
 
