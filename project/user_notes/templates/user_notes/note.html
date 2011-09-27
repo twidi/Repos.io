@@ -24,8 +24,8 @@
         {% else %}
             {% if note %}
                 <section id="note">
-                    Your <strong>private</strong> note <a href="./?edit_note" title="Edit your private note (you'll be able to delete it too)"><small>edit</small></a>
                     <div class="sticky taped">{{ note.rendered_content|safe }}</div>
+                    <a href="./?edit_note" title="Edit your private note (you'll be able to delete it too)"><small>edit</small></a>
                 </section>
             {% else %}
                 <section id="note-button">
