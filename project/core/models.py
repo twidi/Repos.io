@@ -403,6 +403,20 @@ class Account(SyncableModel):
         self.get_backend().user_fetch(self, access_token=access_token)
         self.last_fetch = datetime.now()
 
+        if not self.official_following_count:
+            self.following_modified = self.last_fetch
+            self.following_count = 0
+            if self.following_count:
+                for following in self.following.all():
+                    self.remove_following(following, False, True)
+
+        if not self.official_followers_count:
+            self.followers_modified = self.last_fetch
+            self.followers_count = 0
+            if self.followers_count:
+                for follower in self.followers.all():
+                    self.remove_follower(follower, False, True)
+
         self.save()
         return True
 
@@ -957,6 +971,16 @@ class Repository(SyncableModel):
         self.get_backend().repository_fetch(self, access_token=access_token)
         self.last_fetch = datetime.now()
 
+        if not self.official_followers_count:
+            self.followers_modified = self.last_fetch
+            self.followers_count = 0
+            if self.followers_count:
+                for follower in self.followers.all():
+                    self.remove_follower(follower, False, True)
+
+        if not self.modified:
+            self.readme_modified = self.last_fetch
+
         self.save()
 
         return True
@@ -1319,8 +1343,9 @@ class Repository(SyncableModel):
 
             self.readme = readme
             self.readme_type = readme_type
-            self.readme_modified = datetime.now()
-            self.save()
+
+        self.readme_modified = datetime.now()
+        self.save()
         return True
 
     def compute_popularity(self):
