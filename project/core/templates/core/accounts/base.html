@@ -49,6 +49,14 @@
                     {% endif %}
                 {% endif %}
 
+                {% if account.backend|supports:'repository_contributors' %}
+                    {% if account.contributing_count or account.contributing_count == 0 or subsection == 'contributing' %}
+                        <li{% if subsection == 'contributing' %} class="active"{% endif %}>
+                            <a href="{{ account.get_contributing_url }}">{{ account.contributing_count }} contributed repositories</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+
             </ul>
 
             {% block account_content %}{% endblock %}

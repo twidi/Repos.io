@@ -375,6 +375,9 @@ class Account(SyncableModel):
     repositories_count = models.PositiveIntegerField(blank=True, null=True)
     repositories_modified = models.DateTimeField(blank=True, null=True)
 
+    # Count of contributed projects
+    contributing_count = models.PositiveIntegerField(blank=True, null=True)
+
     # The default manager
     objects = AccountManager()
 
@@ -744,6 +747,14 @@ class Account(SyncableModel):
         if save:
             self.save()
 
+    def update_contributing_count(self, save, use_count=None):
+        """
+        Update the contributed repositories count
+        """
+        self.contributing_count = use_count or self.contributing.count()
+        if save:
+            self.save()
+
     def _get_url(self, url_type, **kwargs):
         """
         Construct the url for a permalink
@@ -784,6 +795,13 @@ class Account(SyncableModel):
         Repositories page url for this Account
         """
         return self._get_url('repositories')
+
+    @models.permalink
+    def get_contributing_url(self):
+        """
+        Contributing page url for this Account
+        """
+        return self._get_url('contributing')
 
     def following_slugs(self):
         """
@@ -1156,7 +1174,7 @@ class Repository(SyncableModel):
 
         return account
 
-    def remove_follower(self, account, update_self_count, update_follower):
+    def remove_follower(self, account, update_self_count, update_follower=True):
         """
         Remove the given account from the ones following
         the Repository
@@ -1172,7 +1190,7 @@ class Repository(SyncableModel):
         if update_self_count:
             self.update_followers_count(save=True)
 
-        # update the following count for the other account
+        # update the followers count for the other account
         if update_follower:
             account.update_repositories_count(save=True)
 
@@ -1239,7 +1257,9 @@ class Repository(SyncableModel):
             return None
 
         # save the account if it's a new one
-        if account.is_new():
+        is_new = account.is_new()
+        if is_new:
+            account.contributing_count = 1
             account.save()
 
         # add the contributor
@@ -1249,9 +1269,13 @@ class Repository(SyncableModel):
         if update_self_count:
             self.update_contributors_count(save=True)
 
+        # update the repositories count for the account
+        if update_contributor and not is_new:
+            account.update_contributing_count(save=True)
+
         return account
 
-    def remove_contributor(self, account, update_self_count, update_contributor):
+    def remove_contributor(self, account, update_self_count, update_contributor=True):
         """
         Remove the given account from the ones contributing to
         the Repository
@@ -1266,6 +1290,10 @@ class Repository(SyncableModel):
         # update the count if we can
         if update_self_count:
             self.update_contributors_count(save=True)
+
+        # update the contributing count for the other account
+        if update_contributor:
+            account.update_contributing_count(save=True)
 
     def update_contributors_count(self, save, use_count=None):
         """

@@ -76,19 +76,13 @@ def following(request, backend, slug, account=None):
         ),
     ))
 
-@check_support('user_repositories')
-@check_account
-def repositories(request, backend, slug, account=None):
-    """
-    Page listing repositories owned/watched by an account
-    """
-
+def _filter_repositories(request, account, queryset):
     sort_key = request.GET.get('sort_by', 'name')
     repository_supports_owner = account.get_backend().supports('repository_owner')
     repository_supports_parent_fork = account.get_backend().supports('repository_parent_fork')
     sort = get_repository_sort(sort_key, repository_supports_owner)
 
-    sorted_repositories = account.repositories.order_by(sort['db_sort']).select_related('owner')
+    sorted_repositories = queryset.order_by(sort['db_sort']).select_related('owner')
 
     if repository_supports_owner:
         owner_only = request.GET.get('owner-only', False) == 'y'
@@ -122,7 +116,7 @@ def repositories(request, backend, slug, account=None):
             found_ids = [int(r.pk) for r in search_queryset]
             sorted_repositories = [r for r in sorted_repositories if r.id in found_ids]
 
-    return render(request, 'core/accounts/repositories.html', dict(
+    return dict(
         account = account,
         sorted_repositories = sorted_repositories,
         sort = dict(
@@ -132,5 +126,24 @@ def repositories(request, backend, slug, account=None):
         owner_only = 'y' if owner_only else False,
         hide_forks = 'y' if hide_forks else False,
         query = query or "",
-    ))
+    )
+
+@check_support('user_repositories')
+@check_account
+def repositories(request, backend, slug, account=None):
+    """
+    Page listing repositories owned/watched by an account
+    """
+    context = _filter_repositories(request, account, account.repositories)
+    return render(request, 'core/accounts/repositories.html', context)
+
+
+@check_support('repository_contributors')
+@check_account
+def contributing(request, backend, slug, account=None):
+    """
+    Page listing repositories with contributions by an account
+    """
+    context = _filter_repositories(request, account, account.contributing)
+    return render(request, 'core/accounts/contributing.html', context)
 

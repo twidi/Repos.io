@@ -39,7 +39,19 @@
                         unknown number repositories <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
                     {% endif %}
                 </dt>
-                <dd>These repositories are the ones {{ account.slug }} ownes, or follows (or likes, stars...) on {{ account.backend }}.</dd>
+                <dd>These repositories are the ones {{ account.slug }} owns, or follows (or likes, stars...) on {{ account.backend }}.</dd>
+            {% endif %}
+
+
+            {% if account.backend|supports:'repository_contributors' %}
+                <dt>
+                    {% if account.contributing_count or account.contributing_count == 0 %}
+                        <a href="{{ account.get_contributing_url }}">{{ account.contributing_count }} (or more) contributed repositories</a>
+                    {% else %}
+                        unknown number of contributed repositories
+                    {% endif %}
+                </dt>
+                <dd>These repositories are the ones to which {{ account.slug }} contributed on {{ account.backend }} (but there may be more).</dd>
             {% endif %}
 
         </dl>
