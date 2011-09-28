@@ -8,6 +8,6 @@
         <p>We don't know if {{ account.slug }} watches/owns some repositories, they need to be fetched{% if not user.is_authenticated %} by an authenticated user{% endif %}</p>
     {% endif %}
 {% endblock %}
-{% block repositories_intro %}Here are {{ sorted_repositories|length }} repositories {% if owner_only %}<strong>owned</strong>{% else %}followed/owned{% endif %} by {{ account.slug }}: <br /><small>(last fetch on {{ account.repositories_modified }})</small>{% endblock %}
+{% block repositories_intro %}Here are {{ sorted_repositories|length }} repositories {% if owner_only %}<strong>owned</strong>{% else %}followed/owned{% endif %} by {{ account.slug }}: <small>(last fetch on {{ account.repositories_modified }})</small>{% endblock %}
 {% block no_repositories %}{{ account.slug }} doesn't watch/own any repository{% endblock %}
 
