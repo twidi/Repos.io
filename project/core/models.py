@@ -842,13 +842,15 @@ class Account(SyncableModel):
             nb_own = all_repositories.count()
             nb_forks = all_repositories.filter(is_fork=True).count()
             nb_real_own = nb_own - nb_forks
-            parts['repositories'] = (nb_real_own + nb_forks / 2) / 2
+            parts['repositories'] = (nb_real_own + nb_forks / 2.0) / 3.0
 
             # popularity of its repositories
             parts['repositories_score'] = 0
             for repository in all_repositories:
                 parts['repositories_score'] += repository.compute_popularity()
             parts['repositories_score'] = min(parts['repositories_score'] / 10.0, 100)
+        if self.contributing_count:
+            parts['contributing'] = self.contributing.count / 20.0
 
         #print parts
         score += sum(parts.values())
