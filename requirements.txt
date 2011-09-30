@@ -26,6 +26,7 @@ haystack
 #-e git+git://github.com/twidi/django-favorites.git#egg=django-favorites
 django-markup-mixin
 django-notes
+taggit
 
 
 # registration/providers

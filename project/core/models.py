@@ -9,11 +9,15 @@ from django.conf import settings
 from model_utils import Choices
 from model_utils.models import TimeStampedModel
 from model_utils.fields import StatusField
+from taggit.managers import TaggableManager
 
 from core.backends import BACKENDS, get_backend
 from core.managers import AccountManager, RepositoryManager
 from core.utils import slugify
 from core.exceptions import MultipleBackendError
+
+from tagging.models import PublicTaggedAccount, PublicTaggedRepository, Tag
+from tagging.words import get_tags_for_repository
 
 from user_notes.views import get_user_note_for_object
 
@@ -380,6 +384,9 @@ class Account(SyncableModel):
 
     # The default manager
     objects = AccountManager()
+
+    # tags
+    public_tags = TaggableManager(through=PublicTaggedAccount)
 
     # Fetch operations
     backend_prefix = 'user_'
@@ -937,6 +944,9 @@ class Repository(SyncableModel):
     # The default manager
     objects = RepositoryManager()
 
+    # tags
+    public_tags = TaggableManager(through=PublicTaggedRepository)
+
     # Fetch operations
     backend_prefix = 'repository_'
     related_operations = (
@@ -1436,5 +1446,16 @@ class Repository(SyncableModel):
         """
         score = super(Repository, self).score_to_boost(force_compute=force_compute)
         return math.log1p(max(score*100, 5) / 5.0) - 0.6
+
+    def update_public_tags(self, known_tags=None):
+        """
+        Update the public tags for this repository.
+        """
+        if not known_tags:
+            known_tags = set(Tag.objects.filter(official=True).values_list('slug', flat=True))
+        rep_tags = get_tags_for_repository(self, known_tags)
+        self.public_tags.add(*rep_tags)
+
+
 
 from core.signals import *
