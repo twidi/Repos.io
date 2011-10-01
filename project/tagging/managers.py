@@ -94,7 +94,7 @@ class _TaggableManager(_BaseTaggableManager):
                 tag = tag[0]
             if isinstance(tag, self.through.tag_model()):
                 tag = tag.slug
-            str_tags.append(tag)
+            str_tags.add(tag)
 
         self.through.objects.filter(**self._lookup_kwargs()).filter(
             tag__slug__in=str_tags).delete()
