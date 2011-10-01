@@ -8,6 +8,9 @@ class Tag(TagBase):
 
     official = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ['slug',]
+
     def slugify(self, tag, i=None):
         slug = core_slugify(tag)
         if i is not None:
@@ -16,9 +19,11 @@ class Tag(TagBase):
 
 class BaseTaggedItem(ItemBase):
     tag = models.ForeignKey(Tag, related_name="%(app_label)s_%(class)s_items")
+    weight = models.FloatField(blank=True, null=True, default=1)
 
     class Meta:
         abstract = True
+        ordering = ('-weight', 'tag__slug',)
 
     @classmethod
     def tags_for(cls, model, instance=None):
@@ -31,7 +36,7 @@ class BaseTaggedItem(ItemBase):
         }).distinct()
 
 class PublicTaggedItem(BaseTaggedItem):
-    class Meta:
+    class Meta(BaseTaggedItem.Meta):
         abstract = True
 
 class PublicTaggedAccount(PublicTaggedItem):
@@ -41,7 +46,7 @@ class PublicTaggedRepository(PublicTaggedItem):
     content_object = models.ForeignKey('core.Repository')
 
 #class PrivateTaggedItem(BaseTaggedItem):
-#    class Meta:
+#    class Meta(BaseTaggedItem.Meta):
 #        abstract = True
 #
 #class PrivateTaggedAccount(PrivateTaggedItem):

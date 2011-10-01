@@ -403,15 +403,6 @@ def sort_words(words, limit=1000, return_format=None):
         return sorted_words
     return dict(sorted_words)
 
-def find_synonyms(words):
-    result = set()
-    for word in words:
-        if word in synonyms:
-            result.add(synonyms[word])
-        else:
-            result.add(word)
-    return result
-
 def get_tags_for_repository(repository, all_tags, repository_is_dict=False):
     """
     Given a list of tags, check for them in a repository and return the found
@@ -420,18 +411,12 @@ def get_tags_for_repository(repository, all_tags, repository_is_dict=False):
     "description" in a dict (using values in your queryset instead of a whole
     one)
     """
-    tags = set()
-    for key in text_types:
-        if repository_is_dict:
-            text = repository.get(key, None)
-        else:
-            text = getattr(repository, key, None)
-        if not text:
-            continue
-        text_words = find_synonyms(set(split_into_words(text)))
-        some_tags = all_tags.intersection(text_words)
-        tags = tags.union(some_tags)
-    return tags
+    tags_dict = manage_synonyms(repository_to_words(repository, repository_is_dict=repository_is_dict))
+    tags_ok = all_tags.intersection(set(tags_dict.keys()))
+    for tag in tags_dict.keys():
+        if tag not in tags_ok:
+            del tags_dict[tag]
+    return tags_dict
 
 def add_tags(tags, official=False, check_duplicates=True):
     """
