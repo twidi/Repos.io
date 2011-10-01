@@ -170,6 +170,9 @@ table tr td {
 #content > section > header h1~p {
     margin: 3px 3px 3px 90px;
 }
+#content > section > header .tags {
+    margin-left: 90px;
+}
 
 /* Fetch date information (buttons on the right) */
 .fetch-date {

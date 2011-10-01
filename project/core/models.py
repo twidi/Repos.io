@@ -1456,6 +1456,13 @@ class Repository(SyncableModel):
         rep_tags = get_tags_for_repository(self, known_tags)
         self.public_tags.set(rep_tags.items())
 
+    def all_public_tags(self):
+        """
+        Return all public tags for this repository.
+        Use this instead of self.public_tags.all() because
+        we set the default order
+        """
+        return self.public_tags.order_by('-tagging_publictaggedrepository_items__weight', 'slug')
 
 
 from core.signals import *
