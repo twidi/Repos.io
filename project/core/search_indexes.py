@@ -58,6 +58,11 @@ class AccountIndex(CoreIndex):
     Search index for Account objects
     """
     renderer_links = CharField(use_template=True, indexed=False)
+    all_public_tags = MultiValueField(null=True, indexed=False)
+    get_repositories_url = CharField(model_attr='get_repositories_url', indexed=False)
+
+    def prepare_all_public_tags(self, obj):
+        return [tag.slug for tag in obj.all_public_tags()]
 
 site.register(Account, AccountIndex)
 

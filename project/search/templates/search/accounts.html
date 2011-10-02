@@ -22,6 +22,7 @@
                                 {% include "core/list_extra.html" with obj=account %}
                                 {{ account.renderer_main|safe }}
                                 {% include "core/score.html" with obj=account score=account.internal_score %}
+                                {% include "core/accounts/tags.html" with account=account %}
                             </td>
                             <td>
                                 {{ account.renderer_links|safe }}
