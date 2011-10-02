@@ -143,12 +143,14 @@ INSTALLED_APPS = (
     'saved_searches',
     'pure_pagination',
     'notes',
+    'taggit',
 
     # ours
     'core',
     'accounts',
     'search',
     'user_notes',
+    'tagging',
 )
 
 # A sample logging configuration. The only tangible logging

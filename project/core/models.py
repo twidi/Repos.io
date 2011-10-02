@@ -15,6 +15,10 @@ from core.managers import AccountManager, RepositoryManager
 from core.utils import slugify
 from core.exceptions import MultipleBackendError
 
+from tagging.models import PublicTaggedAccount, PublicTaggedRepository, Tag
+from tagging.words import get_tags_for_repository
+from tagging.managers import TaggableManager
+
 from user_notes.views import get_user_note_for_object
 
 BACKENDS_CHOICES = Choices(*BACKENDS.keys())
@@ -380,6 +384,9 @@ class Account(SyncableModel):
 
     # The default manager
     objects = AccountManager()
+
+    # tags
+    public_tags = TaggableManager(through=PublicTaggedAccount)
 
     # Fetch operations
     backend_prefix = 'user_'
@@ -863,6 +870,44 @@ class Account(SyncableModel):
         score = super(Account, self).score_to_boost(force_compute=force_compute)
         return math.log10(max(score*100, 5) / 2.0) - 0.3
 
+    def set_public_tags(self):
+        """
+        Update the public tags for this accounts.
+        """
+        tags = {}
+        rep_tagged_items = PublicTaggedRepository.objects.filter(content_object__followers=self).select_related('content_object', 'tag')
+        for tagged_item in rep_tagged_items:
+            repository = tagged_item.content_object
+            divider = 1.0
+            if repository.is_fork:
+                divider = 2
+            if repository.owner_id != self.id:
+                divider = divider * 3
+            if tagged_item.tag.slug not in tags:
+                tags[tagged_item.tag.slug] = 0
+            tags[tagged_item.tag.slug] += (tagged_item.weight or 1) / divider
+
+        tags = sorted(tags.iteritems(), key=lambda t: t[1], reverse=True)
+
+        self.public_tags.set(tags[:5])
+
+    def all_public_tags(self, with_weight=False):
+        """
+        Return all public tags for this account.
+        Use this instead of self.public_tags.all() because
+        we set the default order
+        If `with_weight` is True, return the through model of the tagging
+        system, with tags and weight.
+        Else simply returns tags.
+        in both cases, sort is by weight (desc) and slug (asc)
+        """
+        if with_weight:
+            qs = self.publictaggedaccount_set.select_related('tag').all()
+        else:
+            qs = self.public_tags.order_by('-tagging_publictaggedaccount_items__weight', 'slug')
+
+        return qs
+
 class Repository(SyncableModel):
     """
     Represent a repository from a backend
@@ -936,6 +981,9 @@ class Repository(SyncableModel):
 
     # The default manager
     objects = RepositoryManager()
+
+    # tags
+    public_tags = TaggableManager(through=PublicTaggedRepository)
 
     # Fetch operations
     backend_prefix = 'repository_'
@@ -1436,5 +1484,32 @@ class Repository(SyncableModel):
         """
         score = super(Repository, self).score_to_boost(force_compute=force_compute)
         return math.log1p(max(score*100, 5) / 5.0) - 0.6
+
+    def set_public_tags(self, known_tags=None):
+        """
+        Update the public tags for this repository.
+        """
+        if not known_tags:
+            known_tags = set(Tag.objects.filter(official=True).values_list('slug', flat=True))
+        rep_tags = get_tags_for_repository(self, known_tags)
+        tags = sorted(rep_tags.iteritems(), key=lambda t: t[1], reverse=True)
+        self.public_tags.set(tags[:5])
+
+    def all_public_tags(self, with_weight=False):
+        """
+        Return all public tags for this repository.
+        Use this instead of self.public_tags.all() because
+        we set the default order
+        If `with_weight` is True, return the through model of the tagging
+        system, with tags and weight.
+        Else simply returns tags.
+        in both cases, sort is by weight (desc) and slug (asc)
+        """
+        if with_weight:
+            qs = self.publictaggedrepository_set.select_related('tag').all()
+        else:
+            qs = self.public_tags.order_by('-tagging_publictaggedrepository_items__weight', 'slug')
+        return qs
+
 
 from core.signals import *

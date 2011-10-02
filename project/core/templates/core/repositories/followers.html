@@ -27,6 +27,7 @@
                             {% include "core/accounts/avatar.html" with account=follower %}
                             {% include "core/accounts/link.html" with no_backend=1 account=follower %}
                             {% include "core/score.html" with obj=follower %}
+                            {% include "core/accounts/tags.html" with account=follower %}
                         </td>
                         {% if follower.id = repository.owner.id %}<td title="{{ follower.slug }} is the owner of {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
                         {% if follower.slug in repository.contributors_slugs %}<td title="{{ follower.slug }} is/was a contributor of {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}

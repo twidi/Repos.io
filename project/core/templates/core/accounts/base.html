@@ -13,6 +13,7 @@
                     {% include "core/accounts/links.html" %}
                 </p>
                 {% if account.last_fetch %}<p>On {{ account.backend }} since {{ account.official_created }}.</p>{% endif %}
+                {% include "core/accounts/tags.html" with type_design="success" %}
             </div>
             <div class="span-one-third">
                 {% include "core/accounts/fetch_form.html" %}{% include "core/accounts/fetch_form.html" with for_related=1 %}
