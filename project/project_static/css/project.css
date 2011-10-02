@@ -31,6 +31,9 @@ small {
     font-size: smaller;
 }
 
+.label {
+    padding-bottom: 1px;
+}
 a.label:hover {
     color: white;
 }
@@ -251,11 +254,11 @@ table.zebra-striped th.purple.header:after {
 /* Tables with an extra div info in the last column */
 table.with_extras div.extra {
     float: right;
-    margin: 0 5px;
+    margin-left: 5px;
 }
 table.repositories.with_extras div.extra,
 table.accounts.with_extras div.extra {
-    margin-top: 8px;
+    margin-top: 0;
 }
 /* Scores */
 .score {
@@ -273,7 +276,7 @@ table.repositories .score {
     margin-bottom: 10px;
 }
 table.accounts .score {
-    top: -6px;
+    top: -16px;
 }
 
 
@@ -320,10 +323,20 @@ table.accounts td:first-child {
     min-width: 160px;
 }
 table.accounts td:first-child img {
-    vertical-align: middle;
+    vertical-align: text-top;
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     border-radius: 4px;
+    margin-top: 2px;
+}
+table.accounts .tags {
+    margin-left: 36px;
+    position: relative;
+    top: -16px;
+    margin-bottom: -18px;
+}
+table.accounts .tags .label {
+    font-size: 8px;
 }
 
 /* Home */

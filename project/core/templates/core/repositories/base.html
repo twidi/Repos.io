@@ -37,12 +37,7 @@
                     {% if repository.homepage %}<a href="{{ repository.homepage }}" title="Go to the project's homepage: {{ repository.homepage }}"><img src="{{ STATIC_URL }}img/favicon_home.png" alt="His homepage" /></a>{% endif %}
                 </p>
                 <p>On {{ repository.backend }} since {{ repository.official_created }}, {% if repository.official_modified %}updated on {{ repository.official_modified }}{% else %}never updated{% endif %}</p>
-                {% url search as url_search %}
-                <ul class="tags unstyled">
-                    {% for tag in repository.all_public_tags %}
-                        <li><a href="{{ url_search }}?q={{ tag }}" class="label success">{{ tag }}</a></li>
-                    {% endfor %}
-                </ul>
+                {% include "core/repositories/tags.html" with type_design="success" %}
             </div>
             <div class="span-one-third">
                 {% include "core/repositories/fetch_form.html" %}{% include "core/repositories/fetch_form.html" with for_related=1 %}

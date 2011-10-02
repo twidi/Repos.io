@@ -1,0 +1,3 @@
+{% url search as url_search %}
+{% include "core/tags.html" with tags=repository.all_public_tags tag_link=url_search %}
+
