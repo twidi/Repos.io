@@ -870,7 +870,7 @@ class Account(SyncableModel):
         score = super(Account, self).score_to_boost(force_compute=force_compute)
         return math.log10(max(score*100, 5) / 2.0) - 0.3
 
-    def set_public_tags(self, known_tags=None):
+    def set_public_tags(self):
         """
         Update the public tags for this accounts.
         """
@@ -889,7 +889,7 @@ class Account(SyncableModel):
 
         tags = sorted(tags.iteritems(), key=lambda t: t[1], reverse=True)
 
-        self.public_tags.set(tags[:10])
+        self.public_tags.set(tags[:5])
 
     def all_public_tags(self, with_weight=False):
         """
@@ -1492,7 +1492,8 @@ class Repository(SyncableModel):
         if not known_tags:
             known_tags = set(Tag.objects.filter(official=True).values_list('slug', flat=True))
         rep_tags = get_tags_for_repository(self, known_tags)
-        self.public_tags.set(rep_tags.items())
+        tags = sorted(rep_tags.iteritems(), key=lambda t: t[1], reverse=True)
+        self.public_tags.set(tags[:5])
 
     def all_public_tags(self, with_weight=False):
         """
