@@ -30,7 +30,7 @@ def prepare_notes(objects):
 
         content_type = ContentType.objects.get(app_label=app_label, model=model_name)
 
-        dict_objects = dict((obj.pk, obj) for obj in objects)
+        dict_objects = dict((int(obj.pk), obj) for obj in objects)
 
         notes = Note.objects.filter(
                 content_type = content_type,
