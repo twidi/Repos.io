@@ -31,6 +31,13 @@ small {
     font-size: smaller;
 }
 
+a.label:hover {
+    color: white;
+}
+ul.tags li {
+    display: inline-block;
+}
+
 .btn img {
     vertical-align: middle;
     margin-left: -5px;
