@@ -13,12 +13,13 @@
                     {% include "core/accounts/links.html" %}
                 </p>
                 {% if account.last_fetch %}<p>On {{ account.backend }} since {{ account.official_created }}.</p>{% endif %}
-                {% url search_accounts as url_search %}
-                <ul class="tags unstyled">
-                    {% for tag in account.all_public_tags %}
-                        <li><a href="{{ url_search }}?q={{ tag }}" class="label success">{{ tag }}</a></li>
-                    {% endfor %}
-                </ul>
+                {% with url_search=account.get_repositories_url %}
+                    <ul class="tags unstyled">
+                        {% for tag in account.all_public_tags %}
+                            <li><a href="{{ url_search }}?distinct=y&amp;q={{ tag }}" class="label success">{{ tag }}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% endwith %}
             </div>
             <div class="span-one-third">
                 {% include "core/accounts/fetch_form.html" %}{% include "core/accounts/fetch_form.html" with for_related=1 %}
