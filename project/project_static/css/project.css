@@ -443,6 +443,37 @@ body#user-repositories p.row span:last-child {
 }
 
 /* Notes */
+
+.sticky {
+    -webkit-box-shadow: #DDD 0px 1px 2px;
+    position: relative;
+    background-color: #FFFFB7;
+    border-color: #DEE184;
+    text-align: center;
+    margin: 25px 0px;
+    padding: 15px;
+    -webkit-box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
+    -moz-box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
+    box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
+}
+.sticky.taped:after {
+    display: block;
+    content: "";
+    position: absolute;
+    width: 110px;
+    height: 30px;
+    top: -21px;
+    left: 2400px;
+    border: 1px solid #fff;
+    background: rgba(254, 254, 254, .6);
+    -webkit-box-shadow: 0px 0 3px rgba(0,0,0,0.1);
+    -moz-box-shadow: 0px 0 3px rgba(0,0,0,0.1);
+    box-shadow: 0px 0 3px rgba(0,0,0,0.1);
+    -webkit-transform: rotate(2deg);
+    -moz-transform: rotate(2deg);
+    -o-transform: rotate(2deg);
+    transform: rotate(2deg);
+}
 #note-edit form {
     padding: 0;
     margin: 0;
@@ -463,52 +494,48 @@ body#user-repositories p.row span:last-child {
     margin-top: -20px;
     margin-bottom: 15px;
 }
-#note {
+
+/* Private part */
+#private {
     margin-top: -14px;
-}
-#note > a {
-    float: right;
-    position: relative;
-    top: -2px;
-    right: 2px;
-}
-#note > .sticky {
     text-align: left;
-    margin-top: 2px;
-    margin-bottom: -14px;
 }
-#note > .sticky > p:last-child {
+#private > div {
+    float: left;
+    margin-left: 20px;
+}
+#private > .note-part {
+    margin-left: 0;
+    width: 610px;
+}
+#private > .note-part.with-note > a {
+    position: absolute;
+    top: -2px;
+    left: 4px;
+    display:none;
+}
+#private:hover > .note-part.with-note > a {
+    display: inline;
+}
+#private > .note-part > div:first-child >  p:last-child {
     margin-bottom: 0;
 }
-.sticky {
-    -webkit-box-shadow: #DDD 0px 1px 2px;
-    position: relative;
-    background-color: #FFFFB7;
-    border-color: #DEE184;
+#private.sticky.taped:after {
+    left: 415px;
+    content: "Your private notes on this page";
     text-align: center;
-    margin: 25px 0px;
-    padding: 20px 15px 15px;
-    -webkit-box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
-    -moz-box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
-    box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
+    font-size: smaller;
+    color: #bfbfbf;
+    line-height: 15px;
 }
-.sticky.taped:after {
-    display: block;
-    content: "";
-    position: absolute;
-    width: 110px;
-    height: 30px;
-    top: -21px;
-    left: 240px;
-    border: 1px solid #fff;
-    background: rgba(254, 254, 254, .6);
-    -webkit-box-shadow: 0px 0 3px rgba(0,0,0,0.1);
-    -moz-box-shadow: 0px 0 3px rgba(0,0,0,0.1);
-    box-shadow: 0px 0 3px rgba(0,0,0,0.1);
-    -webkit-transform: rotate(2deg);
-    -moz-transform: rotate(2deg);
-    -o-transform: rotate(2deg);
-    transform: rotate(2deg);
+#private.sticky.taped.for-user:after {
+    content: "Your private notes on this account";
+}
+#private.sticky.taped.for-repository:after {
+    content: "Your private notes on this project";
+}
+#private br {
+    clear: both;
 }
 
 /* List filter */

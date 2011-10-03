@@ -19,7 +19,7 @@ from tagging.models import PublicTaggedAccount, PublicTaggedRepository, Tag
 from tagging.words import get_tags_for_repository
 from tagging.managers import TaggableManager
 
-from user_notes.views import get_user_note_for_object
+from private.views import get_user_note_for_object
 
 BACKENDS_CHOICES = Choices(*BACKENDS.keys())
 

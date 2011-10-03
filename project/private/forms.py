@@ -3,7 +3,7 @@ from django import forms
 from django_globals import globals
 
 from notes.models import Note, Topic
-from user_notes.models import ALLOWED_MODELS
+from private.models import ALLOWED_MODELS
 
 class NoteBaseForm(forms.ModelForm):
     """

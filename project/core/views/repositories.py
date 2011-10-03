@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 
 from core.views.decorators import check_repository, check_support
 from core.views.sort import get_account_sort
-from user_notes.forms import NoteForm, NoteDeleteForm
+from private.forms import NoteForm, NoteDeleteForm
 
 @check_repository
 def home(request, backend, project, repository=None):

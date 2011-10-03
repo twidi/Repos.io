@@ -1,6 +1,12 @@
 {% if request.user and request.user.is_authenticated %}
-<section class="row">
-    <div class="span-two-thirds">
+<section class="sticky taped for-{{ section }}" id="private">
+<div class="note-part{% if note %} with-note{% endif %}">
+        {% if note %}
+            <div>{{ note.rendered_content|safe }}</div>
+            <a href="./?edit_note" title="Edit your private note (you'll be able to delete it too)"><small>edit</small></a>
+        {% else %}
+            <a href="./?edit_note"><small>Add a <strong>private</strong> note</small></a>
+        {% endif %}
         {% if note_form %}
             <section id="note-edit" class="modal">
             <form action="{% url note_save %}" method="POST" id="note-form" class="form-stacked">{% csrf_token %}
@@ -21,18 +27,8 @@
                     </form>
                 {% endif %}
             </section>
-        {% else %}
-            {% if note %}
-                <section id="note">
-                    <div class="sticky taped">{{ note.rendered_content|safe }}</div>
-                    <a href="./?edit_note" title="Edit your private note (you'll be able to delete it too)"><small>edit</small></a>
-                </section>
-            {% else %}
-                <section id="note-button">
-                    <a href="./?edit_note" class="btn small">Add a <strong>private</strong> note</a>
-                </section>
-            {% endif %}
         {% endif %}
     </div>
+    <br />
 </section>
 {% endif %}

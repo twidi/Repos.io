@@ -8,7 +8,7 @@ from django.http import HttpResponseNotAllowed
 
 from notes.models import Note
 
-from user_notes.forms import NoteForm, NoteDeleteForm
+from private.forms import NoteForm, NoteDeleteForm
 
 def get_user_note_for_object(obj):
     """
@@ -29,7 +29,7 @@ def get_user_note_for_object(obj):
 
 @require_POST
 @login_required
-def save(request):
+def note_save(request):
     """
     Save a note for the current user
     """
@@ -47,7 +47,7 @@ def save(request):
 
 @require_POST
 @login_required
-def delete(request):
+def note_delete(request):
     """
     Delete a note for the current user
     """
