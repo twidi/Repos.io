@@ -3,7 +3,7 @@ import unicodedata
 
 from django.utils.encoding import smart_unicode
 
-RE_SLUG = re.compile('[^\w\s-]')
+RE_SLUG = re.compile('[^\w-]')
 
 def slugify(value):
     if not isinstance(value, unicode):

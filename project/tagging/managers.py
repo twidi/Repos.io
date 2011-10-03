@@ -5,6 +5,15 @@ class TaggableManager(BaseTaggableManager):
     """
     We must subclass it to use our own manager
     """
+    def __init__(self, *args, **kwargs):
+        """
+        A related name can now be set
+        """
+        related_name = kwargs.pop('related_name', None)
+        super(TaggableManager, self).__init__(*args, **kwargs)
+        if related_name:
+            self.rel.related_name = related_name
+
     def __get__(self, instance, model):
         if instance is not None and instance.pk is None:
             raise ValueError("%s objects need to have a primary key value "
@@ -15,13 +24,25 @@ class TaggableManager(BaseTaggableManager):
         return manager
 
 
+def prepare_tag(tag):
+    return tag.strip().lower()
+
+
 class _TaggableManager(_BaseTaggableManager):
     """
     Manager to use add, set... with a weight for each tag
     """
 
+    def _lookup_kwargs(self, **filters):
+        """
+        It's possible to filter by other fields
+        """
+        result = self.through.lookup_kwargs(self.instance)
+        result.update(filters)
+        return result
+
     @require_instance_manager
-    def add(self, tags):
+    def add(self, tags, **filters):
         """
         Add a list of tags.
         We consider the SLUG of each tag
@@ -40,31 +61,31 @@ class _TaggableManager(_BaseTaggableManager):
 
         for tag in tags:
             if isinstance(tag, self.through.tag_model()):
-                obj_tags[tag.slug] = (tag, getattr(tag, 'weight', None))
+                obj_tags[prepare_tag(tag.name)] = (tag, getattr(tag, 'weight', None))
             elif isinstance(tag, (tuple, list)):
                 if isinstance(tag[0], self.through.tag_model()):
-                    obj_tags[tag[0].slug] = tag
+                    obj_tags[prepare_tag(tag[0].name)] = tag
                 elif isinstance(tag[0], basestring):
-                    str_tags[tag[0]] = tag[1]
+                    str_tags[prepare_tag(tag[0])] = tag[1]
             elif isinstance(tag, basestring):
-                str_tags[tag] = None
+                str_tags[prepare_tag(tag)] = None
 
         # If str_tags has 0 elements Django actually optimizes that to not do a
         # query.  Malcolm is very smart.
         existing = self.through.tag_model().objects.filter(
-            slug__in=str_tags.keys()
+            name__in=str_tags.keys()
         )
 
-        dict_existing = dict((t.slug, t) for t in existing)
+        dict_existing = dict((t.name, t) for t in existing)
         for tag in str_tags.keys():
             if tag in dict_existing:
                 obj_tags[tag] = (dict_existing[tag], str_tags[tag])
                 del str_tags[tag]
 
         # add new str_tags
-        for new_tag, weight in str_tags:
+        for new_tag, weight in str_tags.items():
             obj_tags[new_tag] = (
-                self.through.tag_model().objects.create(slug=new_tag, name=new_tag),
+                self.through.tag_model().objects.create(name=new_tag),
                 weight
             )
 
@@ -74,7 +95,7 @@ class _TaggableManager(_BaseTaggableManager):
                 defaults['weight'] = tag[1]
 
             params = dict(tag=tag[0], defaults=defaults)
-            params.update(self._lookup_kwargs())
+            params.update(self._lookup_kwargs(**filters))
 
             tagged_item, created = self.through.objects.get_or_create(**params)
             if not created and tagged_item.weight != tag[1]:
@@ -82,12 +103,12 @@ class _TaggableManager(_BaseTaggableManager):
                 tagged_item.save()
 
     @require_instance_manager
-    def set(self, tags):
-        self.clear()
-        self.add(tags)
+    def set(self, tags, **filters):
+        self.clear(**filters)
+        self.add(tags, **filters)
 
     @require_instance_manager
-    def remove(self, tags):
+    def remove(self, tags, **filters):
         str_tags = set()
         for tag in tags:
             if isinstance(tag, (tuple, list)):
@@ -96,5 +117,9 @@ class _TaggableManager(_BaseTaggableManager):
                 tag = tag.slug
             str_tags.add(tag)
 
-        self.through.objects.filter(**self._lookup_kwargs()).filter(
+        self.through.objects.filter(**self._lookup_kwargs(**filters)).filter(
             tag__slug__in=str_tags).delete()
+
+    @require_instance_manager
+    def clear(self, **filters):
+        self.through.objects.filter(**self._lookup_kwargs(**filters)).delete()

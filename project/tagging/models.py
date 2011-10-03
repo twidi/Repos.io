@@ -1,8 +1,10 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 from taggit.models import ItemBase, TagBase
 
 from core.utils import slugify as core_slugify
+from tagging.managers import prepare_tag
 
 class Tag(TagBase):
 
@@ -17,8 +19,11 @@ class Tag(TagBase):
             slug += "_%d" % i
         return slug
 
+    def save(self, *args, **kwargs):
+        self.name = prepare_tag(self.name)
+        super(Tag, self).save(*args, **kwargs)
+
 class BaseTaggedItem(ItemBase):
-    tag = models.ForeignKey(Tag, related_name="%(app_label)s_%(class)s_items")
     weight = models.FloatField(blank=True, null=True, default=1)
 
     class Meta:
@@ -40,17 +45,23 @@ class PublicTaggedItem(BaseTaggedItem):
         abstract = True
 
 class PublicTaggedAccount(PublicTaggedItem):
+    tag = models.ForeignKey(Tag, related_name="public_account_tags")
     content_object = models.ForeignKey('core.Account')
 
 class PublicTaggedRepository(PublicTaggedItem):
+    tag = models.ForeignKey(Tag, related_name="public_repository_tags")
     content_object = models.ForeignKey('core.Repository')
 
-#class PrivateTaggedItem(BaseTaggedItem):
-#    class Meta(BaseTaggedItem.Meta):
-#        abstract = True
-#
-#class PrivateTaggedAccount(PrivateTaggedItem):
-#    content_object = models.ForeignKey(Account)
-#
-#class PrivateTaggedRepository(PrivateTaggedItem):
-#    content_object = models.ForeignKey(Repository)
+class PrivateTaggedItem(BaseTaggedItem):
+    owner = models.ForeignKey(User, related_name="%(app_label)s_%(class)s_items")
+
+    class Meta(BaseTaggedItem.Meta):
+        abstract = True
+
+class PrivateTaggedAccount(PrivateTaggedItem):
+    tag = models.ForeignKey(Tag, related_name="private_account_tags")
+    content_object = models.ForeignKey('core.Account')
+
+class PrivateTaggedRepository(PrivateTaggedItem):
+    tag = models.ForeignKey(Tag, related_name="private_repository_tags")
+    content_object = models.ForeignKey('core.Repository')

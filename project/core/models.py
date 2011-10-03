@@ -15,11 +15,11 @@ from core.managers import AccountManager, RepositoryManager
 from core.utils import slugify
 from core.exceptions import MultipleBackendError
 
-from tagging.models import PublicTaggedAccount, PublicTaggedRepository, Tag
+from tagging.models import PublicTaggedAccount, PublicTaggedRepository, Tag, PrivateTaggedAccount, PrivateTaggedRepository
 from tagging.words import get_tags_for_repository
 from tagging.managers import TaggableManager
 
-from private.views import get_user_note_for_object
+from private.views import get_user_note_for_object, get_user_tags_for_object
 
 BACKENDS_CHOICES = Choices(*BACKENDS.keys())
 
@@ -298,6 +298,12 @@ class SyncableModel(TimeStampedModel):
         """
         return get_user_note_for_object(self)
 
+    def get_user_tags(self):
+        """
+        Return the tags for the current user
+        """
+        return get_user_tags_for_object(self)
+
     def compute_score(self):
         """
         Compute the current score for the object
@@ -386,7 +392,8 @@ class Account(SyncableModel):
     objects = AccountManager()
 
     # tags
-    public_tags = TaggableManager(through=PublicTaggedAccount)
+    public_tags = TaggableManager(through=PublicTaggedAccount, related_name='public_on_accounts')
+    private_tags = TaggableManager(through=PrivateTaggedAccount, related_name='private_on_accounts')
 
     # Fetch operations
     backend_prefix = 'user_'
@@ -870,7 +877,7 @@ class Account(SyncableModel):
         score = super(Account, self).score_to_boost(force_compute=force_compute)
         return math.log10(max(score*100, 5) / 2.0) - 0.3
 
-    def set_public_tags(self):
+    def find_public_tags(self):
         """
         Update the public tags for this accounts.
         """
@@ -904,9 +911,18 @@ class Account(SyncableModel):
         if with_weight:
             qs = self.publictaggedaccount_set.select_related('tag').all()
         else:
-            qs = self.public_tags.order_by('-tagging_publictaggedaccount_items__weight', 'slug')
+            qs = self.public_tags.order_by('-public_account_tags__weight', 'slug')
 
         return qs
+
+    def all_private_tags(self, user):
+        """
+        Return all private tags for this account set by the given user.
+        Use this instead of self.private_tags.filter(owner=user) because
+        we set the default order
+        """
+        return self.private_tags.filter(private_account_tags__owner=user).order_by('-private_account_tags__weight', 'slug')
+
 
 class Repository(SyncableModel):
     """
@@ -983,7 +999,8 @@ class Repository(SyncableModel):
     objects = RepositoryManager()
 
     # tags
-    public_tags = TaggableManager(through=PublicTaggedRepository)
+    public_tags = TaggableManager(through=PublicTaggedRepository, related_name='public_on_repositories')
+    private_tags = TaggableManager(through=PrivateTaggedRepository, related_name='private_on_repositories')
 
     # Fetch operations
     backend_prefix = 'repository_'
@@ -1485,7 +1502,7 @@ class Repository(SyncableModel):
         score = super(Repository, self).score_to_boost(force_compute=force_compute)
         return math.log1p(max(score*100, 5) / 5.0) - 0.6
 
-    def set_public_tags(self, known_tags=None):
+    def find_public_tags(self, known_tags=None):
         """
         Update the public tags for this repository.
         """
@@ -1508,8 +1525,16 @@ class Repository(SyncableModel):
         if with_weight:
             qs = self.publictaggedrepository_set.select_related('tag').all()
         else:
-            qs = self.public_tags.order_by('-tagging_publictaggedrepository_items__weight', 'slug')
+            qs = self.public_tags.order_by('-public_repository_tags__weight', 'slug')
         return qs
+
+    def all_private_tags(self, user):
+        """
+        Return all private tags for this repository set by the given user.
+        Use this instead of self.private_tags.filter(owner=user) because
+        we set the default order
+        """
+        return self.private_tags.filter(private_repository_tags__owner=user).order_by('-private_repository_tags__weight', 'slug')
 
 
 from core.signals import *

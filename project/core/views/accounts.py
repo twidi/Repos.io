@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 
 from core.views.decorators import check_account, check_support
 from core.views.sort import get_repository_sort, get_account_sort
-from private.forms import NoteForm, NoteDeleteForm
+from private.forms import NoteForm, NoteDeleteForm, TagsForm, TagsDeleteForm
 from search.views import parse_keywords, make_query, RepositorySearchView
 
 @check_account
@@ -13,10 +13,12 @@ def home(request, backend, slug, account=None):
     Home page of an account
     """
     note = account.get_user_note()
+    private_tags = account.get_user_tags()
 
     context = dict(
         note = note,
         account = account,
+        private_tags = private_tags,
     )
 
     if 'edit_note' in request.GET:
@@ -27,6 +29,15 @@ def home(request, backend, slug, account=None):
         context['note_form'] = NoteForm(instance=note) if note else NoteForm(noted_object=account)
         if note:
             context['note_delete_form'] = NoteDeleteForm(instance=note)
+
+    elif 'edit_tags' in request.GET:
+        if not (request.user and request.user.is_authenticated()):
+            messages.error(request, 'You must bo logged in to add/edit/delete your tags')
+            return redirect(account)
+
+        context['tags_form'] = TagsForm(tagged_object=account)
+        if private_tags:
+            context['tags_delete_form'] = TagsDeleteForm(tagged_object=account)
 
 
     return render(request, 'core/accounts/home.html', context)
