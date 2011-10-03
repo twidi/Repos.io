@@ -37,6 +37,7 @@
             <a href="./?edit_tags"><small>Add <strong>private</strong> tags</small></a>
         {% endif %}
         {% if tags_form %}
+            {{ tags_form.media }}
             <section id="tags-edit" class="modal">
                 <form action="{% url tags_save %}" method="POST" id="tags-form" class="form-stacked">{% csrf_token %}
                     <header class="modal-header">

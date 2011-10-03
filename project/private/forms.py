@@ -1,12 +1,12 @@
 from django import forms
 from django.contrib.contenttypes.models import ContentType
-from django.utils.translation import ugettext as _
 
 from django_globals import globals
 from notes.models import Note, Topic
 
 from private.models import ALLOWED_MODELS
-from tagging.words import edit_string_for_tags, parse_tags
+from tagging.words import edit_string_for_tags
+from tagging.forms import TagField
 
 class NoteBaseForm(forms.ModelForm):
     """
@@ -178,19 +178,6 @@ class TagsBaseForm(forms.Form):
         if '%s.%s' % (content_type.app_label, content_type.model) not in ALLOWED_MODELS:
             raise forms.ValidationError('It\'s not possible to manage tags for this kind of object')
         return content_type
-
-class TagField(forms.CharField):
-    """
-    Better TagField from taggit, that allows multi-line edit
-    """
-    widget = forms.Textarea
-
-    def clean(self, value):
-        value = super(TagField, self).clean(value)
-        try:
-            return parse_tags(value.replace("\n", ", "))
-        except ValueError:
-            raise forms.ValidationError(_("Please see help text to know attended format"))
 
 class TagsForm(TagsBaseForm):
     """

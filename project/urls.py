@@ -10,5 +10,6 @@ urlpatterns = patterns('',
     url(r'^accounts/', include('accounts.urls')),
     url(r'^search/', include('search.urls')),
     url(r'^private/', include('private.urls')),
+    url(r'^tagging/', include('tagging.urls')),
     url(r'^', include('core.urls')),
 )
