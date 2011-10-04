@@ -9,6 +9,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^accounts/', include('accounts.urls')),
     url(r'^search/', include('search.urls')),
-    url(r'^notes/', include('user_notes.urls')),
+    url(r'^private/', include('private.urls')),
+    url(r'^tags/', include('tagging.urls')),
     url(r'^', include('core.urls')),
 )

@@ -17,6 +17,7 @@
     <script src="{{ STATIC_URL }}js/bootstrap/bootstrap-twipsy.js?1.3"></script>
     <script src="{{ STATIC_URL }}js/bootstrap/bootstrap-popover.js?1.3"></script>
     <script src="{{ STATIC_URL }}js/project.js"></script>
+    {% block form_media %}{% endblock %}
 </head>
 
 <body id="{% block body_id %}{% if section %}{{ section }}{% if subsection %}-{{ subsection }}{% endif %}{% else %}body{% endif %}{% endblock %}">

@@ -5,7 +5,7 @@ from django_globals import globals
 from haystack.models import SearchResult
 from notes.models import Note
 
-from user_notes.models import ALLOWED_MODELS
+from private.models import ALLOWED_MODELS
 
 register = template.Library()
 

@@ -149,7 +149,7 @@ INSTALLED_APPS = (
     'core',
     'accounts',
     'search',
-    'user_notes',
+    'private',
     'tagging',
 )
 

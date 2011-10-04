@@ -40,6 +40,11 @@ a.label:hover {
 ul.tags li {
     display: inline-block;
 }
+.helptext {
+  font-size: 11px;
+  line-height: 18px;
+  color: #bfbfbf;
+}
 
 .btn img {
     vertical-align: middle;
@@ -443,43 +448,7 @@ body#user-repositories p.row span:last-child {
 }
 
 /* Notes */
-#note-edit form {
-    padding: 0;
-    margin: 0;
-}
-#note-edit form .modal-body {
-    padding-bottom: 0;
-}
-#note-edit form textarea {
-    width: 510px;
-}
-#note-edit form#note-delete-form {
-    position: absolute;
-    display: inline-block;
-    bottom: 15px;
-    left: 20px;
-}
-#note-button p {
-    margin-top: -20px;
-    margin-bottom: 15px;
-}
-#note {
-    margin-top: -14px;
-}
-#note > a {
-    float: right;
-    position: relative;
-    top: -2px;
-    right: 2px;
-}
-#note > .sticky {
-    text-align: left;
-    margin-top: 2px;
-    margin-bottom: -14px;
-}
-#note > .sticky > p:last-child {
-    margin-bottom: 0;
-}
+
 .sticky {
     -webkit-box-shadow: #DDD 0px 1px 2px;
     position: relative;
@@ -487,7 +456,7 @@ body#user-repositories p.row span:last-child {
     border-color: #DEE184;
     text-align: center;
     margin: 25px 0px;
-    padding: 20px 15px 15px;
+    padding: 15px;
     -webkit-box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
     -moz-box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
     box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
@@ -499,7 +468,7 @@ body#user-repositories p.row span:last-child {
     width: 110px;
     height: 30px;
     top: -21px;
-    left: 240px;
+    left: 2400px;
     border: 1px solid #fff;
     background: rgba(254, 254, 254, .6);
     -webkit-box-shadow: 0px 0 3px rgba(0,0,0,0.1);
@@ -509,6 +478,89 @@ body#user-repositories p.row span:last-child {
     -moz-transform: rotate(2deg);
     -o-transform: rotate(2deg);
     transform: rotate(2deg);
+}
+
+/* Private part */
+#private {
+    margin-top: -14px;
+    text-align: left;
+}
+#private > div {
+    float: left;
+    margin-left: 20px;
+}
+#private > div > a, #private > div > a small {
+    color: #a28514;
+}
+#private > .note-part {
+    margin-left: 0;
+    width: 610px;
+}
+#private > .note-part.with-note > a {
+    position: absolute;
+    top: -2px;
+    left: 4px;
+}
+#private > .note-part.with-note > a small {
+    color: #f9d64c;
+}
+#private:hover > .note-part.with-note > a small {
+    color: #a28514;
+}
+#private > .note-part > div:first-child >  p:last-child {
+    margin-bottom: 0;
+}
+#private > .more-part {
+    width: 264px;
+    padding-left: 15px;
+    border-left: dashed 1px #bfbfbf;
+}
+#private > .more-part.with-tags > a {
+    position: absolute;
+    top: -2px;
+    right: 4px;
+}
+#private > .more-part.with-tags > a small {
+    color: #f9d64c;
+}
+#private:hover > .more-part.with-tags > a small {
+    color: #a28514;
+}
+#private.sticky.taped:after {
+    left: 415px;
+    content: "Your private notes about this page";
+    text-align: center;
+    font-size: smaller;
+    color: #bfbfbf;
+    line-height: 15px;
+}
+#private.sticky.taped.for-user:after {
+    content: "Your private notes about this account";
+}
+#private.sticky.taped.for-repository:after {
+    content: "Your private notes about this project";
+}
+#private br {
+    clear: both;
+}
+#note-edit form, #tags-edit form {
+    padding: 0;
+    margin: 0;
+}
+#note-edit form .modal-body, #tags-edit form .modal-body {
+    padding-bottom: 0;
+}
+#note-edit form textarea, #tags-edit form textarea {
+    width: 510px;
+}
+#note-edit form#note-delete-form, #tags-edit form#tags-delete-form {
+    position: absolute;
+    display: inline-block;
+    bottom: 15px;
+    left: 20px;
+}
+#tags-edit #id_tags {
+    width: 520px;
 }
 
 /* List filter */

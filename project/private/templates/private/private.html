@@ -1,0 +1,75 @@
+{% if request.user and request.user.is_authenticated %}
+<section class="sticky taped for-{{ section }}" id="private">
+<div class="note-part{% if note %} with-note{% endif %}">
+        {% if note %}
+            <div>{{ note.rendered_content|safe }}</div>
+            <a href="./?edit_note" title="Edit your private note (you'll be able to delete it too)"><small>edit your note</small></a>
+        {% else %}
+            <a href="./?edit_note"><small>Add a <strong>private</strong> note</small></a>
+        {% endif %}
+        {% if note_form %}
+            <section id="note-edit" class="modal">
+                <form action="{% url note_save %}" method="POST" id="note-form" class="form-stacked">{% csrf_token %}
+                    <header class="modal-header">
+                        <a class="close" href=".">&times;</a>
+                        <h3>{% if note %}Edit your private note{% else %}Add a private note{% endif %}</h3>
+                    </header>
+                    <section class="modal-body">{{ note_form.as_p }}</section>
+                    <footer class="modal-footer">
+                        <input class="btn primary" type="submit" name="submit" value="Save your note" />
+                        <a class="btn secondary" href=".">Cancel</a>
+                    </footer>
+                </form>
+                {% if note_delete_form %}
+                    <form action="{% url note_delete %}" method="POST" id="note-delete-form">{% csrf_token %}
+                        {{ note_delete_form.as_p }}
+                        <input class="btn error" type="submit" name="submit" value="Delete your note" />
+                    </form>
+                {% endif %}
+            </section>
+        {% endif %}
+    </div>
+    <div class="more-part{% if private_tags %} with-tags{% endif %}">
+        {% if private_tags %}
+            <a href="./?edit_tags" title="Edit your private tags"><small>edit your tags</small></a>
+            {% include "core/tags.html" with tags=private_tags type_design="success" %}
+        {% else %}
+            <a href="./?edit_tags"><small>Add <strong>private</strong> tags</small></a>
+        {% endif %}
+        {% if tags_form %}
+            {{ tags_form.media }}
+            <section id="tags-edit" class="modal">
+                <form action="{% url tags_save %}" method="POST" id="tags-form" class="form-stacked">{% csrf_token %}
+                    <header class="modal-header">
+                        <a class="close" href=".">&times;</a>
+                        <h3>{% if note %}Edit your private tags{% else %}Add some private tags{% endif %}</h3>
+                    </header>
+                    <section class="modal-body">
+                        {% for field in tags_form.hidden_fields %}
+                            {{ field }}
+                        {% endfor %}
+                        <div>
+                            <label for="id_tags">Add your tags:</label>
+                            {{ tags_form.tags }}
+                            <div class="helptext">
+                                {% autoescape off %}{{ tags_form.tags.help_text }}{% endautoescape %}
+                            </div>
+                        </div>
+                    </section>
+                    <footer class="modal-footer">
+                        <input class="btn primary" type="submit" name="submit" value="Save your tags" />
+                        <a class="btn secondary" href=".">Cancel</a>
+                    </footer>
+                </form>
+                {% if tags_delete_form %}
+                    <form action="{% url tags_delete %}" method="POST" id="tags-delete-form">{% csrf_token %}
+                        {{ tags_delete_form.as_p }}
+                        <input class="btn error" type="submit" name="submit" value="Delete your tags" />
+                    </form>
+                {% endif %}
+            </section>
+        {% endif %}
+    </div>
+    <br />
+</section>
+{% endif %}

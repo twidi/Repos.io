@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 
 from core.views.decorators import check_repository, check_support
 from core.views.sort import get_account_sort
-from user_notes.forms import NoteForm, NoteDeleteForm
+from private.forms import NoteForm, NoteDeleteForm, RepositoryTagsForm, TagsDeleteForm
 
 @check_repository
 def home(request, backend, project, repository=None):
@@ -12,10 +12,12 @@ def home(request, backend, project, repository=None):
     Home page of a repository
     """
     note = repository.get_user_note()
+    private_tags = repository.get_user_tags()
 
     context = dict(
         note = note,
         repository = repository,
+        private_tags = private_tags,
     )
 
     if 'edit_note' in request.GET:
@@ -26,6 +28,15 @@ def home(request, backend, project, repository=None):
         context['note_form'] = NoteForm(instance=note) if note else NoteForm(noted_object=repository)
         if note:
             context['note_delete_form'] = NoteDeleteForm(instance=note)
+
+    elif 'edit_tags' in request.GET:
+        if not (request.user and request.user.is_authenticated()):
+            messages.error(request, 'You must bo logged in to add/edit/delete your tags')
+            return redirect(repository)
+
+        context['tags_form'] = RepositoryTagsForm(tagged_object=repository)
+        if private_tags:
+            context['tags_delete_form'] = TagsDeleteForm(tagged_object=repository)
 
     return render(request, 'core/repositories/home.html', context)
 

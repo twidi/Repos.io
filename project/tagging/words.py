@@ -9,6 +9,7 @@ Usage:
 """
 
 import string
+import re
 
 
 def get_ignore_words():
@@ -434,3 +435,23 @@ def add_tags(tags, official=False, check_duplicates=True):
                 tag_obj.official = True
                 tag_obj.save()
 
+RE_PARSE_TAGS = re.compile('"(.+?)"|,')
+def parse_tags(tagstring):
+    """
+    Parse tags using a simple regular expression (same result as
+    replace taggit.utils.parse_tags but with kept order)
+    """
+    return [word.strip() for word in RE_PARSE_TAGS.split(tagstring) if word and word.strip()]
+
+def edit_string_for_tags(tags):
+    """
+    Replace taggit.utils.edit_string_for_tags by keeping order
+    """
+    names = []
+    for tag in tags:
+        name = tag.name
+        if u',' in name or u' ' in name:
+            names.append('"%s"' % name)
+        else:
+            names.append(name)
+    return u', '.join(names)
