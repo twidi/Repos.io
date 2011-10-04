@@ -45,7 +45,7 @@
                         <h3>{% if note %}Edit your private tags{% else %}Add some private tags{% endif %}</h3>
                     </header>
                     <section class="modal-body">
-                        {% for field in tags_form.hidden_field %}
+                        {% for field in tags_form.hidden_fields %}
                             {{ field }}
                         {% endfor %}
                         <div>

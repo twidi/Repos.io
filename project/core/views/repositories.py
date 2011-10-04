@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 
 from core.views.decorators import check_repository, check_support
 from core.views.sort import get_account_sort
-from private.forms import NoteForm, NoteDeleteForm, TagsForm, TagsDeleteForm
+from private.forms import NoteForm, NoteDeleteForm, RepositoryTagsForm, TagsDeleteForm
 
 @check_repository
 def home(request, backend, project, repository=None):
@@ -34,7 +34,7 @@ def home(request, backend, project, repository=None):
             messages.error(request, 'You must bo logged in to add/edit/delete your tags')
             return redirect(repository)
 
-        context['tags_form'] = TagsForm(tagged_object=repository)
+        context['tags_form'] = RepositoryTagsForm(tagged_object=repository)
         if private_tags:
             context['tags_delete_form'] = TagsDeleteForm(tagged_object=repository)
 

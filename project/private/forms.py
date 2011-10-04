@@ -7,6 +7,7 @@ from notes.models import Note, Topic
 from private.models import ALLOWED_MODELS
 from tagging.words import edit_string_for_tags
 from tagging.forms import TagField
+from tagging.models import Tag
 
 class NoteBaseForm(forms.ModelForm):
     """
@@ -31,7 +32,10 @@ class NoteBaseForm(forms.ModelForm):
         if self.instance:
             return self.instance.content_object
         else:
-            content_type = self.cleaned_data['content_type']
+            try:
+                content_type = self.cleaned_data['content_type']
+            except:
+                content_type = None
             if not content_type:
                 return None
             return content_type.get_object_for_this_type(pk=self.cleaned_data['object_id'])
@@ -165,7 +169,10 @@ class TagsBaseForm(forms.Form):
         if self.tagged_object:
             return self.tagged_object
         else:
-            content_type = self.cleaned_data['content_type']
+            try:
+                content_type = self.cleaned_data['content_type']
+            except:
+                content_type = None
             if not content_type:
                 return None
             return content_type.get_object_for_this_type(pk=self.cleaned_data['object_id'])
@@ -190,11 +197,22 @@ class TagsForm(TagsBaseForm):
         Set the defaults tags
         """
         tagged_object = kwargs.get('tagged_object')
+
         if tagged_object:
             if not kwargs.get('initial'):
                 kwargs['initial'] = {}
             kwargs['initial']['tags'] = edit_string_for_tags(tagged_object.get_user_tags())
+
         super(TagsForm, self).__init__(*args, **kwargs)
+
+        self.fields['tags'].set_available_tags(self.get_available_tags())
+
+    def get_available_tags(self):
+        """
+        Return all available tags for use with the autocomplete
+        If None, all tags from db will be used (via ajax call, else via insert into html)
+        """
+        return None
 
     def save(self):
         """
@@ -211,6 +229,26 @@ class TagsForm(TagsBaseForm):
 
         tagged_object = self.get_related_object()
         tagged_object.private_tags.set(dict_tags, owner=owner)
+
+class AccountTagsForm(TagsForm):
+
+    def get_available_tags(self):
+        """
+        Return the list of all private tags used by the user for accounts
+        """
+        user = globals.user
+        tags = Tag.objects.filter(private_account_tags__owner=user).order_by('name')
+        return [tag.name for tag in tags]
+
+class RepositoryTagsForm(TagsForm):
+
+    def get_available_tags(self):
+        """
+        Return the list of all private tags used by the user for repositories
+        """
+        user = globals.user
+        tags = Tag.objects.filter(private_repository_tags__owner=user).order_by('name')
+        return [tag.name for tag in tags]
 
 
 class TagsDeleteForm(TagsBaseForm):
