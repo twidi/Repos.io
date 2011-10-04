@@ -40,6 +40,11 @@ a.label:hover {
 ul.tags li {
     display: inline-block;
 }
+.helptext {
+  font-size: 11px;
+  line-height: 18px;
+  color: #bfbfbf;
+}
 
 .btn img {
     vertical-align: middle;
@@ -553,6 +558,9 @@ body#user-repositories p.row span:last-child {
     display: inline-block;
     bottom: 15px;
     left: 20px;
+}
+#tags-edit #id_tags {
+    width: 520px;
 }
 
 /* List filter */

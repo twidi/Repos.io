@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 
 from tagging.words import parse_tags
 
-class TagAutocomplete(forms.widgets.Textarea):
+class TagAutocomplete(forms.widgets.Input):
     input_type = 'text'
 
     class Media:
@@ -26,6 +26,13 @@ class TagField(forms.CharField):
     Better TagField from taggit, that allows multi-line edit
     """
     widget = TagAutocomplete
+    _help_text =  'Enter tags separated by comas. A tag can be composed of many words if they are between double quotes.<br />Exemple : <blockquote>django, "python framework", "my project: foobar", web</blockquote>This will result in 4 tags : "<em>django</em>", "<em>python framework</em>", "<em>my project: foobar</em>" and "<em>web</em>"'
+
+    def __init__(self, *args, **kwargs):
+        if not kwargs.get('help_text'):
+            kwargs['help_text'] = self._help_text
+        super(TagField, self).__init__(*args, **kwargs)
+
 
     def clean(self, value):
         value = super(TagField, self).clean(value)

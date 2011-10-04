@@ -183,7 +183,7 @@ class TagsForm(TagsBaseForm):
     """
     Form to add or edit tags for an object, by the currently logged user
     """
-    tags = TagField(help_text='Enter one tag per line, or coma separated. A tag can be composed of many words if they are between double quotes.<br />Exemple : <blockquote>django, "python framework"<br/>my project: foobar<br/>web</blockquote>This will result in 4 tags : "<em>django</em>", "<em>python framework</em>", "<em>my project: foobar</em>" and "<em>web</em>"')
+    tags = TagField()
 
     def __init__(self, *args, **kwargs):
         """

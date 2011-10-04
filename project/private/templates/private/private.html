@@ -44,7 +44,18 @@
                         <a class="close" href=".">&times;</a>
                         <h3>{% if note %}Edit your private tags{% else %}Add some private tags{% endif %}</h3>
                     </header>
-                    <section class="modal-body">{{ tags_form.as_p }}</section>
+                    <section class="modal-body">
+                        {% for field in tags_form.hidden_field %}
+                            {{ field }}
+                        {% endfor %}
+                        <div>
+                            <label for="id_tags">Add your tags:</label>
+                            {{ tags_form.tags }}
+                            <div class="helptext">
+                                {% autoescape off %}{{ tags_form.tags.help_text }}{% endautoescape %}
+                            </div>
+                        </div>
+                    </section>
                     <footer class="modal-footer">
                         <input class="btn primary" type="submit" name="submit" value="Save your tags" />
                         <a class="btn secondary" href=".">Cancel</a>
