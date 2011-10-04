@@ -59,7 +59,7 @@
 
     {% with accounts_manager.get_last_fetched as last_accounts %}
         {% if last_accounts %}
-            {% prepare_notes last_accounts %}
+            {% prepare_private last_accounts %}
             <h2>Last 20 users</h2>
             <table class="with_extras">
                 <tbody>
@@ -83,7 +83,7 @@
 
     {% with repositories_manager.get_last_fetched as last_repositories %}
         {% if last_repositories %}
-            {% prepare_notes last_repositories %}
+            {% prepare_private last_repositories %}
             <h2>Last 20 repositories</h2>
             <table class="with_extras">
                 <tbody>

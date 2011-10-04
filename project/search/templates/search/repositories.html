@@ -19,7 +19,7 @@
     {% if query %}
 
         {% if page.paginator.count %}
-            {% prepare_notes page.object_list %}
+            {% prepare_private page.object_list %}
             <h2>{{ page.paginator.count }} results for <em>{{ query }}</em></h2>
             <table class='zebra-striped repositories with_extras'>
                 <thead>

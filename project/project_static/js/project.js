@@ -6,7 +6,7 @@ $(document).ready(function() {
             return $(this).children('div').html();
         }
     });
-    $('a.rel_popover').popover({
+    $('.rel_popover').popover({
         offset: 10
     });
 });

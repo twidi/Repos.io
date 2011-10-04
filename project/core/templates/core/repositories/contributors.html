@@ -6,7 +6,7 @@
     {% if repository.contributors_modified %}
 
         {% if sorted_contributors %}
-            {% prepare_notes sorted_contributors %}
+            {% prepare_private sorted_contributors %}
 
             <p>{{ repository.slug }} (by {{ repository.owner.slug }}) has {{ repository.contributors_count }} contributors : <small>(last fetch on {{ repository.contributors_modified }})</small></p>
 

@@ -51,7 +51,7 @@ ul.tags li {
     margin-left: -5px;
 }
 
-a.rel_popover div {
+.rel_popover div {
     display: none;
 }
 
@@ -264,6 +264,13 @@ table.with_extras div.extra {
 table.repositories.with_extras div.extra,
 table.accounts.with_extras div.extra {
     margin-top: 0;
+}
+div.extra_container.with_note.with_tags .tags,
+div.extra_container.with_note.with_tags .tags {
+    padding-bottom: 8px;
+    margin-top: -5px;
+    margin-bottom: 8px;
+    border-bottom: solid #bfbfbf 1px;
 }
 /* Scores */
 .score {

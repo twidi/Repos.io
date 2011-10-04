@@ -6,7 +6,7 @@
     {% if repository.followers_modified %}
 
         {% if sorted_followers %}
-            {% prepare_notes sorted_followers %}
+            {% prepare_private sorted_followers %}
 
             <p>{{ repository.slug }} (by {{ repository.owner.slug }}) is followed by {{ repository.followers_count }} people : <small>(last fetch on {{ repository.followers_modified }})</small></p>
 

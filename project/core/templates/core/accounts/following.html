@@ -6,7 +6,7 @@
     {% if account.following_modified %}
 
         {% if sorted_following %}
-            {% prepare_notes sorted_following %}
+            {% prepare_private sorted_following %}
 
             <p>{{ account.slug }} follows {{ account.following_count }} people : <small>(last fetch on {{ account.following_modified }})</small></p>
 

@@ -10,9 +10,9 @@ from private.models import ALLOWED_MODELS
 register = template.Library()
 
 @register.simple_tag
-def prepare_notes(objects):
+def prepare_private(objects):
     """
-    Update each object included in the `objects` with a `has_note` attribute
+    Update each object included in the `objects` with private informations (note and tags)
     All objects must be from the same content_type
     """
     try:
@@ -28,19 +28,40 @@ def prepare_notes(objects):
         if '%s.%s' % (app_label, model_name) not in ALLOWED_MODELS:
             raise
 
+        user = globals.user
+
+        # objects to manage
         content_type = ContentType.objects.get(app_label=app_label, model=model_name)
 
         dict_objects = dict((int(obj.pk), obj) for obj in objects)
+        keys = dict_objects.keys()
 
+        # read and save notes
         notes = Note.objects.filter(
                 content_type = content_type,
-                author = globals.user,
-                object_id__in=dict_objects.keys()
+                author = user,
+                object_id__in=keys
                 ).values_list('object_id', 'rendered_content')
 
-        for note in notes:
-            dict_objects[note[0]].has_note = True
-            dict_objects[note[0]].rendered_note = note[1]
+        for obj_id, note in notes:
+            dict_objects[obj_id].has_note = True
+            dict_objects[obj_id].rendered_note = note
+
+        # read and save tags
+        if model_name == 'account':
+            qs_tags = user.tagging_privatetaggedaccount_items
+        else:
+            qs_tags = user.tagging_privatetaggedrepository_items
+
+        private_tagged_items = qs_tags.filter(
+                content_object__in=keys
+            ).values_list('content_object', 'tag__name')
+
+        for obj_id, tag in private_tagged_items:
+            if not getattr(dict_objects[obj_id], 'has_private_tags'):
+                dict_objects[obj_id].has_private_tags = True
+                dict_objects[obj_id].private_tags = []
+            dict_objects[obj_id].private_tags.append(tag)
 
         return ''
     except:
