@@ -64,7 +64,7 @@ def prepare_private(objects):
             ).values_list('content_object', 'tag__name')
 
         for obj_id, tag in private_tagged_items:
-            if not hasattr(dict_objects[obj_id], 'current_user_has_tags'):
+            if not getattr(dict_objects[obj_id], 'current_user_has_tags', None):
                 dict_objects[obj_id].current_user_has_extra = True
                 dict_objects[obj_id].current_user_has_tags = True
                 dict_objects[obj_id].current_user_tags = []
