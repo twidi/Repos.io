@@ -256,6 +256,17 @@ table.zebra-striped th.purple.header:after {
   border-color: #7a43b6 transparent;
 }
 
+body#search-repositories h2 {
+    float: left;
+}
+#search-options {
+    float: right;
+}
+body#search-repositories table.repositories,
+body#search-accounts table.accounts {
+    margin-top: 15px;
+}
+
 /* Tables with an extra div info in the last column */
 table.with_extras td:first-child {
     padding-right: 110px !important;

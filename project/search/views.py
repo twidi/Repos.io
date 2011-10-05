@@ -187,7 +187,23 @@ class RepositorySearchView(CoreSearchView):
             context['user_most_recent'] = SavedSearch.objects.most_recent(
                 search_key='repositories', user=self.request.user)[:20]
 
+        if self.request.GET.get('show-forks', False) == 'y':
+            context['show_forks'] = 'y'
+
         return context
+
+    def get_results(self):
+        """
+        Filter with is_fork
+        """
+        result = super(RepositorySearchView, self).get_results()
+
+        if not isinstance(result, EmptySearchQuerySet):
+            show_forks = self.request.GET.get('show-forks', False) == 'y'
+            if not show_forks:
+                result = result.exclude(is_fork=True)
+
+        return result
 
 
 class AccountSearchView(CoreSearchView):
