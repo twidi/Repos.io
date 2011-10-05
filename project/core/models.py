@@ -921,7 +921,7 @@ class Account(SyncableModel):
         Use this instead of self.private_tags.filter(owner=user) because
         we set the default order
         """
-        return self.private_tags.filter(private_account_tags__owner=user).order_by('-private_account_tags__weight', 'slug')
+        return self.private_tags.filter(private_account_tags__owner=user).order_by('-private_account_tags__weight', 'slug').distinct()
 
 
 class Repository(SyncableModel):
@@ -1534,7 +1534,7 @@ class Repository(SyncableModel):
         Use this instead of self.private_tags.filter(owner=user) because
         we set the default order
         """
-        return self.private_tags.filter(private_repository_tags__owner=user).order_by('-private_repository_tags__weight', 'slug')
+        return self.private_tags.filter(private_repository_tags__owner=user).order_by('-private_repository_tags__weight', 'slug').distinct()
 
     def links_with_user(self, user):
         """
