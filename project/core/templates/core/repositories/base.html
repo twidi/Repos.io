@@ -44,7 +44,7 @@
             </div>
         </header>
 
-        {% if subsection == 'home' %}{% include "private/private.html" with obj=repository %}{% endif %}
+        {% if subsection == 'home' %}{% include "private/repository.html" with repository=repository %}{% endif %}
 
         <ul class="tabs">
             <li{% if subsection == 'home' %} class="active"{% endif %}><a href="{{ repository.get_absolute_url }}">Home</a></li>

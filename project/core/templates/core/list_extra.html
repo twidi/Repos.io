@@ -1,14 +1,19 @@
-{% if obj.has_note or obj.has_private_tags %}
-<div class="extra rel_popover" data-popover-title="Your private informations" title="You have private informations !">
-    <a href="{{ obj.get_absolute_url }}"><img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" /></a>
-    <div><div class="extra_container{% if obj.has_note %} with_note {% endif %}{% if obj.has_private_tags %} with_tags{% endif %}">
-        {% if obj.has_private_tags %}
-            {% include "core/tags.html" with tags=obj.private_tags type_design="success" %}
-        {% endif %}
-        {% if obj.has_note %}
-            {{ obj.rendered_note|safe }}
-        {% endif %}
-    </div></div>
+{% if obj.current_user_has_extra %}
+<div class="extra{% if obj.current_user_has_note %} with_note {% endif %}{% if obj.current_user_has_tags %} with_tags{% endif %}{% block specific_extra_class %}{% endblock %}">
+    {% if obj.current_user_has_note or obj.current_user_has_tags %}
+        <div class="rel_popover" data-popover-title="Your private informations" title="You have private informations !">
+            <a href="{{ obj.get_absolute_url }}"><img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" /></a>
+            <div><div class="extra_container{% if obj.current_user_has_note %} with_note {% endif %}{% if obj.current_user_has_tags %} with_tags{% endif %}">
+                {% if obj.current_user_has_tags %}
+                    {% include "core/tags.html" with tags=obj.current_user_tags type_design="success" %}
+                {% endif %}
+                {% if obj.current_user_has_note %}
+                    {{ obj.current_user_rendered_note|safe }}
+                {% endif %}
+            </div></div>
+        </div>
+    {% endif %}
+    {% block specific_extra %}{% endblock %}
 </div>
 {% endif %}
 

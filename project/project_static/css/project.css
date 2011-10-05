@@ -257,15 +257,40 @@ table.zebra-striped th.purple.header:after {
 }
 
 /* Tables with an extra div info in the last column */
+table.with_extras td:first-child {
+    padding-right: 110px !important;
+}
 table.with_extras div.extra {
+    margin-top: 0;
+    float: right;
+    margin-right: -105px;
+}
+table.with_extras div.extra .rel_popover {
     float: right;
     margin-left: 5px;
 }
-table.repositories.with_extras div.extra,
-table.accounts.with_extras div.extra {
-    margin-top: 0;
+table.with_extras div.extra img {
+    margin: 0 !important;
 }
-div.extra_container.with_note.with_tags .tags,
+table.with_extras div.extra .special-tags {
+    margin: 0;
+    max-width: 70px;
+    margin-left: 10px;
+    float: right;
+    text-align: right;
+    margin-right: 21px;
+}
+table.with_extras div.extra.with_note .special-tags,
+table.with_extras div.extra.with_tags .special-tags {
+    margin-right: 0;
+}
+table.with_extras div.extra .special-tags .label {
+    font-size: 8px;
+    padding: 1px 2px;
+    line-height: 11px;
+    cursor: default;
+    display: inline-block;
+}
 div.extra_container.with_note.with_tags .tags {
     padding-bottom: 8px;
     margin-top: -5px;
@@ -330,9 +355,8 @@ table.accounts.with_owner td:nth-child(3) {
     font-size: 24px;
 }
 table.accounts td:first-child {
-    padding: 5px 10px 5px 5px;
+    padding: 5px;
     height: 30px;
-    min-width: 160px;
 }
 table.accounts td:first-child img {
     vertical-align: text-top;
@@ -499,56 +523,72 @@ body#user-repositories p.row span:last-child {
 #private > div > a, #private > div > a small {
     color: #a28514;
 }
-#private > .note-part {
+#private > #note-part {
     margin-left: 0;
     width: 610px;
+    padding-bottom: 10px;
 }
-#private > .note-part.with-note > a {
+#private > #note-part.with-note > a {
     position: absolute;
     top: -2px;
     left: 4px;
 }
-#private > .note-part.with-note > a small {
-    color: #f9d64c;
+#private > #note-part.with-note > a small {
+    color: #F8E498;
 }
-#private:hover > .note-part.with-note > a small {
+#private:hover > #note-part.with-note > a small {
     color: #a28514;
 }
-#private > .note-part > div:first-child >  p:last-child {
+#private > #note-part > div:first-child >  p:last-child {
     margin-bottom: 0;
 }
-#private > .more-part {
+#private > #tags-part {
     width: 264px;
     padding-left: 15px;
     border-left: dashed 1px #bfbfbf;
+    padding-bottom: 10px;
 }
-#private > .more-part.with-tags > a {
+#private > #tags-part ul {
+    margin-bottom: 0;
+}
+#private > #tags-part.with-tags > a {
     position: absolute;
     top: -2px;
     right: 4px;
 }
-#private > .more-part.with-tags > a small {
-    color: #f9d64c;
+#private > #tags-part.with-tags > a small {
+    color: #F8E498;
 }
-#private:hover > .more-part.with-tags > a small {
+#private:hover > #tags-part.with-tags > a small {
+    color: #a28514;
+}
+#private #specific-part {
+    border-top: dashed 1px #bfbfbf;
+    float: none;
+    margin: 0;
+    padding-top: 10px;
+    clear: both;
+    font-size: smaller;
+}
+#private #specific-part ul {
+    margin-bottom: 0;
+}
+#private #specific-part a  {
     color: #a28514;
 }
 #private.sticky.taped:after {
     left: 415px;
-    content: "Your private notes about this page";
+    content: "About you and this page";
     text-align: center;
     font-size: smaller;
     color: #bfbfbf;
     line-height: 15px;
 }
 #private.sticky.taped.for-user:after {
-    content: "Your private notes about this account";
+    content: "About you and this account";
 }
 #private.sticky.taped.for-repository:after {
-    content: "Your private notes about this project";
-}
-#private br {
-    clear: both;
+    content: "About you and this project";
 }
 #note-edit form, #tags-edit form {
     padding: 0;

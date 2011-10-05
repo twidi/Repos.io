@@ -23,7 +23,7 @@
                     {% for contributor in sorted_contributors %}
                     <tr>
                         <td>
-                            {% include "core/list_extra.html" with obj=contributor %}
+                            {% include "core/accounts/list_extra.html" with obj=contributor %}
                             {% include "core/accounts/avatar.html" with account=contributor %}
                             {% include "core/accounts/link.html" with no_backend=1 account=contributor %}
                             {% include "core/score.html" with obj=contributor %}

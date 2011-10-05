@@ -1,0 +1,11 @@
+{% extends "core/list_extra.html" %}
+{% block specific_extra_class %}{% if obj.current_user_follows or obj.current_user_owns or obj.current_user_has_fork %} with_special_tags{% endif %}{% endblock %}
+{% block specific_extra %}
+    {% if obj.current_user_follows or obj.current_user_owns or obj.current_user_has_fork %}
+        <ul class="special-tags unstyled">
+            {% if obj.current_user_follows %}<li class="label notice" title="You follow {{ obj.project }}">following</li>{% endif %}
+            {% if obj.current_user_owns %}<li class="label success" title="{{ obj.project }} is your project">yours</li>{% endif %}
+            {% if obj.current_user_has_fork %}<li class="label warning" title="You have a fork of {{ obj.project }}">forked</li>{% endif %}
+        </ul>
+    {% endif %}
+{% endblock %}

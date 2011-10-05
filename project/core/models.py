@@ -921,7 +921,35 @@ class Account(SyncableModel):
         Use this instead of self.private_tags.filter(owner=user) because
         we set the default order
         """
-        return self.private_tags.filter(private_account_tags__owner=user).order_by('-private_account_tags__weight', 'slug')
+        return self.private_tags.filter(private_account_tags__owner=user).order_by('-private_account_tags__weight', 'slug').distinct()
+
+    def links_with_user(self, user):
+        """
+        Return informations about some links between this account and the given user
+        """
+        backend = self.get_backend()
+        links = {}
+
+        if backend.supports('user_following'):
+            followed = self.following.filter(user=user)
+            if followed:
+                links['followed'] = followed
+
+        if backend.supports('user_followers'):
+            following = self.followers.filter(user=user)
+            if following:
+                links['following'] = following
+
+        if backend.supports('repository_followers'):
+            project_following = Repository.objects.filter(owner=self, followers__user=user)
+            if project_following:
+                links['project_following'] = project_following
+            project_followed = Repository.objects.filter(owner__user=user, followers=self)
+            if project_followed:
+                links['project_followed'] = project_followed
+
+        return links
+
 
 
 class Repository(SyncableModel):
@@ -1534,7 +1562,49 @@ class Repository(SyncableModel):
         Use this instead of self.private_tags.filter(owner=user) because
         we set the default order
         """
-        return self.private_tags.filter(private_repository_tags__owner=user).order_by('-private_repository_tags__weight', 'slug')
+        return self.private_tags.filter(private_repository_tags__owner=user).order_by('-private_repository_tags__weight', 'slug').distinct()
+
+    def links_with_user(self, user):
+        """
+        Return informations about some links between this repository and the given user
+        """
+        backend = self.get_backend()
+        links = {}
+
+        if backend.supports('repository_owner'):
+            if self.owner.user_id == user.id:
+                links['owning'] = self.owner
+
+            if backend.supports('repository_parent_fork'):
+                forks = self.forks.filter(owner__user=user)
+                if forks:
+                    links['forks'] = forks
+
+                project_forks = Repository.objects.filter(
+                        slug_lower=self.slug_lower, owner__user=user).select_related('owner').exclude(
+                                id=self.id)
+                if forks:
+                    project_forks = project_forks.exclude(id__in=list(fork.id for fork in forks))
+                if project_forks:
+                    links['project_forks'] = project_forks
+
+        if backend.supports('repository_followers'):
+            following = self.followers.filter(user=user)
+            if following:
+                links['following'] = following
+
+            project_following = Repository.objects.filter(
+                    slug_lower=self.slug_lower, followers__user=user).exclude(
+                            owner__user=user).exclude(id=self.id).select_related('owner')
+            if project_following:
+                links['project_following'] = project_following
+
+        if backend.supports('repository_contributors'):
+            contributing = self.contributors.filter(user=user)
+            if contributing:
+                links['contributing'] = contributing
+
+        return links
 
 
 from core.signals import *

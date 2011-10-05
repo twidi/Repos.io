@@ -1,0 +1,65 @@
+{% extends "private/private.html" %}
+{% load reposio_core %}
+
+{% block specific_part %}
+    {% with links=account|links_with_user:request.user %}
+        {% if links %}
+            <div id="specific-part">
+                Links between you and <em>{{ account.slug }} </em>:
+                <ul>
+                    {% if account.user.id == request.user.id %}
+                        <li>It's you !</li>
+                    {% else %}
+                        {% if links.following %}
+                            <li>
+                                You (
+                                {% for acc in links.following %}
+                                    {% include "core/accounts/link.html" with account=acc no_backend=1 %}
+                                    {% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                                ) are following him
+                            </li>
+                        {% endif %}
+                        {% if links.followed %}
+                            <li>
+                                He is following you (
+                                {% for acc in links.followed %}
+                                    {% include "core/accounts/link.html" with account=acc no_backend=1 %}
+                                    {% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                                )
+                            </li>
+                        {% endif %}
+                        {% if links.project_following %}
+                            <li>
+                                You are following
+                                {% if links.project_following|length > 1 %}some{% else %}one{% endif %}
+                                of its projects (
+                                {% for rep in links.project_following %}
+                                    {% include "core/repositories/link.html" with repository=rep no_backend=1 no_owner=1 %}
+                                    {% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                                )
+                            </li>
+                        {% endif %}
+                        {% if links.project_followed %}
+                            <li>
+                                He is following
+                                {% if links.project_followed|length > 1 %}some{% else %}one{% endif %}
+                                of your projects (
+                                {% for rep in links.project_followed %}
+                                    {% include "core/repositories/link.html" with repository=rep no_backend=1 %}
+                                    {% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                                )
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </div>
+        {% else %}
+            <br />
+        {% endif %}
+    {% endwith %}
+{% endblock %}
+

@@ -22,7 +22,7 @@
                     {% for following in sorted_following %}
                     <tr>
                         <td>
-                            {% include "core/list_extra.html" with obj=following %}
+                            {% include "core/accounts/list_extra.html" with obj=following %}
                             {% include "core/accounts/avatar.html" with account=following %}
                             {% include "core/accounts/link.html" with no_backend=1 account=following %}
                             {% include "core/score.html" with obj=following %}
