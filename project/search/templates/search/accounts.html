@@ -19,7 +19,7 @@
                     {% for account in page.object_list %}
                         <tr>
                             <td>
-                                {% include "core/list_extra.html" with obj=account %}
+                                {% include "core/accounts/list_extra.html" with obj=account %}
                                 {{ account.renderer_main|safe }}
                                 {% include "core/score.html" with obj=account score=account.internal_score %}
                                 {% include "core/accounts/tags.html" with account=account %}

@@ -49,6 +49,7 @@ def prepare_private(objects):
                 ).values_list('object_id', 'rendered_content')
 
         for obj_id, note in notes:
+            dict_objects[obj_id].current_user_has_extra = True
             dict_objects[obj_id].current_user_has_note = True
             dict_objects[obj_id].current_user_rendered_note = note
 
@@ -63,7 +64,8 @@ def prepare_private(objects):
             ).values_list('content_object', 'tag__name')
 
         for obj_id, tag in private_tagged_items:
-            if not getattr(dict_objects[obj_id], 'current_user_has_tags'):
+            if not hasattr(dict_objects[obj_id], 'current_user_has_tags'):
+                dict_objects[obj_id].current_user_has_extra = True
                 dict_objects[obj_id].current_user_has_tags = True
                 dict_objects[obj_id].current_user_tags = []
             dict_objects[obj_id].current_user_tags.append(tag)
@@ -72,17 +74,20 @@ def prepare_private(objects):
             # follows
             following = Account.objects.filter(id__in=ids, followers__user=user).values_list('id', flat=True)
             for obj_id in following:
+                dict_objects[obj_id].current_user_has_extra = True
                 dict_objects[obj_id].current_user_follows = True
 
             # is followed
             followed = Account.objects.filter(id__in=ids, following__user=user).values_list('id', flat=True)
             for obj_id in followed:
+                dict_objects[obj_id].current_user_has_extra = True
                 dict_objects[obj_id].current_user_followed = True
 
         else:
             # owns or follows
             following = Repository.objects.filter(id__in=ids, followers__user=user).values_list('id', 'owner__user_id')
             for obj_id, owner_id in following:
+                dict_objects[obj_id].current_user_has_extra = True
                 if owner_id == user.id:
                     dict_objects[obj_id].current_user_owns = True
                 else:
@@ -91,6 +96,7 @@ def prepare_private(objects):
             # fork
             forked = Repository.objects.filter(id__in=ids, forks__owner__user=user).values_list('id', flat=True)
             for obj_id in forked:
+                dict_objects[obj_id].current_user_has_extra = True
                 dict_objects[obj_id].current_user_has_fork = True
 
         return ''

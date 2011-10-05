@@ -51,7 +51,7 @@
             {% for repository in sorted_repositories %}
             <tr>
                 <td>
-                    {% include "core/list_extra.html" with obj=repository %}
+                    {% include "core/repositories/list_extra.html" with obj=repository %}
                     {% include "core/repositories/logo.html" %}</strong>
                     <strong>{% include "core/repositories/link.html" with no_backend=1 no_owner=1 %}</strong>
                     {% if repository.backend|supports:"repository_parent_fork" and repository.is_fork %}

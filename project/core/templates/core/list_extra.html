@@ -1,4 +1,4 @@
-{% if obj.current_user_has_note or obj.current_user_has_tags or obj.current_user_follows or obj.current_user_followed or obj.current_user_owns or obj.current_user_has_fork%}
+{% if obj.current_user_has_extra %}
 <div class="extra">
     {% if obj.current_user_has_note or obj.current_user_has_tags %}
         <div class="rel_popover" data-popover-title="Your private informations" title="You have private informations !">
@@ -13,14 +13,7 @@
             </div></div>
         </div>
     {% endif %}
-    {% if obj.current_user_follows or obj.current_user_followed or obj.current_user_owns or obj.current_user_has_fork %}
-        <ul class="special-tags unstyled">
-            {% if obj.current_user_follows %}<li class="label">following</li>{% endif %}
-            {% if obj.current_user_followed %}<li class="label">followed by</li>{% endif %}
-            {% if obj.current_user_owns %}<li class="label success">yours</li>{% endif %}
-            {% if obj.current_user_has_fork %}<li class="label warning">forked</li>{% endif %}
-        </ul>
-    {% endif %}
+    {% block specific_extra %}{% endblock %}
 </div>
 {% endif %}
 

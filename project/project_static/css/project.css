@@ -278,6 +278,7 @@ table.with_extras div.extra .special-tags .label {
     padding: 1px 2px;
     line-height: 11px;
     cursor: default;
+    display: inline-block;
 }
 table.repositories.with_extras div.extra,
 table.accounts.with_extras div.extra {
