@@ -1,6 +1,7 @@
 from django import template
 
 from core.backends import BaseBackend, get_backend
+from core.models import Account, Repository
 
 register = template.Library()
 
@@ -21,3 +22,12 @@ def supports(backend, functionnality):
 
     return False
 
+@register.filter
+def links_with_user(obj, user):
+    """
+    Return informations about some links between the given object (account or repository) and the given user
+    """
+    try:
+        return obj.links_with_user(user)
+    except:
+        return {}

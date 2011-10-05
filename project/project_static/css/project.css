@@ -499,56 +499,68 @@ body#user-repositories p.row span:last-child {
 #private > div > a, #private > div > a small {
     color: #a28514;
 }
-#private > .note-part {
+#private > #note-part {
     margin-left: 0;
     width: 610px;
+    padding-bottom: 10px;
 }
-#private > .note-part.with-note > a {
+#private > #note-part.with-note > a {
     position: absolute;
     top: -2px;
     left: 4px;
 }
-#private > .note-part.with-note > a small {
-    color: #f9d64c;
+#private > #note-part.with-note > a small {
+    color: #F8E498;
 }
-#private:hover > .note-part.with-note > a small {
+#private:hover > #note-part.with-note > a small {
     color: #a28514;
 }
-#private > .note-part > div:first-child >  p:last-child {
+#private > #note-part > div:first-child >  p:last-child {
     margin-bottom: 0;
 }
-#private > .more-part {
+#private > #tags-part {
     width: 264px;
     padding-left: 15px;
     border-left: dashed 1px #bfbfbf;
+    padding-bottom: 10px;
 }
-#private > .more-part.with-tags > a {
+#private > #tags-part ul {
+    margin-bottom: 0;
+}
+#private > #tags-part.with-tags > a {
     position: absolute;
     top: -2px;
     right: 4px;
 }
-#private > .more-part.with-tags > a small {
-    color: #f9d64c;
+#private > #tags-part.with-tags > a small {
+    color: #F8E498;
 }
-#private:hover > .more-part.with-tags > a small {
+#private:hover > #tags-part.with-tags > a small {
     color: #a28514;
+}
+#private #specific-part {
+    border-top: dashed 1px #bfbfbf;
+    float: none;
+    margin: 0;
+    padding-top: 10px;
+    clear: both;
+}
+#private #specific-part ul {
+    margin-bottom: 0;
 }
 #private.sticky.taped:after {
     left: 415px;
-    content: "Your private notes about this page";
+    content: "About you and this page";
     text-align: center;
     font-size: smaller;
     color: #bfbfbf;
     line-height: 15px;
 }
 #private.sticky.taped.for-user:after {
-    content: "Your private notes about this account";
+    content: "About you and this account";
 }
 #private.sticky.taped.for-repository:after {
-    content: "Your private notes about this project";
-}
-#private br {
-    clear: both;
+    content: "About you and this project";
 }
 #note-edit form, #tags-edit form {
     padding: 0;

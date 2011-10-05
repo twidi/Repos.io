@@ -1,6 +1,6 @@
 {% if request.user and request.user.is_authenticated %}
 <section class="sticky taped for-{{ section }}" id="private">
-<div class="note-part{% if note %} with-note{% endif %}">
+<div id="note-part"{% if note %} class="with-note"{% endif %}>
         {% if note %}
             <div>{{ note.rendered_content|safe }}</div>
             <a href="./?edit_note" title="Edit your private note (you'll be able to delete it too)"><small>edit your note</small></a>
@@ -29,7 +29,7 @@
             </section>
         {% endif %}
     </div>
-    <div class="more-part{% if private_tags %} with-tags{% endif %}">
+    <div id="tags-part"{% if private_tags %} class="with-tags"{% endif %}>
         {% if private_tags %}
             <a href="./?edit_tags" title="Edit your private tags"><small>edit your tags</small></a>
             {% include "core/tags.html" with tags=private_tags type_design="success" %}
@@ -70,6 +70,6 @@
             </section>
         {% endif %}
     </div>
-    <br />
+    {% block specific_part %}{% endblock %}
 </section>
 {% endif %}
