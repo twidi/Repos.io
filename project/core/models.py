@@ -1595,9 +1595,7 @@ class Repository(SyncableModel):
 
             project_following = Repository.objects.filter(
                     slug_lower=self.slug_lower, followers__user=user).exclude(
-                            owner__user=user).select_related('owner')
-            if following:
-                project_following = project_following.exclude(id__in=list(rep.id for rep in following))
+                            owner__user=user).exclude(id=self.id).select_related('owner')
             if project_following:
                 links['project_following'] = project_following
 
