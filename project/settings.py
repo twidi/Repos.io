@@ -151,6 +151,7 @@ INSTALLED_APPS = (
     'search',
     'private',
     'tagging',
+    'dashboard',
 )
 
 # A sample logging configuration. The only tangible logging

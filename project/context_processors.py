@@ -49,6 +49,16 @@ def design(request):
             # remove the "repository_" part
             subsection = url_name[11:]
 
+    elif request.path.startswith('/dashboard/'):
+        section = 'dashboard'
+        try:
+            url_name = resolve(request.path).url_name
+        except:
+            pass
+        else:
+            # remove the "dashboard_" part
+            subsection = url_name[10:]
+
     # final result
     return dict(
         section  = section,

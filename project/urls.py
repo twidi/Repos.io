@@ -11,5 +11,6 @@ urlpatterns = patterns('',
     url(r'^search/', include('search.urls')),
     url(r'^private/', include('private.urls')),
     url(r'^tags/', include('tagging.urls')),
+    url(r'^dashboard/', include('dashboard.urls')),
     url(r'^', include('core.urls')),
 )
