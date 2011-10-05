@@ -258,8 +258,25 @@ table.zebra-striped th.purple.header:after {
 
 /* Tables with an extra div info in the last column */
 table.with_extras div.extra {
+}
+table.with_extras div.extra .rel_popover {
     float: right;
     margin-left: 5px;
+}
+table.with_extras div.extra img {
+    margin: 0 !important;
+}
+table.with_extras div.extra .tags {
+    margin: 0;
+    max-width: 60px;
+    margin-left: 5px;
+    float: right;
+    text-align: right;
+}
+table.with_extras div.extra .tags .label {
+    font-size: 8px;
+    padding: 1px 2px;
+    line-height: 11px;
 }
 table.repositories.with_extras div.extra,
 table.accounts.with_extras div.extra {

@@ -1,14 +1,25 @@
-{% if obj.has_note or obj.has_private_tags %}
-<div class="extra rel_popover" data-popover-title="Your private informations" title="You have private informations !">
-    <a href="{{ obj.get_absolute_url }}"><img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" /></a>
-    <div><div class="extra_container{% if obj.has_note %} with_note {% endif %}{% if obj.has_private_tags %} with_tags{% endif %}">
-        {% if obj.has_private_tags %}
-            {% include "core/tags.html" with tags=obj.private_tags type_design="success" %}
-        {% endif %}
-        {% if obj.has_note %}
-            {{ obj.rendered_note|safe }}
-        {% endif %}
-    </div></div>
+{% if obj.current_user_has_note or obj.current_user_has_tags or obj.current_user_follows or obj.current_user_owns or obj.current_user_has_fork%}
+<div class="extra">
+    {% if obj.current_user_has_note or obj.current_user_has_tags %}
+        <div class="rel_popover" data-popover-title="Your private informations" title="You have private informations !">
+            <a href="{{ obj.get_absolute_url }}"><img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" /></a>
+            <div><div class="extra_container{% if obj.current_user_has_note %} with_note {% endif %}{% if obj.current_user_has_tags %} with_tags{% endif %}">
+                {% if obj.current_user_has_tags %}
+                    {% include "core/tags.html" with tags=obj.current_user_tags type_design="success" %}
+                {% endif %}
+                {% if obj.current_user_has_note %}
+                    {{ obj.current_user_rendered_note|safe }}
+                {% endif %}
+            </div></div>
+        </div>
+    {% endif %}
+    {% if obj.current_user_follows or obj.current_user_owns or obj.current_user_has_fork %}
+        <ul class="tags unstyled">
+            {% if obj.current_user_follows %}<li class="label">following</li>{% endif %}
+            {% if obj.current_user_owns %}<li class="label success">yours</li>{% endif %}
+            {% if obj.current_user_has_fork %}<li class="label warning">forked</li>{% endif %}
+        </ul>
+    {% endif %}
 </div>
 {% endif %}
 
