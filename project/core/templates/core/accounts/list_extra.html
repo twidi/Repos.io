@@ -1,9 +1,10 @@
 {% extends "core/list_extra.html" %}
+{% block specific_extra_class %}{% if obj.current_user_follows or obj.current_user_followed %} with_special_tags{% endif %}{% endblock %}
 {% block specific_extra %}
     {% if obj.current_user_follows or obj.current_user_followed %}
         <ul class="special-tags unstyled">
-            {% if obj.current_user_follows %}<li class="label" title="You follow {{ obj.slug }}">following</li>{% endif %}
-            {% if obj.current_user_followed %}<li class="label" title="{{ obj.slug }} follows you">followed by</li>{% endif %}
+            {% if obj.current_user_follows %}<li class="label notice" title="You follow {{ obj.slug }}">following</li>{% endif %}
+            {% if obj.current_user_followed %}<li class="label notice" title="{{ obj.slug }} follows you">followed by</li>{% endif %}
         </ul>
     {% endif %}
 {% endblock %}

@@ -257,7 +257,13 @@ table.zebra-striped th.purple.header:after {
 }
 
 /* Tables with an extra div info in the last column */
+table.with_extras td:first-child {
+    padding-right: 110px !important;
+}
 table.with_extras div.extra {
+    margin-top: 0;
+    float: right;
+    margin-right: -105px;
 }
 table.with_extras div.extra .rel_popover {
     float: right;
@@ -269,9 +275,14 @@ table.with_extras div.extra img {
 table.with_extras div.extra .special-tags {
     margin: 0;
     max-width: 70px;
-    margin-left: 5px;
+    margin-left: 10px;
     float: right;
     text-align: right;
+    margin-right: 21px;
+}
+table.with_extras div.extra.with_note .special-tags,
+table.with_extras div.extra.with_tags .special-tags {
+    margin-right: 0;
 }
 table.with_extras div.extra .special-tags .label {
     font-size: 8px;
@@ -280,11 +291,6 @@ table.with_extras div.extra .special-tags .label {
     cursor: default;
     display: inline-block;
 }
-table.repositories.with_extras div.extra,
-table.accounts.with_extras div.extra {
-    margin-top: 0;
-}
-div.extra_container.with_note.with_tags .tags,
 div.extra_container.with_note.with_tags .tags {
     padding-bottom: 8px;
     margin-top: -5px;
@@ -349,9 +355,8 @@ table.accounts.with_owner td:nth-child(3) {
     font-size: 24px;
 }
 table.accounts td:first-child {
-    padding: 5px 10px 5px 5px;
+    padding: 5px;
     height: 30px;
-    min-width: 300px;
 }
 table.accounts td:first-child img {
     vertical-align: text-top;
