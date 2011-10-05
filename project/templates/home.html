@@ -59,16 +59,14 @@
 
     {% with accounts_manager.get_last_fetched as last_accounts %}
         {% if last_accounts %}
-            {% prepare_private last_accounts %}
             <h2>Last 20 users</h2>
-            <table class="with_extras">
+            <table>
                 <tbody>
                     {% for an_account in last_accounts %}
                     <tr>
                         <td>
                             {% include "core/accounts/avatar.html" with account=an_account size=16 %}
                             {% include "core/accounts/link.html" with account=an_account %}
-                            {% include "core/list_extra.html" with obj=an_account %}
                         </td>
                     </tr>
                     {% endfor %}
@@ -83,9 +81,8 @@
 
     {% with repositories_manager.get_last_fetched as last_repositories %}
         {% if last_repositories %}
-            {% prepare_private last_repositories %}
             <h2>Last 20 repositories</h2>
-            <table class="with_extras">
+            <table>
                 <tbody>
                     {% for a_repository in last_repositories %}
                     <tr>
@@ -93,7 +90,6 @@
                             {% include "core/repositories/logo.html" with repository=a_repository size=16 %}
                             {% include "core/repositories/link.html" with repository=a_repository no_owner=1 %}
                             <small>by {% include "core/accounts/link.html" with account=a_repository.owner no_backend=1 %}</small>
-                            {% include "core/list_extra.html" with obj=a_repository %}
                         </td>
                     </tr>
                     {% endfor %}
