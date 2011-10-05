@@ -1,5 +1,68 @@
 {% extends 'dashboard/base.html' %}
 
 {% block dashboard_content %}
-    <p>Work in progress</p>
+<div class="row">
+
+    <section id="d-accounts" class="span4">
+        <h2>Accounts</h2>
+        <p>Your associated accounts</p>
+        <table>
+            <tbody>
+                {% for account in request.user.accounts.all %}
+                <tr>
+                    <td>
+                    {% include "core/accounts/avatar.html" with size=32 %}
+                    {% include "core/accounts/link.html" %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="{% url accounts_manage %}">Manage your accounts...</a>
+    </section>
+
+    <section id="d-tags" class="span4">
+        <h2>Tags</h2>
+        <p>All your tags</p>
+        {% with tags as all_tags %}
+
+            <h3>For repositories</h3>
+
+            {% if all_tags.repository %}
+                <ul class="tags unstyled">
+                    {% for tag in all_tags.repository %}
+                        <li class="label success" title="{% for obj in tag.1 %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.0 }}{% if tag.1|length > 1 %}<small> ({{ tag.1|length }})</small>{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p><em>No tags !</em></p>
+            {% endif %}
+
+            <h3>For people</h3>
+
+            {% if all_tags.account %}
+                <ul class="tags unstyled">
+                    {% for tag in all_tags.account %}
+                        <li class="label success" title="{% for obj in tag.1 %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.0 }}{% if tag.1|length > 1 %}<small> ({{ tag.1|length }})</small>{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p><em>No tags !</em></p>
+            {% endif %}
+
+        {% endwith %}
+
+        <a href="{% url dashboard_tags %}">Manage your tags...</a>
+    </section>
+
+    <section id="d-notes" class="span4">
+        <h2>Notes</h2>
+    </section>
+
+    <section id="d-people" class="span4">
+        <h2>People</h2>
+    </section>
+
+</div>
 {% endblock %}

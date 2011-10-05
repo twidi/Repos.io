@@ -628,3 +628,26 @@ form#list-filter {
 }
 form#list-filter:last-child {
     margin-right: 0;
+}
+
+/* dashboard home */
+#content > div > section h2 {
+    font-size: 16px;
+}
+#content > div > section h3 {
+    font-size: 14px;
+}
+
+#d-accounts table {
+    width: auto;
+}
+#d-accounts table tr:first-child td {
+    border-top: 1px solid #DDDDDD;
+}
+#d-accounts table td:first-child img {
+    vertical-align: middle;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+}
+
