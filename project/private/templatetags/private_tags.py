@@ -31,11 +31,6 @@ def prepare_private(objects):
         if '%s.%s' % (app_label, model_name) not in ALLOWED_MODELS:
             return ''
 
-        if model_name == 'account':
-            model = Account
-        else:
-            model = Repository
-
         user = globals.user
 
         # objects to manage
@@ -73,19 +68,30 @@ def prepare_private(objects):
                 dict_objects[obj_id].current_user_tags = []
             dict_objects[obj_id].current_user_tags.append(tag)
 
-        # owns or follows
-        following = model.objects.filter(id__in=ids, followers__user=user).values_list('id', 'owner__user_id')
-        for obj_id, owner_id in following:
-            if owner_id == user.id:
-                dict_objects[obj_id].current_user_owns = True
-            else:
+        if model_name == 'account':
+            # follows
+            following = Account.objects.filter(id__in=ids, followers__user=user).values_list('id', flat=True)
+            for obj_id in following:
                 dict_objects[obj_id].current_user_follows = True
 
-        # fork
-        forked = model.objects.filter(id__in=ids, forks__owner__user=user).values_list('id', flat=True)
-        for obj_id in forked:
-            dict_objects[obj_id].current_user_has_fork = True
+            # is followed
+            followed = Account.objects.filter(id__in=ids, following__user=user).values_list('id', flat=True)
+            for obj_id in followed:
+                dict_objects[obj_id].current_user_followed = True
 
+        else:
+            # owns or follows
+            following = Repository.objects.filter(id__in=ids, followers__user=user).values_list('id', 'owner__user_id')
+            for obj_id, owner_id in following:
+                if owner_id == user.id:
+                    dict_objects[obj_id].current_user_owns = True
+                else:
+                    dict_objects[obj_id].current_user_follows = True
+
+            # fork
+            forked = Repository.objects.filter(id__in=ids, forks__owner__user=user).values_list('id', flat=True)
+            for obj_id in forked:
+                dict_objects[obj_id].current_user_has_fork = True
 
         return ''
     except:

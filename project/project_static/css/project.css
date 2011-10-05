@@ -266,17 +266,18 @@ table.with_extras div.extra .rel_popover {
 table.with_extras div.extra img {
     margin: 0 !important;
 }
-table.with_extras div.extra .tags {
+table.with_extras div.extra .special-tags {
     margin: 0;
-    max-width: 60px;
+    max-width: 70px;
     margin-left: 5px;
     float: right;
     text-align: right;
 }
-table.with_extras div.extra .tags .label {
+table.with_extras div.extra .special-tags .label {
     font-size: 8px;
     padding: 1px 2px;
     line-height: 11px;
+    cursor: default;
 }
 table.repositories.with_extras div.extra,
 table.accounts.with_extras div.extra {
@@ -349,7 +350,7 @@ table.accounts.with_owner td:nth-child(3) {
 table.accounts td:first-child {
     padding: 5px 10px 5px 5px;
     height: 30px;
-    min-width: 160px;
+    min-width: 300px;
 }
 table.accounts td:first-child img {
     vertical-align: text-top;
