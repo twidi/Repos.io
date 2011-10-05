@@ -5,7 +5,7 @@
     {% with links=repository|links_with_user:request.user %}
         {% if links %}
             <div id="specific-part">
-                Links between you and this project :
+                Links between you and <em>{{ repository.project }}</em> :
                 <ul>
                     {% if links.owning %}
                         <li>
@@ -55,7 +55,7 @@
                             {% if links.forks %}
                                 {% if links.forks|length > 1 %}forks{% else %} a fork{% endif %} (
                                 {% for fork in links.forks %}
-                                        {% include "core/repositories/link.html" with repository=fork no_backend=1 %}
+                                    {% include "core/repositories/link.html" with repository=fork no_backend=1 %}
                                     {% if not forloop.last %}, {% endif %}
                                 {% endfor %}
                                 )
@@ -64,7 +64,7 @@
                                 {% if links.forks %} and {% endif %}
                                 {% if links.project_forks|length > 1 %}indirect forks{% else %} an indirect fork{% endif %} (
                                 {% for fork in links.project_forks %}
-                                        {% include "core/repositories/link.html" with repository=fork %}
+                                    {% include "core/repositories/link.html" with repository=fork %}
                                     {% if not forloop.last %}, {% endif %}
                                 {% endfor %}
                                 )

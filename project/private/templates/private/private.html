@@ -1,6 +1,6 @@
 {% if request.user and request.user.is_authenticated %}
 <section class="sticky taped for-{{ section }}" id="private">
-<div id="note-part"{% if note %} class="with-note"{% endif %}>
+    <div id="note-part"{% if note %} class="with-note"{% endif %}>
         {% if note %}
             <div>{{ note.rendered_content|safe }}</div>
             <a href="./?edit_note" title="Edit your private note (you'll be able to delete it too)"><small>edit your note</small></a>

@@ -923,6 +923,34 @@ class Account(SyncableModel):
         """
         return self.private_tags.filter(private_account_tags__owner=user).order_by('-private_account_tags__weight', 'slug').distinct()
 
+    def links_with_user(self, user):
+        """
+        Return informations about some links between this account and the given user
+        """
+        backend = self.get_backend()
+        links = {}
+
+        if backend.supports('user_following'):
+            followed = self.following.filter(user=user)
+            if followed:
+                links['followed'] = followed
+
+        if backend.supports('user_followers'):
+            following = self.followers.filter(user=user)
+            if following:
+                links['following'] = following
+
+        if backend.supports('repository_followers'):
+            project_following = Repository.objects.filter(owner=self, followers__user=user)
+            if project_following:
+                links['project_following'] = project_following
+            project_followed = Repository.objects.filter(owner__user=user, followers=self)
+            if project_followed:
+                links['project_followed'] = project_followed
+
+        return links
+
+
 
 class Repository(SyncableModel):
     """
@@ -1538,7 +1566,7 @@ class Repository(SyncableModel):
 
     def links_with_user(self, user):
         """
-        Return informations about some links between the repository and the given user
+        Return informations about some links between this repository and the given user
         """
         backend = self.get_backend()
         links = {}
@@ -1553,7 +1581,8 @@ class Repository(SyncableModel):
                     links['forks'] = forks
 
                 project_forks = Repository.objects.filter(
-                        slug_lower=self.slug_lower, owner__user=user).select_related('owner')
+                        slug_lower=self.slug_lower, owner__user=user).select_related('owner').exclude(
+                                id=self.id)
                 if forks:
                     project_forks = project_forks.exclude(id__in=list(fork.id for fork in forks))
                 if project_forks:

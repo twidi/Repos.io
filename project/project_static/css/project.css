@@ -544,9 +544,13 @@ body#user-repositories p.row span:last-child {
     margin: 0;
     padding-top: 10px;
     clear: both;
+    font-size: smaller;
 }
 #private #specific-part ul {
     margin-bottom: 0;
+}
+#private #specific-part a  {
+    color: #a28514;
 }
 #private.sticky.taped:after {
     left: 415px;
