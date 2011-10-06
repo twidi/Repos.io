@@ -204,13 +204,20 @@ def notes(request, obj_type=None):
     return render(request, 'dashboard/notes.html', context)
 
 
+def accounts_dict(request):
+    """
+    Return a dict with all accounts of the current user
+    """
+    return dict((a.id, a) for a in request.user.accounts.all())
+
+
 @login_required
 def following(request):
     """
     Display following for all accounts of the user
     """
 
-    all_following = Account.objects.filter(followers__user=request.user)
+    all_following = Account.objects.filter(followers__user=request.user).extra(select=dict(current_user_account_id='core_account_following.from_account_id'))
 
     sort = get_account_sort(request.GET.get('sort_by', None), default=None)
 
@@ -219,13 +226,17 @@ def following(request):
 
     followers_ids = Account.objects.filter(following__user=request.user).values_list('id', flat=True)
 
+    def get_accounts_dict():
+        return accounts_dict(request)
+
     context = dict(
         all_following = all_following,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
         ),
-        followers_ids = followers_ids
+        followers_ids = followers_ids,
+        accounts = get_accounts_dict,
     )
     return render(request, 'dashboard/following.html', context)
 
@@ -236,7 +247,7 @@ def followers(request):
     Display followers for all accounts of the user
     """
 
-    all_followers = Account.objects.filter(following__user=request.user)
+    all_followers = Account.objects.filter(following__user=request.user).extra(select=dict(current_user_account_id='core_account_following.to_account_id'))
 
     sort = get_account_sort(request.GET.get('sort_by', None), default=None)
 
@@ -245,13 +256,17 @@ def followers(request):
 
     following_ids = Account.objects.filter(followers__user=request.user).values_list('id', flat=True)
 
+    def get_accounts_dict():
+        return accounts_dict(request)
+
     context = dict(
         all_followers = all_followers,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
         ),
-        following_ids = following_ids
+        following_ids = following_ids,
+        accounts = get_accounts_dict,
     )
     return render(request, 'dashboard/followers.html', context)
 

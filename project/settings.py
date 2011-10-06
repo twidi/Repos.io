@@ -146,6 +146,7 @@ INSTALLED_APPS = (
     'taggit',
 
     # ours
+    'utils',
     'core',
     'accounts',
     'search',

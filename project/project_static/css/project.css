@@ -715,3 +715,11 @@ body#dashboard-tags #content > .tags {
 body#dashboard-notes table.repositories td:nth-child(4) {
     white-space: nowrap;
 }
+/* Dashboard followers and following */
+body#dashboard-following table.accounts td:last-child > div img,
+body#dashboard-followers table.accounts td:last-child > div img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}

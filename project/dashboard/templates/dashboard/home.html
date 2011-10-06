@@ -96,7 +96,7 @@
                 <p><em>No notes !</em></p>
             {% endif %}
 
-            <a href="{% url dashboard_notes %}">Manage your notes...</a>
+            <a href="{% url dashboard_notes obj_type="repositories" %}">Manage your notes...</a>
 
             <h3>For people</h3>
 
@@ -123,7 +123,7 @@
                 <p><em>No notes !</em></p>
             {% endif %}
 
-            <a href="{% url dashboard_notes %}">Manage your notes...</a>
+            <a href="{% url dashboard_notes obj_type="accounts" %}">Manage your notes...</a>
 
         {% endwith %}
 
