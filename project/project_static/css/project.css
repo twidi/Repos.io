@@ -259,6 +259,9 @@ table.zebra-striped th.purple.header:after {
 body#search-repositories h2 {
     float: left;
 }
+body#search-repositories h2.no-results {
+    float: none;
+}
 #search-options {
     float: right;
 }
