@@ -13,29 +13,31 @@
 
 <div class="row">
 
-<section class="span5">
+    <section class="span5{% if user.is_authenticated %} authenticated{% endif %}">
     {% if user.is_authenticated %}
         <h1>Welcome back <em>{{ user.username }} </em>!</h1>
+
+        <p class="with-btn"><a class="btn primary large" href="{% url dashboard_home %}">Go to your dashboard</a></p>
 
         {% with accounts=user.accounts.all %}
 
             {% if not accounts %}
-                <p>You have no account associated.</p>
-                <p><a class="btn primary large" href="{% url accounts_manage %}">Associate your account</a></p>
+                <p>You have no account associated:</p>
+                <p class="with-btn"><a class="btn large" href="{% url accounts_manage %}">Associate your account</a></p>
             {% else %}
-                <p>Start by visiting one of your accounts :</p>
-            <table>
-                <tbody>
-                    {% for account in accounts %}
-                    <tr>
-                        <td>
-                        {% include "core/accounts/avatar.html" with size=16 %}
-                        {% include "core/accounts/link.html" %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                <p>or visit one of your accounts:</p>
+                <table>
+                    <tbody>
+                        {% for account in accounts %}
+                        <tr>
+                            <td>
+                            {% include "core/accounts/avatar.html" with size=16 %}
+                            {% include "core/accounts/link.html" %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
                 <p class='with-btn'><a class="btn" href="{% url accounts_manage %}">Manage your accounts</a></p>
             {% endif %}
 
