@@ -689,6 +689,12 @@ body#dashboard-home #content > div > section > a:hover {
 #d-notes table td:last-child div.rel_popover {
     height: 16px;
 }
+body#dashboard-home .note_container hr {
+    margin-bottom: 5px;
+}
+body#dashboard-home .note_container hr+em {
+    font-size: smaller;
+}
 #d-people-repositories table td {
     padding: 5px;
 }

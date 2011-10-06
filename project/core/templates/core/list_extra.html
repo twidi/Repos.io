@@ -10,7 +10,7 @@
                 {% if obj.current_user_has_note %}
                     <blockquote>{{ obj.current_user_rendered_note|safe }}</blockquote>
                     <hr />
-                    <em>Note date : {{ obj.current_user_note_modified }}</em>
+                    <em>Last updated: {{ obj.current_user_note_modified }}</em>
                 {% endif %}
             </div></div>
         </div>
