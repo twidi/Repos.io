@@ -930,6 +930,9 @@ class Account(SyncableModel):
         backend = self.get_backend()
         links = {}
 
+        if self.user_id == user.id:
+            links['self'] = self.owner
+
         if backend.supports('user_following'):
             followed = self.following.filter(user=user)
             if followed:
