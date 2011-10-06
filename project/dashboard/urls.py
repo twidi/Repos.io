@@ -3,7 +3,7 @@ from dashboard.views import home, tags, notes, following, followers, repositorie
 
 urlpatterns = patterns('',
     url(r'^$', home, name='dashboard_home'),
-    url(r'^tags/$', tags, name='dashboard_tags'),
+    url(r'^tags(?:/(?P<obj_type>repositories|accounts))?/$', tags, name='dashboard_tags'),
     url(r'^notes/$', notes, name='dashboard_notes'),
     url(r'^following/$', following, name='dashboard_following'),
     url(r'^followers/$', followers, name='dashboard_followers'),

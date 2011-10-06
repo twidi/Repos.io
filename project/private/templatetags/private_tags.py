@@ -61,16 +61,22 @@ def prepare_private(objects):
 
         private_tagged_items = qs_tags.filter(
                 content_object__in=ids
-            ).values_list('content_object', 'tag__name')
+            ).values_list('content_object', 'tag__name', 'tag__slug')
 
-        for obj_id, tag in private_tagged_items:
+        for obj_id, tag, slug in private_tagged_items:
             if not getattr(dict_objects[obj_id], 'current_user_has_tags', None):
                 dict_objects[obj_id].current_user_has_extra = True
                 dict_objects[obj_id].current_user_has_tags = True
                 dict_objects[obj_id].current_user_tags = []
-            dict_objects[obj_id].current_user_tags.append(tag)
+            dict_objects[obj_id].current_user_tags.append(dict(name=tag, slug=slug))
 
         if model_name == 'account':
+            # self
+            self_accounts = Account.objects.filter(id__in=ids, user=user).values_list('id', flat=True)
+            for obj_id in self_accounts:
+                dict_objects[obj_id].current_user_has_extra = True
+                dict_objects[obj_id].current_user_is_self = True
+
             # follows
             following = Account.objects.filter(id__in=ids, followers__user=user).values_list('id', flat=True)
             for obj_id in following:

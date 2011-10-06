@@ -1,0 +1,34 @@
+{% extends 'dashboard/base.html' %}
+{% load private_tags %}
+
+{% block dashboard_content %}
+
+<ul class="pills">
+    <li{% if obj_type == 'repositories' %} class="active"{% endif %}><a href="{% url dashboard_tags obj_type="repositories" %}">Tags for repositories</a></li>
+    <li{% if obj_type == 'accounts' %} class="active"{% endif %}><a href="{% url dashboard_tags obj_type="accounts" %}">Tags for people</a></li>
+</ul>
+
+{% with tags as all_tags %}
+    {% if all_tags %}
+        Filter with :
+        <ul class="tags unstyled">
+            <li><a href="." class="label {% if not tag_filter %}important{% else %}success{% endif %}">All tags</a></li>
+            {% for tag in all_tags %}
+                <li><a href=".?tag={{ tag.0 }}" class="label {% if tag_filter == tag.0 %}important{% else %}success{% endif %}" title="{% for obj in tag.2 %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.1 }}{% if tag.2|length > 1 %}<small> ({{ tag.2|length }})</small>{% endif %}</a></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p><em>You haven't set any tags !</em></p>
+    {% endif %}
+{% endwith %}
+
+{% prepare_private objects %}
+{% if obj_type == "accounts" %}
+    {% include "dashboard/tagged_accounts.html" %}
+{% else %}
+    {% include "dashboard/tagged_repositories.html" %}
+{% endif %}
+
+
+{% endblock %}
+

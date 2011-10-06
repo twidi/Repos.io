@@ -379,13 +379,13 @@ table.accounts td:first-child img {
     border-radius: 4px;
     margin-top: 2px;
 }
-table.accounts .tags {
+table.accounts td:first-child .tags {
     margin-left: 36px;
     position: relative;
     top: -16px;
     margin-bottom: -18px;
 }
-table.accounts .tags .label {
+table.accounts td:first-child .tags .label {
     font-size: 8px;
 }
 
@@ -694,4 +694,8 @@ body#dashboard-home #content > div > section > a:hover {
     -webkit-border-radius: 2px;
     -moz-border-radius: 2px;
     border-radius: 2px;
+}
+/* Dashboard tags */
+body#dashboard-tags #content > .tags {
+    display: inline-block;
 }

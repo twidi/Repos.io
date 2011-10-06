@@ -1,0 +1,29 @@
+<table class='zebra-striped accounts with_extras'>
+    <thead>
+        <tr>
+            {% include "core/sort_th.html" with color="orange" key="name" name="Name" param1_key="tag" param1_value=tag_filter %}
+            <th class="green">Links</th>
+            <th>Your tags</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for account in objects %}
+        <tr>
+            <td>
+                {% include "core/accounts/list_extra.html" with obj=account %}
+                {% include "core/accounts/avatar.html" %}
+                {% include "core/accounts/link.html" %}
+                {% include "core/score.html" with obj=account %}
+                {% include "core/accounts/tags.html" %}
+            </td>
+            <td>
+                {% include "core/accounts/links.html" %}
+            </td>
+            <td>
+                {% include "dashboard/include_tags.html" with obj_type="accounts" tags=account.current_user_tags %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+

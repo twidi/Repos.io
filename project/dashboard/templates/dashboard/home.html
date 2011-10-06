@@ -32,29 +32,31 @@
 
             {% if all_tags.repository %}
                 <ul class="tags unstyled">
+                    {% url dashboard_tags obj_type="repositories" as repositories_tags_url %}
                     {% for tag in all_tags.repository %}
-                        <li class="label success" title="{% for obj in tag.1 %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.0 }}{% if tag.1|length > 1 %}<small> ({{ tag.1|length }})</small>{% endif %}</li>
+                        <li><a href="{{ repositories_tags_url }}?tag={{ tag.0 }}" class="label success" title="{% for obj in tag.2 %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.1 }}{% if tag.2|length > 1 %}<small> ({{ tag.2|length }})</small>{% endif %}</a></li>
                     {% endfor %}
                 </ul>
             {% else %}
                 <p><em>No tags !</em></p>
             {% endif %}
 
-            <a href="{% url dashboard_tags %}">Manage your tags...</a>
+            <a href="{{ repositories_tags_url }}">Manage your tags...</a>
 
             <h3>For people</h3>
 
             {% if all_tags.account %}
                 <ul class="tags unstyled">
+                    {% url dashboard_tags obj_type="accounts" as accounts_tags_url %}
                     {% for tag in all_tags.account %}
-                        <li class="label success" title="{% for obj in tag.1 %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.0 }}{% if tag.1|length > 1 %}<small> ({{ tag.1|length }})</small>{% endif %}</li>
+                        <li><a href="{{ accounts_tags_url }}?tag={{ tag.0 }}" class="label success" title="{% for obj in tag.2 %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.1 }}{% if tag.2|length > 1 %}<small> ({{ tag.2|length }})</small>{% endif %}</a></li>
                     {% endfor %}
                 </ul>
             {% else %}
                 <p><em>No tags !</em></p>
             {% endif %}
 
-            <a href="{% url dashboard_tags %}">Manage your tags...</a>
+            <a href="{{ accounts_tags_url }}">Manage your tags...</a>
         {% endwith %}
 
     </section>
