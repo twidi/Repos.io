@@ -217,20 +217,43 @@ def following(request):
     if sort['key']:
         all_following = all_following.order_by(sort['db_sort'])
 
+    followers_ids = Account.objects.filter(following__user=request.user).values_list('id', flat=True)
+
     context = dict(
         all_following = all_following,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
         ),
+        followers_ids = followers_ids
     )
     return render(request, 'dashboard/following.html', context)
 
 
 @login_required
 def followers(request):
-    messages.warning(request, '"Followers" page not ready : work in progress')
-    return redirect(home)
+    """
+    Display followers for all accounts of the user
+    """
+
+    all_followers = Account.objects.filter(following__user=request.user)
+
+    sort = get_account_sort(request.GET.get('sort_by', None), default=None)
+
+    if sort['key']:
+        all_followers = all_followers.order_by(sort['db_sort'])
+
+    following_ids = Account.objects.filter(followers__user=request.user).values_list('id', flat=True)
+
+    context = dict(
+        all_followers = all_followers,
+        sort = dict(
+            key = sort['key'],
+            reverse = sort['reverse'],
+        ),
+        following_ids = following_ids
+    )
+    return render(request, 'dashboard/followers.html', context)
 
 
 @login_required

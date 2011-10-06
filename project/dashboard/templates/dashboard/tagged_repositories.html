@@ -13,7 +13,7 @@
             <td>
                 {% include "core/repositories/list_extra.html" with obj=repository %}
                 {% include "core/repositories/logo.html" %}</strong>
-                <strong>{% include "core/repositories/link.html" with no_backend=1 no_owner=1 %}</strong>
+                <strong>{% include "core/repositories/link.html" with no_owner=1 %}</strong>
                 {% if repository.is_fork %}
                 <small>
                     <span class="label warning">Fork</span>
