@@ -72,7 +72,7 @@
             {% if last_notes.repository %}
                 <table>
                     <tbody>
-                        {% for obj, rendered_note in last_notes.repository %}
+                        {% for obj in last_notes.repository %}
                         <tr>
                             <td>
                                 {% include "core/repositories/logo.html" with repository=obj size=16 %}
@@ -81,7 +81,7 @@
                             <td>
                                 <div class="rel_popover" data-popover-title="Your private note">
                                     <img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" />
-                                    <div>{{ rendered_note|safe }}</div>
+                                    <div>{{ obj.current_user_rendered_note|safe }}</div>
                                 </div>
                             </td>
                         </tr>
@@ -99,7 +99,7 @@
             {% if last_notes.account %}
                 <table>
                     <tbody>
-                        {% for obj, rendered_note in last_notes.account %}
+                        {% for obj in last_notes.account %}
                         <tr>
                             <td>
                                 {% include "core/accounts/avatar.html" with account=obj size=16 %}
@@ -108,7 +108,7 @@
                             <td>
                                 <div class="rel_popover" data-popover-title="Your private note">
                                     <img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" />
-                                    <div>{{ rendered_note|safe }}</div>
+                                    <div>{{ obj.current_user_rendered_note|safe }}</div>
                                 </div>
                             </td>
                         </tr>

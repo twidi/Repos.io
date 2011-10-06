@@ -311,6 +311,12 @@ div.extra_container.with_note.with_tags .tags {
     margin-bottom: 8px;
     border-bottom: solid #bfbfbf 1px;
 }
+div.extra_container.with_note hr {
+    margin-bottom: 5px;
+}
+div.extra_container.with_note hr+em {
+    font-size: smaller;
+}
 /* Scores */
 .score {
     background-color: #e0e0e0;
@@ -698,4 +704,8 @@ body#dashboard-home #content > div > section > a:hover {
 /* Dashboard tags */
 body#dashboard-tags #content > .tags {
     display: inline-block;
+}
+/* Dashboard notes */
+body#dashboard-notes table.repositories td:nth-child(4) {
+    white-space: nowrap;
 }

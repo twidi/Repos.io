@@ -3,7 +3,7 @@
     <div id="note-part"{% if note %} class="with-note"{% endif %}>
         {% if note %}
             <div>{{ note.rendered_content|safe }}</div>
-            <a href="./?edit_note" title="Edit your private note (you'll be able to delete it too)"><small>edit your note</small></a>
+            <a href="./?edit_note" title="Edit your private note (you'll be able to delete it too)"><small>edit your note (last update : {{ note.modified }})</small></a>
         {% else %}
             <a href="./?edit_note"><small>Add a <strong>private</strong> note</small></a>
         {% endif %}

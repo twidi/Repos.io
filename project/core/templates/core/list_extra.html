@@ -8,7 +8,9 @@
                     {% include "dashboard/include_tags.html" with tags=obj.current_user_tags %}
                 {% endif %}
                 {% if obj.current_user_has_note %}
-                    {{ obj.current_user_rendered_note|safe }}
+                    <blockquote>{{ obj.current_user_rendered_note|safe }}</blockquote>
+                    <hr />
+                    <em>Note date : {{ obj.current_user_note_modified }}</em>
                 {% endif %}
             </div></div>
         </div>

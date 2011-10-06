@@ -6,14 +6,16 @@ from django.shortcuts import redirect
 from notes.models import Note
 
 from core.models import Account, Repository
-from core.views.sort import get_repository_sort
+from core.views.sort import get_repository_sort,get_account_sort
+from utils.sort import prepare_sort
 
 def _get_sorted_user_tags(user, only=None):
     """
     Return all tags for the user, sorted by usage (desc) and name (asc)
     The result is a dict with two entries : `repository` and `account`,
     grouping tags for each category. Each list is a list of tuple, with
-    the tag in first, and the list of tagged objects (only names)
+    the tag's slug in first, then the tag's name and finally the list of
+    tagged objects (only names)
     """
     result = {}
     types = dict(account='slug', repository='project')
@@ -37,12 +39,12 @@ def _get_sorted_user_tags(user, only=None):
 
     return result
 
-def _get_last_user_notes(user, limit=None, only=None):
+def _get_last_user_notes(user, limit=None, only=None, sort_by='-modified'):
     """
     Return `limit` last noted objects (or all if no limit), sorted by date (desc).
     The result is a dict with two entries: `repotiroy` and `account`,
-    grouping notes for each category. Each list is a list of typle, with
-    the object (repository or account) and the rendered note
+    grouping notes for each category. Each list is a list of objects
+    (repository or account) with a "current_user_rendered_note" added attribute
     """
     result = {}
     types = dict(account=Account, repository=Repository)
@@ -51,20 +53,34 @@ def _get_last_user_notes(user, limit=None, only=None):
         if only and obj_type != only:
             continue
 
-        notes = Note.objects.filter(author=user, content_type__app_label='core', content_type__model=obj_type).order_by('-modified').values_list('object_id', 'rendered_content')
+        notes = Note.objects.filter(author=user, content_type__app_label='core', content_type__model=obj_type).values_list('object_id', 'rendered_content', 'modified')
+
+        sort_objs = True
+        if sort_by in ('-modified', 'modified'):
+            sort_objs = False
+            notes = notes.order_by(sort_by)
+
         if limit:
             notes = notes[:limit]
 
-        notes_by_obj_id = dict(notes)
-
-        if not notes_by_obj_id:
+        if not notes:
             continue
 
-        objs = types[obj_type].objects.in_bulk(notes_by_obj_id.keys())
+        notes_by_obj_id = dict((note[0], note[1:]) for note in notes)
 
-        result[obj_type] = [(objs[note[0]], note[1])  for note in notes if note[0] in objs]
+        if sort_objs:
+            objs = types[obj_type].objects.filter(id__in=notes_by_obj_id.keys()).order_by(sort_by)
+            ordered = [obj for obj in objs if obj.id in notes_by_obj_id]
+        else:
+            objs = types[obj_type].objects.in_bulk(notes_by_obj_id.keys())
+            ordered = [objs[note[0]] for note in notes if note[0] in objs]
 
-    print result
+        result[obj_type] = []
+        for obj in ordered:
+            obj.current_user_rendered_note, obj.current_user_note_modified = notes_by_obj_id[obj.id]
+            obj.current_user_has_extra = obj.current_user_has_note = True
+            result[obj_type].append(obj)
+
     return result
 
 
@@ -136,7 +152,7 @@ def tags(request, obj_type=None):
 
     if model == 'account':
         objects = Account.objects.filter(**params)
-        sort = get_repository_sort(sort_key)
+        sort = get_account_sort(sort_key)
     else:
         objects = Repository.objects.filter(**params).select_related('owner')
         sort = get_repository_sort(sort_key)
@@ -157,9 +173,32 @@ def tags(request, obj_type=None):
 
 
 @login_required
-def notes(request):
-    messages.warning(request, '"Notes" page not ready : work in progress')
-    return redirect(home)
+def notes(request, obj_type=None):
+    if obj_type is None:
+        return redirect(notes, obj_type='repositories', permanent=True)
+
+    model = obj_type_from_url(obj_type)
+
+    sort_key = request.GET.get('sort_by', '-note')
+    if model == 'account':
+        sort = get_account_sort(sort_key, default=None)
+    else:
+        sort = get_repository_sort(sort_key, default=None)
+    if not sort.get('db_sort'):
+        sort = prepare_sort(sort_key, dict(note='modified'), default='note', default_reverse=True)
+
+    def get_notes():
+        return _get_last_user_notes(request.user, only=model, sort_by=sort['db_sort'])[model]
+
+    context = dict(
+        noted_objects = get_notes,
+        obj_type = obj_type,
+        sort = dict(
+            key = sort['key'],
+            reverse = sort['reverse'],
+        ),
+    )
+    return render(request, 'dashboard/notes.html', context)
 
 
 @login_required
