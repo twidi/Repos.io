@@ -654,3 +654,19 @@ form#list-filter:last-child {
     border-radius: 4px;
 }
 
+#d-notes table td {
+    padding: 5px;
+}
+#d-notes table tr:first-child td {
+    border-top: 1px solid #DDDDDD;
+}
+#d-notes table td:first-child img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
+#d-notes table td:last-child div.rel_popover {
+    height: 16px;
+}
+

@@ -25,6 +25,7 @@
     <section id="d-tags" class="span4">
         <h2>Tags</h2>
         <p>All your tags</p>
+
         {% with tags as all_tags %}
 
             <h3>For repositories</h3>
@@ -58,6 +59,63 @@
 
     <section id="d-notes" class="span4">
         <h2>Notes</h2>
+        <p>Your last notes</p>
+
+        {% with notes as last_notes %}
+
+            <h3>For repositories</h3>
+
+            {% if last_notes.repository %}
+                <table id="notes-repositories">
+                    <tbody>
+                        {% for obj, rendered_note in last_notes.repository %}
+                        <tr>
+                            <td>
+                                {% include "core/repositories/logo.html" with repository=obj size=16 %}
+                                {% include "core/repositories/link.html" with repository=obj %}
+                            </td>
+                            <td>
+                                <div class="rel_popover" data-popover-title="Your private note">
+                                    <img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" />
+                                    <div>{{ rendered_note|safe }}</div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p><em>No notes !</em></p>
+            {% endif %}
+
+            <h3>For people</h3>
+
+            {% if last_notes.account %}
+                <table id="notes-accounts">
+                    <tbody>
+                        {% for obj, rendered_note in last_notes.account %}
+                        <tr>
+                            <td>
+                                {% include "core/accounts/avatar.html" with account=obj size=16 %}
+                                {% include "core/accounts/link.html" with account=obj %}
+                            </td>
+                            <td>
+                                <div class="rel_popover" data-popover-title="Your private note">
+                                    <img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" />
+                                    <div>{{ rendered_note|safe }}</div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p><em>No notes !</em></p>
+            {% endif %}
+
+        {% endwith %}
+
+        <a href="{% url dashboard_notes %}">Manage your notes...</a>
     </section>
 
     <section id="d-people" class="span4">
