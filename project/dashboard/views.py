@@ -174,6 +174,9 @@ def tags(request, obj_type=None):
 
 @login_required
 def notes(request, obj_type=None):
+    """
+    Display all repositories or accounts with a note
+    """
     if obj_type is None:
         return redirect(notes, obj_type='repositories', permanent=True)
 
@@ -203,8 +206,25 @@ def notes(request, obj_type=None):
 
 @login_required
 def following(request):
-    messages.warning(request, '"Following" page not ready : work in progress')
-    return redirect(home)
+    """
+    Display following for all accounts of the user
+    """
+
+    all_following = Account.objects.filter(followers__user=request.user)
+
+    sort = get_account_sort(request.GET.get('sort_by', None), default=None)
+
+    if sort['key']:
+        all_following = all_following.order_by(sort['db_sort'])
+
+    context = dict(
+        all_following = all_following,
+        sort = dict(
+            key = sort['key'],
+            reverse = sort['reverse'],
+        ),
+    )
+    return render(request, 'dashboard/following.html', context)
 
 
 @login_required
