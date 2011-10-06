@@ -40,6 +40,8 @@
                 <p><em>No tags !</em></p>
             {% endif %}
 
+            <a href="{% url dashboard_tags %}">Manage your tags...</a>
+
             <h3>For people</h3>
 
             {% if all_tags.account %}
@@ -52,9 +54,9 @@
                 <p><em>No tags !</em></p>
             {% endif %}
 
+            <a href="{% url dashboard_tags %}">Manage your tags...</a>
         {% endwith %}
 
-        <a href="{% url dashboard_tags %}">Manage your tags...</a>
     </section>
 
     <section id="d-notes" class="span4">
@@ -66,7 +68,7 @@
             <h3>For repositories</h3>
 
             {% if last_notes.repository %}
-                <table id="notes-repositories">
+                <table>
                     <tbody>
                         {% for obj, rendered_note in last_notes.repository %}
                         <tr>
@@ -88,10 +90,12 @@
                 <p><em>No notes !</em></p>
             {% endif %}
 
+            <a href="{% url dashboard_notes %}">Manage your notes...</a>
+
             <h3>For people</h3>
 
             {% if last_notes.account %}
-                <table id="notes-accounts">
+                <table>
                     <tbody>
                         {% for obj, rendered_note in last_notes.account %}
                         <tr>
@@ -113,13 +117,95 @@
                 <p><em>No notes !</em></p>
             {% endif %}
 
+            <a href="{% url dashboard_notes %}">Manage your notes...</a>
+
         {% endwith %}
 
-        <a href="{% url dashboard_notes %}">Manage your notes...</a>
     </section>
 
-    <section id="d-people" class="span4">
-        <h2>People</h2>
+    <section id="d-people-repositories" class="span4">
+
+        <h2>People & repositories</h2>
+
+        <h3>Your best followers</h3>
+        {% if best.accounts.followers %}
+            <table>
+                <tbody>
+                    {% for account in best.accounts.followers %}
+                        <tr>
+                            <td>
+                                {% include "core/accounts/avatar.html" with account=account size=16 %}
+                                {% include "core/accounts/link.html" with account=account %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p><em>No followers !</em></p>
+        {% endif %}
+
+        <a href="{% url dashboard_followers %}">More followers...</a>
+
+        <h3>Your best following</h3>
+        {% if best.accounts.following %}
+            <table>
+                <tbody>
+                    {% for account in best.accounts.following %}
+                        <tr>
+                            <td>
+                                {% include "core/accounts/avatar.html" with account=account size=16 %}
+                                {% include "core/accounts/link.html" with account=account %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p><em>No following !</em></p>
+        {% endif %}
+
+        <a href="{% url dashboard_following %}">More following...</a>
+
+        <h3>Your best owned repositories</h3>
+        {% if best.repositories.owned %}
+            <table>
+                <tbody>
+                    {% for repository in best.repositories.owned %}
+                        <tr>
+                            <td>
+                                {% include "core/repositories/logo.html" with repository=repository size=16 %}
+                                {% include "core/repositories/link.html" with repository=repository %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p><em>No owned repositories !</em></p>
+        {% endif %}
+
+        <a href="{% url dashboard_repositories %}">More repositories...</a>
+
+        <h3>Your best followed repositories</h3>
+        {% if best.repositories.followed %}
+            <table>
+                <tbody>
+                    {% for repository in best.repositories.followed %}
+                        <tr>
+                            <td>
+                                {% include "core/repositories/logo.html" with repository=repository size=16 %}
+                                {% include "core/repositories/link.html" with repository=repository %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p><em>No followed repositories !</em></p>
+        {% endif %}
+
+        <a href="{% url dashboard_repositories %}">More repositories...</a>
     </section>
 
 </div>

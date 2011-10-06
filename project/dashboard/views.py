@@ -74,11 +74,23 @@ def home(request):
     def get_tags():
         return _get_sorted_user_tags(request.user)
     def get_notes():
-        return _get_last_user_notes(request.user, 5)
+        return _get_last_user_notes(request.user, 10)
+
+    best = dict(
+        accounts = dict(
+            followers = Account.objects.filter(following__user=request.user).order_by('-score')[:5],
+            following = Account.objects.filter(followers__user=request.user).order_by('-score')[:5],
+        ),
+        repositories = dict(
+            followed = Repository.objects.filter(followers__user=request.user).exclude(owner__user=request.user).order_by('-score')[:5],
+            owned = Repository.objects.filter(owner__user=request.user).order_by('-score')[:5],
+        ),
+    )
 
     context = dict(
         tags = get_tags,
         notes = get_notes,
+        best = best,
     )
     return render(request, 'dashboard/home.html', context)
 

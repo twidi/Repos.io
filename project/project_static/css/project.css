@@ -634,15 +634,26 @@ form#list-filter:last-child {
 }
 
 /* dashboard home */
-#content > div > section h2 {
+body#dashboard-home #content > div > section h2 {
     font-size: 16px;
 }
-#content > div > section h3 {
+body#dashboard-home #content > div > section h3 {
     font-size: 14px;
 }
-
-#d-accounts table {
-    width: auto;
+body#dashboard-home #content > div > section > a {
+    display: block;
+    text-align: right;
+    margin-top: -18px;
+    font-style: italic;
+    font-size: smaller;
+    margin-bottom: 8px;
+    color: #bfbfbf;
+}
+body#dashboard-home #content > div > section:hover > a {
+    color: #999
+}
+body#dashboard-home #content > div > section > a:hover {
+    color: #00438A
 }
 #d-accounts table tr:first-child td {
     border-top: 1px solid #DDDDDD;
@@ -653,7 +664,10 @@ form#list-filter:last-child {
     -moz-border-radius: 4px;
     border-radius: 4px;
 }
-
+#d-tags > a {
+    text-align: left !important;
+    margin-top: -10px !important;
+}
 #d-notes table td {
     padding: 5px;
 }
@@ -669,4 +683,15 @@ form#list-filter:last-child {
 #d-notes table td:last-child div.rel_popover {
     height: 16px;
 }
-
+#d-people-repositories table td {
+    padding: 5px;
+}
+#d-people-repositories table tr:first-child td {
+    border-top: 1px solid #DDDDDD;
+}
+#d-people-repositories table td:first-child img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
