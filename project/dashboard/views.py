@@ -8,6 +8,7 @@ from notes.models import Note
 from core.models import Account, Repository
 from core.views.sort import get_repository_sort,get_account_sort
 from utils.sort import prepare_sort
+from search.views import parse_keywords, make_query, RepositorySearchView
 
 def _get_sorted_user_tags(user, only=None):
     """
@@ -293,8 +294,23 @@ def repositories(request):
     if sort['key']:
         all_repositories = all_repositories.order_by(sort['db_sort'])
 
-    def get_accounts_dict():
-        return accounts_dict(request)
+    accounts = accounts_dict(request)
+
+    query = request.GET.get('q')
+    if query:
+        keywords = parse_keywords(query)
+        search_queryset = make_query(RepositorySearchView.search_fields, keywords)
+        search_queryset = search_queryset.models(RepositorySearchView.model)
+        if owner_only:
+            search_queryset = search_queryset.filter(owner_id__in=accounts.keys())
+        if hide_forks:
+            search_queryset = search_queryset.exclude(is_fork=True)
+        # It's certainly not the best way to do it but.... :(
+        sorted_ids = [r.id for r in all_repositories]
+        if sorted_ids:
+            search_queryset = search_queryset.filter(django_id__in=sorted_ids)
+            found_ids = [int(r.pk) for r in search_queryset]
+            all_repositories = [r for r in all_repositories if r.id in found_ids]
 
     context = dict(
         all_repositories = all_repositories,
@@ -302,9 +318,10 @@ def repositories(request):
             key = sort['key'],
             reverse = sort['reverse'],
         ),
-        accounts = get_accounts_dict,
+        accounts = accounts,
         owner_only = 'y' if owner_only else False,
         hide_forks = 'y' if hide_forks else False,
+        query = query or "",
     )
 
     return render(request, 'dashboard/repositories.html', context)
