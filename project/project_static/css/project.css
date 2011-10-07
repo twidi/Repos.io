@@ -716,8 +716,22 @@ body#dashboard-notes table.repositories td:nth-child(4) {
     white-space: nowrap;
 }
 /* Dashboard followers and following */
+body#dashboard-following table.accounts td:last-child > div,
+body#dashboard-followers table.accounts td:last-child > div {
+    white-space: nowrap;
+}
 body#dashboard-following table.accounts td:last-child > div img,
 body#dashboard-followers table.accounts td:last-child > div img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
+/* Dashboard repositories */
+body#dashboard-repositories table.repositories td:last-child > div {
+    white-space: nowrap;
+}
+body#dashboard-repositories table.repositories td:last-child > div img {
     vertical-align: middle;
     -webkit-border-radius: 2px;
     -moz-border-radius: 2px;

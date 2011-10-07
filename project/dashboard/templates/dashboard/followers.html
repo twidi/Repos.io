@@ -42,7 +42,7 @@
                                         {% with user_account=user_accounts|dict_get:user_account_id %}
                                         <div>
                                             {% include "core/accounts/avatar.html" with account=user_account size=16 %}
-                                            {% include "core/accounts/link.html" with account=user_account %}
+                                            {% include "core/accounts/link.html" with account=user_account no_backend=1 %}
                                         </div>
                                         {% endwith %}
                                     {% endfor %}
