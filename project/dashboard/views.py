@@ -272,19 +272,19 @@ def followers(request):
     return render(request, 'dashboard/followers.html', context)
 
 
-@login_required
-def repositories(request):
+def _filter_repositories(request, param, extra):
     """
-    Display repositories followed/owned by the user
+    Helper doing all sort/query stuff about repositories, for listing
+    repositories owned/followed or contributed by the user
     """
 
-    params = dict(followers__user = request.user)
+    params = {param: request.user}
 
     owner_only = request.GET.get('owner-only', False) == 'y'
     if owner_only:
         params['owner__user'] = request.user
 
-    all_repositories = Repository.objects.filter(**params).extra(select=dict(current_user_account_id='core_account_repositories.account_id'))
+    all_repositories = Repository.objects.filter(**params).extra(select=dict(current_user_account_id=extra))
 
     hide_forks = request.GET.get('hide-forks', False) == 'y'
     if hide_forks:
@@ -323,11 +323,22 @@ def repositories(request):
         hide_forks = 'y' if hide_forks else False,
         query = query or "",
     )
+    return context
 
+
+@login_required
+def repositories(request):
+    """
+    Display repositories followed/owned by the user
+    """
+    context = _filter_repositories(request, param='followers__user', extra='core_account_repositories.account_id')
     return render(request, 'dashboard/repositories.html', context)
 
 
 @login_required
 def contributing(request):
-    messages.warning(request, '"Contributions" page not ready : work in progress')
-    return redirect(home)
+    """
+    Display repositories contributed by the user
+    """
+    context = _filter_repositories(request, param='contributors__user', extra='core_repository_contributors.account_id')
+    return render(request, 'dashboard/contributing.html', context)
