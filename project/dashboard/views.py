@@ -273,8 +273,41 @@ def followers(request):
 
 @login_required
 def repositories(request):
-    messages.warning(request, '"Repositories" page not ready : work in progress')
-    return redirect(home)
+    """
+    Display repositories followed/owned by the user
+    """
+
+    params = dict(followers__user = request.user)
+
+    owner_only = request.GET.get('owner-only', False) == 'y'
+    if owner_only:
+        params['owner__user'] = request.user
+
+    all_repositories = Repository.objects.filter(**params).extra(select=dict(current_user_account_id='core_account_repositories.account_id'))
+
+    hide_forks = request.GET.get('hide-forks', False) == 'y'
+    if hide_forks:
+        all_repositories = all_repositories.exclude(is_fork=True)
+
+    sort = get_repository_sort(request.GET.get('sort_by', None))
+    if sort['key']:
+        all_repositories = all_repositories.order_by(sort['db_sort'])
+
+    def get_accounts_dict():
+        return accounts_dict(request)
+
+    context = dict(
+        all_repositories = all_repositories,
+        sort = dict(
+            key = sort['key'],
+            reverse = sort['reverse'],
+        ),
+        accounts = get_accounts_dict,
+        owner_only = 'y' if owner_only else False,
+        hide_forks = 'y' if hide_forks else False,
+    )
+
+    return render(request, 'dashboard/repositories.html', context)
 
 
 @login_required
