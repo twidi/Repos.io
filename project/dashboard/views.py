@@ -101,12 +101,12 @@ def home(request):
 
     best = dict(
         accounts = dict(
-            followers = Account.objects.filter(following__user=request.user).order_by('-score')[:5],
-            following = Account.objects.filter(followers__user=request.user).order_by('-score')[:5],
+            followers = Account.objects.filter(following__user=request.user).order_by('-score').distinct()[:5],
+            following = Account.objects.filter(followers__user=request.user).order_by('-score').distinct()[:5],
         ),
         repositories = dict(
-            followed = Repository.objects.filter(followers__user=request.user).exclude(owner__user=request.user).order_by('-score')[:5],
-            owned = Repository.objects.filter(owner__user=request.user).order_by('-score')[:5],
+            followed = Repository.objects.filter(followers__user=request.user).exclude(owner__user=request.user).order_by('-score').distinct()[:5],
+            owned = Repository.objects.filter(owner__user=request.user).order_by('-score').distinct()[:5],
         ),
     )
 
