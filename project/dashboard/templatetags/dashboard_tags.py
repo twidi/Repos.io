@@ -18,19 +18,32 @@ def distinctify(objects, fields=None):
     (no spaces !)
     Usage : {{ mylist|distinctify:"field1,field2" }}
     """
-
-    # todo : by doing that we have not the _list fields !
-    ## first test length: it's same, no need to distintify
-    #ids = set([obj.id for obj in objects])
-    #if len(ids) == len(objects):
-    #    return objects
-
-    result = []
-    found = {}
+    if not objects:
+        return []
 
     special_fields = []
     if fields:
         special_fields = fields.split(',')
+
+    # first test length: it's same, no need to distintify
+    ids = set([obj.id for obj in objects])
+    if len(ids) == len(objects):
+        # check if all fields are present
+        ok = True
+        for field in special_fields:
+            if not hasattr(objects[0], '%s_list' % field):
+                ok = False
+                break
+        # not fields present, quickly create them
+        if not ok:
+            for obj in objects:
+                for field in special_fields:
+                    setattr(obj, '%s_list' % field, set((getattr(obj, field),)))
+        return objects
+
+    # we really have to distinct !
+    result = []
+    found = {}
 
     for obj in objects:
 
@@ -39,11 +52,12 @@ def distinctify(objects, fields=None):
             result.append(obj)
 
             for field in special_fields:
-                setattr(obj, '%s_list' % field, [])
+                if not hasattr(obj, '%s_list' % field):
+                    setattr(obj, '%s_list' % field, set())
 
         for field in special_fields:
             if hasattr(obj, field):
-                getattr(found[obj.id], '%s_list' % field).append(getattr(obj, field))
+                getattr(found[obj.id], '%s_list' % field).add(getattr(obj, field))
 
     return result
 

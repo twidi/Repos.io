@@ -312,6 +312,57 @@ def _filter_repositories(request, param, extra):
             found_ids = [int(r.pk) for r in search_queryset]
             all_repositories = [r for r in all_repositories if r.id in found_ids]
 
+    distinct = request.GET.get('distinct', False) == 'y'
+    if distinct:
+        # try to keep one entry for each backend/slug
+        uniq = []
+        slugs = {}
+        for repository in all_repositories:
+            if repository.slug=='django-extended-choices':
+                print repository
+            slug = '%s:%s' % (repository.backend, repository.slug)
+            if slug in slugs:
+                slugs[slug].append(repository)
+                continue
+            slugs[slug] = []
+            uniq.append(repository)
+        for repository in uniq:
+            slug = '%s:%s' % (repository.backend, repository.slug)
+            repository.distinct_others = slugs[slug]
+        # try to keep the first non-fork for each one
+        all_repositories = []
+        sort_lambda = lambda r:r.official_created
+        for repository in uniq:
+            if not repository.distinct_others or repository.owner_id in accounts:
+                good_repository = repository
+            else:
+                important_ones = [r for r in repository.distinct_others if not r.is_fork]
+                owned = [r for r in important_ones if r.owner_id in accounts]
+                if owned:
+                    good_repository = owned[0]  # all are from the owner, take one
+                else:
+                    if important_ones:
+                        if not repository.is_fork:
+                            important_ones + [repository,]
+                    else:
+                        important_ones = repository.distinct_others + [repository,]
+
+                    good_repository = sorted(important_ones, key=sort_lambda)[0]
+
+                if good_repository != repository:
+                    good_repository.distinct_others = [r for r in repository.distinct_others + [repository,] if r != good_repository]
+                    delattr(repository, 'distinct_others')
+
+                if hasattr(good_repository, 'distinct_others'):
+                    good_repository.distinct_others = sorted(good_repository.distinct_others, key=sort_lambda)
+
+            good_repository.current_user_account_id_list = set((good_repository.current_user_account_id,))
+            if hasattr(good_repository, 'distinct_others'):
+                for other_rep in good_repository.distinct_others:
+                    good_repository.current_user_account_id_list.add(other_rep.current_user_account_id)
+
+            all_repositories.append(good_repository)
+
     context = dict(
         all_repositories = all_repositories,
         sort = dict(
@@ -321,6 +372,7 @@ def _filter_repositories(request, param, extra):
         accounts = accounts,
         owner_only = 'y' if owner_only else False,
         hide_forks = 'y' if hide_forks else False,
+        distinct = 'y' if distinct else False,
         query = query or "",
     )
     return context

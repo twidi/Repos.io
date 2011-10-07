@@ -151,11 +151,11 @@ def _filter_repositories(request, account, queryset):
             if not repository.distinct_others or repository.owner_id == account.id:
                 good_repository = repository
             else:
-                owned = [r for r in repository.distinct_others if r.owner_id == account.id]
+                important_ones = [r for r in repository.distinct_others if not r.is_fork]
+                owned = [r for r in important_ones if r.owner_id == account.id]
                 if owned:
                     good_repository = owned[0]  # only one possible
                 else:
-                    important_ones = [r for r in repository.distinct_others if not r.is_fork]
                     if important_ones:
                         if not repository.is_fork:
                             important_ones + [repository,]
@@ -167,7 +167,9 @@ def _filter_repositories(request, account, queryset):
                 if good_repository != repository:
                     good_repository.distinct_others = [r for r in repository.distinct_others + [repository,] if r != good_repository]
                     delattr(repository, 'distinct_others')
-                good_repository.distinct_others = sorted(good_repository.distinct_others, key=sort_lambda)
+
+                if hasattr(good_repository, 'distinct_others'):
+                    good_repository.distinct_others = sorted(good_repository.distinct_others, key=sort_lambda)
 
             sorted_repositories.append(good_repository)
 
