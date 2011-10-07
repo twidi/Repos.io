@@ -30,7 +30,7 @@
                             {% include "core/accounts/tags.html" with account=contributor  %}
                         </td>
                         {% if contributor.id = repository.owner.id %}<td title="{{ contributor.slug }} is the owner of {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
-                        {% if contributor.slug in repository.followers_slugs %}<td title="{{ contributor.slug }} follows {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
+                        {% if contributor.id in repository.followers_ids %}<td title="{{ contributor.slug }} follows {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
                         <td>
                             {% include "core/accounts/links.html" with account=contributor %}
                         </td>

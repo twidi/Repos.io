@@ -146,11 +146,13 @@ INSTALLED_APPS = (
     'taggit',
 
     # ours
+    'utils',
     'core',
     'accounts',
     'search',
     'private',
     'tagging',
+    'dashboard',
 )
 
 # A sample logging configuration. The only tangible logging

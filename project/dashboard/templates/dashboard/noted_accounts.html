@@ -1,0 +1,28 @@
+<table class='zebra-striped accounts with_extras'>
+    <thead>
+        <tr>
+            {% include "core/sort_th.html" with color="orange" key="name" name="Name" %}
+            <th class="green">Links</th>
+            {% include "core/sort_th.html" with key="note" name="Note date" default_reverse=1 %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for account in objects %}
+        <tr>
+            <td>
+                {% include "core/accounts/list_extra.html" with obj=account %}
+                {% include "core/accounts/avatar.html" %}
+                {% include "core/accounts/link.html" %}
+                {% include "core/score.html" with obj=account %}
+                {% include "core/accounts/tags.html" %}
+            </td>
+            <td>
+                {% include "core/accounts/links.html" %}
+            </td>
+            <td>{{ account.current_user_note_modified }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+

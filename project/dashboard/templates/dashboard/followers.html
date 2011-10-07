@@ -1,0 +1,64 @@
+{% extends 'dashboard/base.html' %}
+{% load private_tags utils_tags dashboard_tags %}
+{% block title %}Your followers on {% endblock %}
+
+{% block dashboard_content %}
+
+    {% if all_followers %}
+        {% with user_accounts=accounts user_followers=all_followers|distinctify:"current_user_account_id" %}
+            {% prepare_private user_followers %}
+
+            <p>You are followed by {{ user_followers|length }} people :</p>
+
+            <table class='zebra-striped accounts with_extras'>
+                <thead>
+                    <tr>
+                        {% include "core/sort_th.html" with color="orange" key="name" name="Name" %}
+                        <th class="blue">Reciprocity</th>
+                        <th class="green">Links</th>
+                        {% if user_accounts|length > 1 %}
+                            <th>Your account(s)</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for follower in user_followers %}
+                    <tr>
+                        <td>
+                            {% include "core/accounts/list_extra.html" with obj=follower %}
+                            {% include "core/accounts/avatar.html" with account=follower %}
+                            {% include "core/accounts/link.html" with account=follower %}
+                            {% include "core/score.html" with obj=follower %}
+                            {% include "core/accounts/tags.html" with account=follower %}
+                        </td>
+                        {% if follower.id in following_ids %}<td title="You follow {{ follower.slug }} too !">&check;</td>{% else %}<td></td>{% endif %}
+                        <td>
+                            {% include "core/accounts/links.html" with account=follower %}
+                        </td>
+                        {% if user_accounts|length > 1 %}
+                            <td>
+                                {% if follower.current_user_account_id_list %}
+                                    {% for user_account_id in follower.current_user_account_id_list %}
+                                        {% with user_account=user_accounts|dict_get:user_account_id %}
+                                        <div>
+                                            {% include "core/accounts/avatar.html" with account=user_account size=16 %}
+                                            {% include "core/accounts/link.html" with account=user_account no_backend=1 %}
+                                        </div>
+                                        {% endwith %}
+                                    {% endfor %}
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        {% endwith %}
+
+    {% else %}
+        <p>You don't have any follower</p>
+    {% endif %}
+
+{% endblock %}
+

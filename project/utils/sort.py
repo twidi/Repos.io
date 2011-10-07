@@ -1,5 +1,5 @@
 # example of sort map :
-#_repository_sort_map = dict(
+#repository_sort_map = dict(
 #    request_key = 'db_field'
 #    name = 'slug_sort',
 #    owner = 'owner__slug_sort',
@@ -20,9 +20,9 @@ def prepare_sort(key, sort_map, default, default_reverse):
             key = key[1:]
             reverse = True
 
-        if key not in sort_map:
-            key = default
-            reverse = default_reverse
+    if key not in sort_map:
+        key = default
+        reverse = default_reverse
 
     if key:
         db_sort = sort_map[key]

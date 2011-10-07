@@ -1,0 +1,105 @@
+{% extends 'dashboard/base.html' %}
+{% load private_tags utils_tags dashboard_tags %}
+
+{% block dashboard_content %}
+
+    {% if all_repositories %}
+        <div>
+            <form id="list-filter" method="get" action=".">
+                <input type="text" name="q" class="medium" value="{{ query }}" />
+                <button class="btn" type="submit">Filter</button>
+                {% if sort.key %}<input type="hidden" name="sort_by" value="{% if sort.reverse %}-{% endif %}{{ sort.key }}" />{% endif %}
+                {% if owner_only %}<input type="hidden" name="owner-only" value="y" />{% endif %}
+                {% if hide_forks %}<input type="hidden" name="hide-forks" value="y" />{% endif %}
+                {% if distinct %}<input type="hidden" name="distinct" value="y" />{% endif %}
+            </form>
+            {% if owner_only %}
+                <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if hide_forks %}&amp;hide-forks=y{% endif %}{% if distinct %}&amp;distinct=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn error">Show ones from all owners</a>
+            {% else %}
+                <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}&amp;owner-only=y{% if hide_forks %}&amp;hide-forks=y{% endif %}{% if distinct %}&amp;distinct=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn success">See only yours</a>
+            {% endif %}
+            {% if hide_forks %}
+                <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}{% if distinct %}&amp;distinct=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn error">Show forks</a>
+            {% else %}
+                <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}&amp;hide-forks=y{% if distinct %}&amp;distinct=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn success">Hide forks</a>
+            {% endif %}
+        {% if distinct %}
+            <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}{% if hide_forks %}&amp;hide-forks=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn error">Show duplicates</a>
+        {% else %}
+            <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}{% if hide_forks %}&amp;hide-forks=y{% endif %}&amp;distinct=y{% if query %}&amp;q={{ query }}{% endif %}" class="btn success">Hide duplicates</a>
+        {% endif %}
+        </div>
+        <p>{% block repositories_intro %}{% endblock %}</p>
+
+        {% with user_accounts=accounts user_repositories=all_repositories|distinctify:"current_user_account_id" %}
+            {% prepare_private user_repositories %}
+
+            <table class='zebra-striped repositories with_extras'>
+                <thead>
+                    <tr>
+                        {% include "core/sort_th.html" with color="orange" key="name" name="Name" param1_key="owner-only" param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key="distinct" param3_value=distinct param4_key="q" param4_value=query %}
+                        {% include "core/sort_th.html" with color="blue" key="owner" name="Owner" param1_key="owner-only" param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key="distinct" param3_value=distinct param4_key="q" param4_value=query %}
+                        {% include "core/sort_th.html" with color="green" key="updated" name="Updated" default_reverse=1 param1_key="owner-only" param1_value=owner_only param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key="distinct" param3_value=distinct param4_key="q" param4_value=query %}
+                        {% if user_accounts|length > 1 %}
+                            <th>Your account(s)</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for repository in user_repositories %}
+                    <tr>
+                        <td>
+                            {% include "core/repositories/list_extra.html" with obj=repository %}
+                            {% include "core/repositories/logo.html" %}</strong>
+                            <strong>{% include "core/repositories/link.html" with no_owner=1 %}</strong>
+                            {% if repository.is_fork %}
+                            <small>
+                                <span class="label warning">Fork</span>
+                                {% if repository.parent_fork %}
+                                    of
+                                    {% include "core/repositories/link.html" with no_backend=1 no_owner=1 repository=repository.parent_fork %}
+                                    by
+                                    {% include "core/accounts/link.html" with no_backend=1 account=repository.parent_fork.owner %}
+                                {% endif %}
+                            </small>
+                            {% endif %}
+                            {% if repository.distinct_others %}
+                                <small title="{{ repository.distinct_others|join:', '}}"><em>(and {{ repository.distinct_others|length }} more)</em></small>
+                            {% endif %}
+                            {% include "core/score.html" with obj=repository max_width=200 ratio=2 %}
+                            {% if repository.description %}<blockquote>{{ repository.description }}</blockquote>{% endif %}
+                        </td>
+                        <td>
+                            {% include "core/accounts/avatar.html" with account=repository.owner size=16 %}
+                            {% include "core/accounts/link.html" with no_backend=1 account=repository.owner %}
+                            {% if repository.distinct_others %}
+                                <br /><small><em>(and {{ repository.distinct_others|length }} more)</em></small>
+                            {% endif %}
+                        </td>
+                        <td>{% if repository.official_modified %}{{ repository.official_modified }}{% else %}-{% endif %}</td>
+                        {% if user_accounts|length > 1 %}
+                            <td>
+                                {% if repository.current_user_account_id_list %}
+                                    {% for user_account_id in repository.current_user_account_id_list %}
+                                        {% with user_account=user_accounts|dict_get:user_account_id %}
+                                        <div>
+                                            {% include "core/accounts/avatar.html" with account=user_account size=16 %}
+                                            {% include "core/accounts/link.html" with account=user_account no_backend=1 %}
+                                        </div>
+                                        {% endwith %}
+                                    {% endfor %}
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        {% endwith %}
+
+    {% else %}
+        <p>{% block no_repositories %}{% endblock %}</p>
+    {% endif %}
+
+{% endblock %}

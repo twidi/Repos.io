@@ -1,0 +1,25 @@
+{% extends 'dashboard/base.html' %}
+{% load private_tags %}
+{% block title %}Your notes on {% endblock %}
+
+{% block dashboard_content %}
+
+<ul class="pills">
+    <li{% if obj_type == 'repositories' %} class="active"{% endif %}><a href="{% url dashboard_notes obj_type="repositories" %}">Notes for repositories</a></li>
+    <li{% if obj_type == 'accounts' %} class="active"{% endif %}><a href="{% url dashboard_notes obj_type="accounts" %}">Notes for people</a></li>
+</ul>
+
+{% with noted_objects as objects %}
+    {% if objects %}
+        {% prepare_private objects "-notes" %}
+        {% if obj_type == "accounts" %}
+            {% include "dashboard/noted_accounts.html" %}
+        {% else %}
+            {% include "dashboard/noted_repositories.html" %}
+        {% endif %}
+    {% else %}
+        <p><em>You haven't set any notes !</em></p>
+    {% endif %}
+{% endwith %}
+
+{% endblock %}

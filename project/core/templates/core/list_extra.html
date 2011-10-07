@@ -5,10 +5,12 @@
             <a href="{{ obj.get_absolute_url }}"><img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" /></a>
             <div><div class="extra_container{% if obj.current_user_has_note %} with_note {% endif %}{% if obj.current_user_has_tags %} with_tags{% endif %}">
                 {% if obj.current_user_has_tags %}
-                    {% include "core/tags.html" with tags=obj.current_user_tags type_design="success" %}
+                    {% include "dashboard/include_tags.html" with tags=obj.current_user_tags %}
                 {% endif %}
                 {% if obj.current_user_has_note %}
-                    {{ obj.current_user_rendered_note|safe }}
+                    <blockquote>{{ obj.current_user_rendered_note|safe }}</blockquote>
+                    <hr />
+                    <em>Last updated: {{ obj.current_user_note_modified }}</em>
                 {% endif %}
             </div></div>
         </div>

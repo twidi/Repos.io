@@ -1,0 +1,5 @@
+{% extends "dashboard/base_repositories.html" %}
+{% block title %}Your repositories on {% endblock %}
+
+{% block repositories_intro %}Here are the repositories you {% if owner_only %}<strong>own</strong>{% else %}follow/own{% endif %}:{% endblock %}
+{% block no_repositories %}You don't watch/own any repository{% endblock %}

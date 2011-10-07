@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Your dashboard on {% endblock %}
+{% block content %}
+    <header class="main_header">
+        <h1>Your dashboard <small>All your stuff on Repos.io, from you and for all your associated accounts</small></h1>
+    </header>
+
+
+    <ul class="tabs">
+
+        <li{% if subsection == 'home' %} class="active"{% endif %}><a href="{% url dashboard_home %}">Home</a></li>
+        <li{% if subsection == 'tags' %} class="active"{% endif %}><a href="{% url dashboard_tags %}">Your tags</a></li>
+        <li{% if subsection == 'notes' %} class="active"{% endif %}><a href="{% url dashboard_notes %}">Your notes</a></li>
+        <li{% if subsection == 'following' %} class="active"{% endif %}><a href="{% url dashboard_following %}">Your following</a></li>
+        <li{% if subsection == 'followers' %} class="active"{% endif %}><a href="{% url dashboard_followers %}">Your followers</a></li>
+        <li{% if subsection == 'repositories' %} class="active"{% endif %}><a href="{% url dashboard_repositories %}">Your repositories</a></li>
+        <li{% if subsection == 'contributing' %} class="active"{% endif %}><a href="{% url dashboard_contributing %}">Your contributed repositories</a></li>
+
+    </ul>
+
+    {% block dashboard_content %}{% endblock %}
+
+{% endblock %}
+

@@ -28,7 +28,7 @@
                             {% include "core/score.html" with obj=following %}
                             {% include "core/accounts/tags.html" with account=following %}
                         </td>
-                        {% if following.slug in account.followers_slugs %}<td title="{{ following.slug }} follows {{ account.slug }} too !">&check;</td>{% else %}<td></td>{% endif %}
+                        {% if following.id in account.followers_ids %}<td title="{{ following.slug }} follows {{ account.slug }} too !">&check;</td>{% else %}<td></td>{% endif %}
                         <td>
                             {% include "core/accounts/links.html" with account=following %}
                         </td>

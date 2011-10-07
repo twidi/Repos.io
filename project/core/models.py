@@ -817,21 +817,21 @@ class Account(SyncableModel):
         """
         return self._get_url('contributing')
 
-    def following_slugs(self):
+    def following_ids(self):
         """
-        Return the following as a list of slugs
+        Return the following as a list of ids
         """
-        if not hasattr(self, '_following_slugs'):
-            self._following_slugs = [f.slug for f in self.following.all()]
-        return self._following_slugs
+        if not hasattr(self, '_following_ids'):
+            self._following_ids = self.following.values_list('id', flat=True)
+        return self._following_ids
 
-    def followers_slugs(self):
+    def followers_ids(self):
         """
-        Return the followers as a list of slugs
+        Return the followers as a list of ids
         """
-        if not hasattr(self, '_followers_slugs'):
-            self._followers_slugs = [f.slug for f in self.followers.all()]
-        return self._followers_slugs
+        if not hasattr(self, '_followers_ids'):
+            self._followers_ids = self.followers.values_list('id', flat=True)
+        return self._followers_ids
 
     def compute_score(self):
         """
@@ -929,6 +929,9 @@ class Account(SyncableModel):
         """
         backend = self.get_backend()
         links = {}
+
+        if self.user_id == user.id:
+            links['self'] = self.owner
 
         if backend.supports('user_following'):
             followed = self.following.filter(user=user)
@@ -1432,21 +1435,21 @@ class Repository(SyncableModel):
         """
         return self._get_url('contributors')
 
-    def followers_slugs(self):
+    def followers_ids(self):
         """
-        Return the followers as a list of slugs
+        Return the followers as a list of ids
         """
-        if not hasattr(self, '_followers_slugs'):
-            self._followers_slugs = [f.slug for f in self.followers.all()]
-        return self._followers_slugs
+        if not hasattr(self, '_followers_ids'):
+            self._followers_ids = self.followers.values_list('id', flat=True)
+        return self._followers_ids
 
-    def contributors_slugs(self):
+    def contributors_ids(self):
         """
-        Return the contributors as a list of slugs
+        Return the contributors as a list of ids
         """
-        if not hasattr(self, '_contributors_slugs'):
-            self._contributors_slugs = [f.slug for f in self.contributors.all()]
-        return self._contributors_slugs
+        if not hasattr(self, '_contributors_ids'):
+            self._contributors_ids = self.contributors.values_list('id', flat=True)
+        return self._contributors_ids
 
     def fetch_readme(self, access_token=None):
         """

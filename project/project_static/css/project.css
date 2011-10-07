@@ -107,17 +107,20 @@ td small a:hover {
 table {
     border: none;
 }
-table th {
+table thead th {
     border-bottom-width: 2px;
 }
-table th + th, table td + td {
+table thead th + th, table td + td {
     border-left: none;
 }
-table tr + tr td {
+table tbody tr + tr td {
     border-top: none;
 }
-table tr td {
+table tbody tr td {
     border-bottom: 1px solid #DDDDDD;
+    -webkit-border-radius: 0 !important;
+    -moz-border-radius: 0 !important;
+    border-radius: 0 !important;
 }
 .zebra-striped .headerSortUp, .zebra-striped .headerSortDown {
     -webkit-border-radius: 3px 3px 0 0;
@@ -311,6 +314,12 @@ div.extra_container.with_note.with_tags .tags {
     margin-bottom: 8px;
     border-bottom: solid #bfbfbf 1px;
 }
+div.extra_container.with_note hr {
+    margin-bottom: 5px;
+}
+div.extra_container.with_note hr+em {
+    font-size: smaller;
+}
 /* Scores */
 .score {
     background-color: #e0e0e0;
@@ -379,47 +388,47 @@ table.accounts td:first-child img {
     border-radius: 4px;
     margin-top: 2px;
 }
-table.accounts .tags {
+table.accounts td:first-child .tags {
     margin-left: 36px;
     position: relative;
     top: -16px;
     margin-bottom: -18px;
 }
-table.accounts .tags .label {
+table.accounts td:first-child .tags .label {
     font-size: 8px;
 }
 
 /* Home */
-body#home .row:first-child section:first-child {
+body#home .row section:first-child {
     padding-top: 10px;
     padding-bottom: 10px;
     background : #f5f5f5;
 }
-body#home .row:first-child section:first-child h1 {
+body#home .row section:first-child h1 {
     text-align: center;
 }
-body#home .row:first-child section:first-child hr {
+body#home .row section:first-child hr {
     margin: 10px 0;
 }
-body#home .row:first-child section:first-child p {
+body#home .row section:first-child p {
     margin-left: 10px;
     margin-right: 10px;
     line-height: 15px;
 }
-body#home .row:first-child section:first-child table {
+body#home .row section:first-child table {
     width: 90%;
     margin: auto;
 }
-body#home .row:first-child section:first-child table tr:first-child td {
-    border-top: 1px solid #DDDDDD;
-}
-body#home .row:first-child section:first-child p.with-btn {
+body#home .row section:first-child p.with-btn {
     text-align: center;
     margin-top: 20px;
     margin-bottom: 20px;
 }
 body#home table td {
     padding: 5px;
+}
+body#home table tr:first-child td {
+    border-top: 1px solid #DDDDDD;
 }
 body#home table td:first-child img {
     vertical-align: middle;
@@ -631,3 +640,103 @@ form#list-filter {
 }
 form#list-filter:last-child {
     margin-right: 0;
+}
+
+/* dashboard home */
+body#dashboard-home #content > div > section h2 {
+    font-size: 16px;
+}
+body#dashboard-home #content > div > section h3 {
+    font-size: 14px;
+}
+body#dashboard-home #content > div > section > a {
+    display: block;
+    text-align: right;
+    margin-top: -18px;
+    font-style: italic;
+    font-size: smaller;
+    margin-bottom: 8px;
+    color: #bfbfbf;
+}
+body#dashboard-home #content > div > section:hover > a {
+    color: #999
+}
+body#dashboard-home #content > div > section > a:hover {
+    color: #00438A
+}
+#d-accounts table tr:first-child td {
+    border-top: 1px solid #DDDDDD;
+}
+#d-accounts table td:first-child img {
+    vertical-align: middle;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+}
+#d-tags > a {
+    text-align: left !important;
+    margin-top: -10px !important;
+}
+#d-notes table td {
+    padding: 5px;
+}
+#d-notes table tr:first-child td {
+    border-top: 1px solid #DDDDDD;
+}
+#d-notes table td:first-child img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
+#d-notes table td:last-child div.rel_popover {
+    height: 16px;
+}
+body#dashboard-home .note_container hr {
+    margin-bottom: 5px;
+}
+body#dashboard-home .note_container hr+em {
+    font-size: smaller;
+}
+#d-people-repositories table td {
+    padding: 5px;
+}
+#d-people-repositories table tr:first-child td {
+    border-top: 1px solid #DDDDDD;
+}
+#d-people-repositories table td:first-child img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
+/* Dashboard tags */
+body#dashboard-tags #content > .tags {
+    display: inline-block;
+}
+/* Dashboard notes */
+body#dashboard-notes table.repositories td:nth-child(4) {
+    white-space: nowrap;
+}
+/* Dashboard followers and following */
+body#dashboard-following table.accounts td:last-child > div,
+body#dashboard-followers table.accounts td:last-child > div {
+    white-space: nowrap;
+}
+body#dashboard-following table.accounts td:last-child > div img,
+body#dashboard-followers table.accounts td:last-child > div img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
+/* Dashboard repositories */
+body#dashboard-repositories table.repositories td:last-child > div {
+    white-space: nowrap;
+}
+body#dashboard-repositories table.repositories td:last-child > div img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
