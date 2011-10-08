@@ -1,0 +1,117 @@
+{% load i18n adminmedia%}<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{LANGUAGE_CODE|default:"en-us"}}" xml:lang="{{LANGUAGE_CODE|default:"en-us"}}" {%if LANGUAGE_BIDI%}dir="rtl"{%endif%}>
+<head>
+<title>{{title}} | Django site admin</title>
+<link rel="stylesheet" type="text/css" href="{%admin_media_prefix %}css/base.css" />
+<link rel="stylesheet" type="text/css" href="{%admin_media_prefix %}css/login.css" />
+<!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="{%admin_media_prefix %}css/ie.css" /><![endif]-->
+{%if LANGUAGE_BIDI%}<link rel="stylesheet" type="text/css" href="{%admin_media_prefix %}css/rtl.css" />{%endif%}
+<script type="text/javascript">window.__admin_media_prefix__ = "{%filter escapejs %}{%admin_media_prefix %}{%endfilter %}";</script>
+
+<meta name="robots" content="NONE,NOARCHIVE" />
+</head>
+
+
+<body class="{%if is_popup%}popup {%endif%}login">
+
+<!-- Container -->
+<div id="container">
+
+    {%if not is_popup%}
+    <!-- Header -->
+    <div id="header">
+        <div id="branding">
+        
+<h1 id="site-name">Django administration</h1>
+
+        </div>
+        {%if user.is_active and user.is_staff%}
+        <div id="user-tools">
+            Welcome,
+            <strong>{%filter force_escape %}{%firstof user.first_name user.username %}{%endfilter %}</strong>.
+            
+                {%url 'django-admindocs-docroot' as docsroot %}
+                {%if docsroot%}
+                    <a href="{{docsroot}}">Documentation</a> /
+                {%endif%}
+                {%url 'admin:password_change' as password_change_url %}
+                {%if password_change_url%}
+                    <a href="{{password_change_url}}">
+                {%else%}
+                    <a href="{{root_path}}password_change/">
+                {%endif%}
+                Change password</a> /
+                {%url 'admin:logout' as logout_url %}
+                {%if logout_url%}
+                    <a href="{{logout_url}}">
+                {%else%}
+                    <a href="{{root_path}}logout/">
+                {%endif%}
+                Log out</a>
+            
+        </div>
+        {%endif%}
+        
+    </div>
+    <!-- END Header -->
+    
+    {%endif%}
+
+        {%if messages%}
+        <ul class="messagelist">{%for message in messages %}
+          <li{%if message.tags%} class="{{message.tags}}"{%endif%}>{{message}}</li>
+	{%endfor %}</ul>
+        {%endif%}
+
+    <!-- Content -->
+    <div id="content" class="colM">
+        
+        
+        
+{%if form.errors and not form.non_field_errors and not form.this_is_the_login_form.errors%}
+<p class="errornote">
+{%with form.errors.items|length as counter%}{%if counter > 1%}Please correct the errors below.{%else%}Please correct the error below.{%endif%}{%endwith%}
+</p>
+{%endif%}
+
+{%if form.non_field_errors or form.this_is_the_login_form.errors%}
+{%for error in form.non_field_errors|add:form.this_is_the_login_form.errors %}
+<p class="errornote">
+    {{error}}
+</p>
+{%endfor %}
+{%endif%}
+
+<div id="content-main">
+<form action="{{app_path}}" method="post" id="login-form">{%csrf_token %}
+  <div class="form-row">
+    {%if not form.this_is_the_login_form.errors%}{{form.username.errors}}{%endif%}
+    <label for="id_username" class="required">Username:</label> {{form.username}}
+  </div>
+  <div class="form-row">
+    {%if not form.this_is_the_login_form.errors%}{{form.password.errors}}{%endif%}
+    <label for="id_password" class="required">Password:</label> {{form.password}}
+    <input type="hidden" name="this_is_the_login_form" value="1" />
+    <input type="hidden" name="next" value="{{next}}" />
+  </div>
+  <div class="submit-row">
+    <label>&nbsp;</label><input type="submit" value="Log in" />
+  </div>
+</form>
+
+<script type="text/javascript">
+document.getElementById('id_username').focus()
+</script>
+</div>
+
+        
+        <br class="clear" />
+    </div>
+    <!-- END Content -->
+
+    <div id="footer"></div>
+</div>
+<!-- END Container -->
+
+</body>
+</html>

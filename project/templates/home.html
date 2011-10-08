@@ -31,7 +31,7 @@
                         {% for account in accounts %}
                         <tr>
                             <td>
-                            {% include "core/accounts/avatar.html" with size=16 %}
+                            {% include "core/accounts/avatar_small.html" %}
                             {% include "core/accounts/link.html" %}
                             </td>
                         </tr>
@@ -63,11 +63,11 @@
         <h2>Last 20 users</h2>
         <table>
             <tbody>
-                {% for an_account in last_accounts %}
+                {% for account in last_accounts %}
                 <tr>
                     <td>
-                        {% include "core/accounts/avatar.html" with account=an_account size=16 %}
-                        {% include "core/accounts/link.html" with account=an_account %}
+                        {% include "core/accounts/avatar_small.html" %}
+                        {% include "core/accounts/link.html" %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -83,12 +83,12 @@
         <h2>Last 20 repositories</h2>
         <table>
             <tbody>
-                {% for a_repository in last_repositories %}
+                {% for repository in last_repositories %}
                 <tr>
                     <td>
-                        {% include "core/repositories/logo.html" with repository=a_repository size=16 %}
-                        {% include "core/repositories/link.html" with repository=a_repository no_owner=1 %}
-                        <small>by {% include "core/accounts/link.html" with account=a_repository.owner no_backend=1 %}</small>
+                        {% include "core/repositories/logo_small.html" %}
+                        {% include "core/repositories/link_no_owner.html" %}
+                        <small>by {% include "core/accounts/link_no_backend.html" %}</small>
                     </td>
                 </tr>
                 {% endfor %}

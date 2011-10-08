@@ -1,20 +1,20 @@
-{% include "core/repositories/list_extra.html" with obj=repository %}
+{% include "core/repositories/list_extra.html" %}
 {% include "core/repositories/logo.html" %}
-<strong>{% include "core/repositories/link.html" with no_owner=1 %}</strong>
+<strong>{% include "core/repositories/link_no_owner.html" %}</strong>
 {% if repository.is_fork %}
 <small>
     <span class="label warning">Fork</span>
     {% if repository.parent_fork %}
         of
-        {% include "core/repositories/link.html" with no_backend=1 no_owner=1 repository=repository.parent_fork %}
+        {% with repository=repository.parent_fork %}{% include "core/repositories/link_no_owner_no_backend.html" %}{% endwith %}
         by
-        {% include "core/accounts/link.html" with no_backend=1 account=repository.parent_fork.owner %}
+        {% with account=repository.parent_fork.owner %}{% include "core/accounts/link_no_backend.html" %}{% endwith %}
     {% endif %}
 </small>
 {% endif %}
 {% if repository.distinct_others %}
     <small title="{{ repository.distinct_others|join:', '}}"><em>(and {{ repository.distinct_others|length }} more)</em></small>
 {% endif %}
-{% include "core/score.html" with obj=repository max_width=200 ratio=2 %}
+{% with max_width=200 ratio=2 %}{% include "core/repositories/score.html" %}{% endwith %}
 {% if repository.description %}<blockquote>{{ repository.description }}</blockquote>{% endif %}
 

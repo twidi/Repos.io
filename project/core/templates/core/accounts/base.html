@@ -5,22 +5,22 @@
     <section id="user">
         <header class="row main_header">
             <div class="span-two-thirds">
-                {% include "core/accounts/avatar.html" with size=80 %}
+                {% include "core/accounts/avatar_big.html" %}
                 <h1> {% include "core/accounts/link.html" %}</h1>
-                {% include "core/score.html" with obj=account max_score=250 ratio=2 %}
+                {% with max_score=250 ratio=2 %}{% include "core/accounts/score.html" %}{% endwith %}
                 <p>
                     {{ account.name|default:account.slug }}
                     {% include "core/accounts/links.html" %}
                 </p>
                 {% if account.last_fetch %}<p>On {{ account.backend }} since {{ account.official_created }}.</p>{% endif %}
-                {% include "core/accounts/tags.html" with type_design="success" %}
+                {% with tag_style="success" %}{% include "core/accounts/tags.html" %}{% endwith %}
             </div>
             <div class="span-one-third">
-                {% include "core/accounts/fetch_form.html" %}{% include "core/accounts/fetch_form.html" with for_related=1 %}
+                {% include "core/accounts/fetch_form.html" %}{% with for_related=1 %}{% include "core/accounts/fetch_form.html" %}{% endwith %}
             </div>
         </header>
 
-        {% if subsection == 'home' %}{% include "private/account.html" with account=account %}{% endif %}
+        {% if subsection == 'home' %}{% include "private/account.html" %}{% endif %}
 
         {% if account.last_fetch %}
             <ul class="tabs">

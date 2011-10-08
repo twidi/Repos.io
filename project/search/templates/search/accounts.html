@@ -1,5 +1,4 @@
 {% extends 'search/base.html' %}
-{% load private_tags %}
 {% load private_tags tagging_tags %}
 {% block title %}Search for {% if query %}"{{ query }}" in {% endif %}accounts on {% endblock %}
 {% block search_content %}
@@ -8,12 +7,12 @@
 
         {% if page.paginator.count %}
             {% prepare_private page.object_list %}
-            {% prepare_public_tags sorted_following %}
+            {% prepare_public_tags page.object_list %}
             <h2>{{ page.paginator.count }} results for <em>{{ query }}</em></h2>
             <table class='zebra-striped accounts with_extras'>
                 <thead>
                     <tr>
-                        {% include "core/sort_th.html" with color="orange" key="name" name="Name" param1_key="q" param1_value=query %}
+                        {% with param1_key="q" param1_value=query %}{% include "core/accounts/sort_th_name.html" %}{% endwith %}
                         <th>Links</th>
                     </tr>
                 </thead>
@@ -21,10 +20,10 @@
                     {% for account in page.object_list %}
                         <tr>
                             <td>
-                                {% include "core/accounts/list_extra.html" with obj=account %}
+                                {% include "core/accounts/list_extra.html" %}
                                 {{ account.renderer_main|safe }}
-                                {% include "core/score.html" with obj=account score=account.internal_score %}
-                                {% include "core/accounts/tags.html" with account=account %}
+                                {% with score=account.internal_score %}{% include "core/accounts/score.html" %}{% endwith %}
+                                {% include "core/accounts/tags.html" %}
                             </td>
                             <td>
                                 {{ account.renderer_links|safe }}

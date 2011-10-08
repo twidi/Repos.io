@@ -6,6 +6,7 @@ django-extensions
 -e git+git://github.com/twidi/django-globals.git#egg=django-globals
 #django-pure-pagination ( bug if % in querystring : https://github.com/jamespacileo/django-pure-pagination/pull/6)
 -e git+git://github.com/twidi/django-pure-pagination.git#egg=django-pure-pagination
+-e git+git://github.com/twidi/django-template-preprocessor.git#egg=django-template-preprocessor
 
 # python tools
 debug
@@ -14,6 +15,7 @@ markdown
 docutils
 pysolr
 beautifulsoup
+termcolor
 
 # github !
 #github2 (missing repository info with parent : https://github.com/ask/python-github2/pull/60 )

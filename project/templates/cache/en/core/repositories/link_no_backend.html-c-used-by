@@ -1,0 +1,13 @@
+core/accounts/base.html
+core/accounts/base_repositories.html
+core/accounts/contributing.html
+core/accounts/followers.html
+core/accounts/following.html
+core/accounts/home.html
+core/accounts/repositories.html
+core/repositories/base.html
+core/repositories/contributors.html
+core/repositories/followers.html
+core/repositories/home.html
+private/account.html
+private/repository.html

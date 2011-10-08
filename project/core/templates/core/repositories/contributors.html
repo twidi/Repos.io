@@ -14,22 +14,22 @@
             <table class='zebra-striped accounts with_owner with_extras'>
                 <thead>
                     <tr>
-                        {% include "core/sort_th.html" with color="orange" key="name" name="Name" %}
+                        {% include "core/accounts/sort_th_name.html"%}
                         <th class="blue">Owner</th>
                         <th class="purple">Follower</th>
                         <th class="green">Links</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for contributor in sorted_contributors %}
+                    {% for account in sorted_contributors %}
                     <tr>
                         <td>
-                            {% include "core/accounts/main_account_cell.html" with account=contributor %}
+                            {% include "core/accounts/main_account_cell.html" %}
                         </td>
-                        {% if contributor.id = repository.owner.id %}<td title="{{ contributor.slug }} is the owner of {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
-                        {% if contributor.id in repository.followers_ids %}<td title="{{ contributor.slug }} follows {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
+                        {% if account.id == repository.owner.id %}<td title="{{ contributor.slug }} is the owner of {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
+                        {% if account.id in repository.followers_ids %}<td title="{{ contributor.slug }} follows {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
                         <td>
-                            {% include "core/accounts/links.html" with account=contributor %}
+                            {% include "core/accounts/links.html" %}
                         </td>
                     </tr>
                     {% endfor %}

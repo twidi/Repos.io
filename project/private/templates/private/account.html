@@ -13,8 +13,8 @@
                         {% if links.following %}
                             <li>
                                 You (
-                                {% for acc in links.following %}
-                                    {% include "core/accounts/link.html" with account=acc no_backend=1 %}
+                                {% for account in links.following %}
+                                    {% include "core/accounts/link_no_backend.html" %}
                                     {% if not forloop.last %}, {% endif %}
                                 {% endfor %}
                                 ) are following him
@@ -23,8 +23,8 @@
                         {% if links.followed %}
                             <li>
                                 He is following you (
-                                {% for acc in links.followed %}
-                                    {% include "core/accounts/link.html" with account=acc no_backend=1 %}
+                                {% for account in links.followed %}
+                                    {% include "core/accounts/link_no_backend.html" %}
                                     {% if not forloop.last %}, {% endif %}
                                 {% endfor %}
                                 )
@@ -35,8 +35,8 @@
                                 You are following
                                 {% if links.project_following|length > 1 %}some{% else %}one{% endif %}
                                 of its projects (
-                                {% for rep in links.project_following %}
-                                    {% include "core/repositories/link.html" with repository=rep no_backend=1 no_owner=1 %}
+                                {% for repository in links.project_following %}
+                                    {% include "core/repositories/link_no_owner_no_backend.html" %}
                                     {% if not forloop.last %}, {% endif %}
                                 {% endfor %}
                                 )
@@ -47,8 +47,8 @@
                                 He is following
                                 {% if links.project_followed|length > 1 %}some{% else %}one{% endif %}
                                 of your projects (
-                                {% for rep in links.project_followed %}
-                                    {% include "core/repositories/link.html" with repository=rep no_backend=1 %}
+                                {% for repository in links.project_followed %}
+                                    {% include "core/repositories/link_no_backend.html" %}
                                     {% if not forloop.last %}, {% endif %}
                                 {% endfor %}
                                 )
