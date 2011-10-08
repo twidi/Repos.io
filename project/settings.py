@@ -32,7 +32,10 @@ TIME_ZONE = 'America/Chicago'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en'
+LANGUAGES = (
+    ('en', 'EN'),
+)
 
 SITE_ID = 1
 
@@ -46,12 +49,12 @@ USE_L10N = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = ''
+MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media/')
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
-MEDIA_URL = ''
+MEDIA_URL = '/media/'
 
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
@@ -93,6 +96,26 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.app_directories.Loader',
 #     'django.template.loaders.eggs.Loader',
 )
+
+# django-template-preprocessor
+TEMPLATE_LOADERS = (
+    ('template_preprocessor.template.loaders.PreprocessedLoader',
+        TEMPLATE_LOADERS
+    ),
+)
+MEDIA_CACHE_DIR = os.path.join(MEDIA_ROOT, 'cache/')
+MEDIA_CACHE_URL = os.path.join(MEDIA_URL, 'cache/')
+TEMPLATE_CACHE_DIR = os.path.join(PROJECT_PATH, 'templates/cache/')
+# Enabled modules of the template preprocessor
+TEMPLATE_PREPROCESSOR_OPTIONS = {
+        # Default settings
+        '*': ('html', 'whitespace-compression', ),
+
+        # Override for specific applications
+        ('django.contrib.admin', 'django.contrib.admindocs', 'debug_toolbar'): ('no-html',),
+}
+
+
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
@@ -144,6 +167,7 @@ INSTALLED_APPS = (
     'pure_pagination',
     'notes',
     'taggit',
+    'template_preprocessor',
 
     # ours
     'utils',
