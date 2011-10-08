@@ -12,11 +12,7 @@
         {% for account in objects %}
         <tr>
             <td>
-                {% include "core/accounts/list_extra.html" with obj=account %}
-                {% include "core/accounts/avatar.html" %}
-                {% include "core/accounts/link.html" %}
-                {% include "core/score.html" with obj=account %}
-                {% include "core/accounts/tags.html" %}
+                {% include "core/accounts/main_account_cell.html" %}
             </td>
             <td>
                 {% include "core/accounts/links.html" %}

@@ -26,11 +26,7 @@
                     {% for follower in user_followers %}
                     <tr>
                         <td>
-                            {% include "core/accounts/list_extra.html" with obj=follower %}
-                            {% include "core/accounts/avatar.html" with account=follower %}
-                            {% include "core/accounts/link.html" with account=follower %}
-                            {% include "core/score.html" with obj=follower %}
-                            {% include "core/accounts/tags.html" with account=follower %}
+                            {% include "core/accounts/main_account_cell.html" with account=follower %}
                         </td>
                         {% if follower.id in following_ids %}<td title="You follow {{ follower.slug }} too !">&check;</td>{% else %}<td></td>{% endif %}
                         <td>

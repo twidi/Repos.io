@@ -24,11 +24,7 @@
                     {% for follower in sorted_followers %}
                     <tr>
                         <td>
-                            {% include "core/accounts/list_extra.html" with obj=follower %}
-                            {% include "core/accounts/avatar.html" with account=follower %}
-                            {% include "core/accounts/link.html" with no_backend=1 account=follower %}
-                            {% include "core/score.html" with obj=follower %}
-                            {% include "core/accounts/tags.html" with account=follower %}
+                            {% include "core/accounts/main_account_cell.html" with account=follower %}
                         </td>
                         {% if follower.id = repository.owner.id %}<td title="{{ follower.slug }} is the owner of {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
                         {% if follower.id in repository.contributors_ids %}<td title="{{ follower.slug }} is/was a contributor of {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}

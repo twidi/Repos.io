@@ -136,7 +136,7 @@ def tags(request, obj_type=None):
     A get parameter "tag" allow to filter the list.
     """
     if obj_type is None:
-        return redirect(tags, obj_type='repositories', permanent=True)
+        return redirect(tags, obj_type='repositories')
 
     model = obj_type_from_url(obj_type)
 
@@ -179,7 +179,7 @@ def notes(request, obj_type=None):
     Display all repositories or accounts with a note
     """
     if obj_type is None:
-        return redirect(notes, obj_type='repositories', permanent=True)
+        return redirect(notes, obj_type='repositories')
 
     model = obj_type_from_url(obj_type)
 

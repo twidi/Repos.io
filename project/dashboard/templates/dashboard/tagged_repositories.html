@@ -11,28 +11,14 @@
         {% for repository in objects %}
         <tr>
             <td>
-                {% include "core/repositories/list_extra.html" with obj=repository %}
-                {% include "core/repositories/logo.html" %}</strong>
-                <strong>{% include "core/repositories/link.html" with no_owner=1 %}</strong>
-                {% if repository.is_fork %}
-                <small>
-                    <span class="label warning">Fork</span>
-                    {% if repository.parent_fork %}
-                        of
-                        {% include "core/repositories/link.html" with no_backend=1 no_owner=1 repository=repository.parent_fork %}
-                        by
-                        {% include "core/accounts/link.html" with no_backend=1 account=repository.parent_fork.owner %}
-                    {% endif %}
-                </small>
-                {% endif %}
-                {% include "core/score.html" with obj=repository max_width=200 ratio=2 %}
-                {% if repository.description %}<blockquote>{{ repository.description }}</blockquote>{% endif %}
+                {% include "core/repositories/main_repository_cell.html" %}
             </td>
             <td>
-                {% include "core/accounts/avatar.html" with account=repository.owner size=16 %}
-                {% include "core/accounts/link.html" with no_backend=1 account=repository.owner %}
+                {% include "core/accounts/owner_cell.html" %}
             </td>
-            <td>{% if repository.official_modified %}{{ repository.official_modified }}{% else %}-{% endif %}</td>
+            <td>
+                {% include "core/repositories/date_modified_cell.html" %}
+            </td>
             <td>
                 {% include "dashboard/include_tags.html" with obj_type="repositories" tags=repository.current_user_tags %}
             </td>

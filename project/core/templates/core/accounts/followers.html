@@ -23,11 +23,7 @@
                     {% for follower in sorted_followers %}
                     <tr>
                         <td>
-                            {% include "core/accounts/list_extra.html" with obj=follower %}
-                            {% include "core/accounts/avatar.html" with account=follower %}
-                            {% include "core/accounts/link.html" with no_backend=1 account=follower %}
-                            {% include "core/score.html" with obj=follower %}
-                            {% include "core/accounts/tags.html" with account=follower %}
+                            {% include "core/accounts/main_account_cell.html" with account=follower %}
                         </td>
                         {% if follower.id in account.following_ids %}<td title="{{ account.slug }} follows {{ follower.slug }} too !">&check;</td>{% else %}<td></td>{% endif %}
                         <td>

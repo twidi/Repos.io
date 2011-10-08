@@ -17,7 +17,7 @@ def default(request, identifier):
 
     search_url = reverse('search')
 
-    return redirect(search_url + '?q='+identifier, permanent=True)
+    return redirect(search_url + '?q='+identifier)
 
 
 @require_POST
