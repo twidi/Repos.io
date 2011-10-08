@@ -1,12 +1,11 @@
 from django import template
-from django.contrib.contenttypes.models import ContentType
 
 from django_globals import globals
-from haystack.models import SearchResult
 from notes.models import Note
 
 from private.models import ALLOWED_MODELS
 from core.models import Account, Repository
+from utils.models import get_app_and_model
 
 register = template.Library()
 
@@ -25,18 +24,12 @@ def prepare_private(objects, ignore=None):
         # find objects' type
         obj = objects[0]
 
-        if isinstance(obj, SearchResult):
-            app_label, model_name = obj.app_label, obj.model_name
-        else:
-            app_label, model_name = obj._meta.app_label, obj._meta.module_name
+        app_label, model_name = get_app_and_model(obj)
 
         if '%s.%s' % (app_label, model_name) not in ALLOWED_MODELS:
             return ''
 
         user = globals.user
-
-        # objects to manage
-        content_type = ContentType.objects.get(app_label=app_label, model=model_name)
 
         dict_objects = dict((int(obj.pk), obj) for obj in objects)
         ids = dict_objects.keys()
@@ -46,7 +39,8 @@ def prepare_private(objects, ignore=None):
         # read and save notes
         if not (ignore and '-notes' in ignore):
             notes = Note.objects.filter(
-                    content_type = content_type,
+                    content_type__app_label = app_label,
+                    content_type__model = model_name,
                     author = user,
                     object_id__in=ids
                     ).values_list('object_id', 'rendered_content', 'modified')

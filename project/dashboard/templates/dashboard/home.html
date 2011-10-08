@@ -8,7 +8,7 @@
         <p>Your associated accounts</p>
         <table>
             <tbody>
-                {% for account in request.user.accounts.all %}
+                {% for account in user_accounts %}
                 <tr>
                     <td>
                     {% include "core/accounts/avatar.html" with size=32 %}

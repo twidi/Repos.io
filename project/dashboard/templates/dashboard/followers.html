@@ -1,12 +1,13 @@
 {% extends 'dashboard/base.html' %}
-{% load private_tags utils_tags dashboard_tags %}
+{% load private_tags utils_tags dashboard_tags tagging_tags %}
 {% block title %}Your followers on {% endblock %}
 
 {% block dashboard_content %}
 
     {% if all_followers %}
-        {% with user_accounts=accounts user_followers=all_followers|distinctify:"current_user_account_id" %}
+        {% with user_accounts_by_id=accounts user_followers=all_followers|distinctify:"current_user_account_id" %}
             {% prepare_private user_followers %}
+            {% prepare_public_tags user_followers %}
 
             <p>You are followed by {{ user_followers|length }} people :</p>
 
@@ -16,7 +17,7 @@
                         {% include "core/sort_th.html" with color="orange" key="name" name="Name" %}
                         <th class="blue">Reciprocity</th>
                         <th class="green">Links</th>
-                        {% if user_accounts|length > 1 %}
+                        {% if user_accounts_by_id|length > 1 %}
                             <th>Your account(s)</th>
                         {% endif %}
                     </tr>
@@ -35,11 +36,11 @@
                         <td>
                             {% include "core/accounts/links.html" with account=follower %}
                         </td>
-                        {% if user_accounts|length > 1 %}
+                        {% if user_accounts_by_id|length > 1 %}
                             <td>
                                 {% if follower.current_user_account_id_list %}
                                     {% for user_account_id in follower.current_user_account_id_list %}
-                                        {% with user_account=user_accounts|dict_get:user_account_id %}
+                                        {% with user_account=user_accounts_by_id|dict_get:user_account_id %}
                                         <div>
                                             {% include "core/accounts/avatar.html" with account=user_account size=16 %}
                                             {% include "core/accounts/link.html" with account=user_account no_backend=1 %}

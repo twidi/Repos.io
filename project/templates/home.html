@@ -19,7 +19,7 @@
 
         <p class="with-btn"><a class="btn primary large" href="{% url dashboard_home %}">Go to your dashboard</a></p>
 
-        {% with accounts=user.accounts.all %}
+        {% with accounts=user_accounts %}
 
             {% if not accounts %}
                 <p>You have no account associated:</p>
@@ -59,46 +59,42 @@
 
 <section class="span4">
 
-    {% with accounts_manager.get_last_fetched as last_accounts %}
-        {% if last_accounts %}
-            <h2>Last 20 users</h2>
-            <table>
-                <tbody>
-                    {% for an_account in last_accounts %}
-                    <tr>
-                        <td>
-                            {% include "core/accounts/avatar.html" with account=an_account size=16 %}
-                            {% include "core/accounts/link.html" with account=an_account %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% endif %}
-    {% endwith %}
+    {% if last_accounts %}
+        <h2>Last 20 users</h2>
+        <table>
+            <tbody>
+                {% for an_account in last_accounts %}
+                <tr>
+                    <td>
+                        {% include "core/accounts/avatar.html" with account=an_account size=16 %}
+                        {% include "core/accounts/link.html" with account=an_account %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
 
 </section>
 
 <section class="span7">
 
-    {% with repositories_manager.get_last_fetched as last_repositories %}
-        {% if last_repositories %}
-            <h2>Last 20 repositories</h2>
-            <table>
-                <tbody>
-                    {% for a_repository in last_repositories %}
-                    <tr>
-                        <td>
-                            {% include "core/repositories/logo.html" with repository=a_repository size=16 %}
-                            {% include "core/repositories/link.html" with repository=a_repository no_owner=1 %}
-                            <small>by {% include "core/accounts/link.html" with account=a_repository.owner no_backend=1 %}</small>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% endif %}
-    {% endwith %}
+    {% if last_repositories %}
+        <h2>Last 20 repositories</h2>
+        <table>
+            <tbody>
+                {% for a_repository in last_repositories %}
+                <tr>
+                    <td>
+                        {% include "core/repositories/logo.html" with repository=a_repository size=16 %}
+                        {% include "core/repositories/link.html" with repository=a_repository no_owner=1 %}
+                        <small>by {% include "core/accounts/link.html" with account=a_repository.owner no_backend=1 %}</small>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
 
 </section>
 

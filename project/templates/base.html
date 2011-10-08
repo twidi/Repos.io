@@ -42,7 +42,7 @@
 
                 {% if user.is_authenticated %}
                     <li><a href="{% url dashboard_home %}">{{ user.username }} : <strong>your dashboard</strong></a></li>
-                    {% with accounts=user.accounts.all %}
+                    {% with accounts=user_accounts %}
                         {% if accounts %}
                             <li class='dropdown{% if section == 'accounts' %} active{% endif %}' data-dropdown="dropdown">
                                 <a href="{% url accounts_manage %}" class="dropdown-toggle">Your accounts</a>

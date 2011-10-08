@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
 
+from core.models import Account, Repository
 from core.views.decorators import check_account, check_support
 from core.views.sort import get_repository_sort, get_account_sort
 from private.forms import NoteForm, NoteDeleteForm, AccountTagsForm, TagsDeleteForm
@@ -51,10 +52,10 @@ def followers(request, backend, slug, account=None):
     """
 
     sort = get_account_sort(request.GET.get('sort_by', None), default=None)
+
+    sorted_followers = Account.for_list.filter(following=account)
     if sort['key']:
-        sorted_followers = account.followers.order_by(sort['db_sort'])
-    else:
-        sorted_followers = account.followers.all()
+        sorted_followers = sorted_followers.order_by(sort['db_sort'])
 
     return render(request, 'core/accounts/followers.html', dict(
         account = account,
@@ -73,10 +74,10 @@ def following(request, backend, slug, account=None):
     """
 
     sort = get_account_sort(request.GET.get('sort_by', None), default=None)
+
+    sorted_following = Account.for_list.filter(followers=account)
     if sort['key']:
-        sorted_following = account.following.order_by(sort['db_sort'])
-    else:
-        sorted_following = account.following.all()
+        sorted_following = sorted_following.order_by(sort['db_sort'])
 
     return render(request, 'core/accounts/following.html', dict(
         account = account,
@@ -97,7 +98,7 @@ def _filter_repositories(request, account, queryset):
     repository_supports_parent_fork = account.get_backend().supports('repository_parent_fork')
     sort = get_repository_sort(sort_key, repository_supports_owner)
 
-    sorted_repositories = queryset.order_by(sort['db_sort']).select_related('owner')
+    sorted_repositories = queryset.order_by(sort['db_sort'])
 
     if repository_supports_owner:
         owner_only = request.GET.get('owner-only', False) == 'y'
@@ -192,7 +193,8 @@ def repositories(request, backend, slug, account=None):
     """
     Page listing repositories owned/watched by an account
     """
-    context = _filter_repositories(request, account, account.repositories)
+    queryset = Repository.for_list.filter(followers=account)
+    context = _filter_repositories(request, account, queryset)
     return render(request, 'core/accounts/repositories.html', context)
 
 
@@ -202,6 +204,7 @@ def contributing(request, backend, slug, account=None):
     """
     Page listing repositories with contributions by an account
     """
-    context = _filter_repositories(request, account, account.contributing)
+    queryset = Repository.for_list.filter(contributors=account)
+    context = _filter_repositories(request, account, queryset)
     return render(request, 'core/accounts/contributing.html', context)
 

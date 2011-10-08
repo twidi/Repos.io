@@ -10,15 +10,7 @@ class SyncableModelManager(models.Manager):
     """
     Base manager for all syncable models
     """
-
-    def get_last_fetched(self, length=20):
-        """
-        Return the last fetch objects
-        """
-        result = self.filter(last_fetch__isnull=False).order_by('-last_fetch')
-        if length:
-            result = result[:length]
-        return result
+    pass
 
 
 class AccountManager(SyncableModelManager):
@@ -77,6 +69,18 @@ class AccountManager(SyncableModelManager):
             return None
 
 
+class OptimForListAccountManager(AccountManager):
+    """
+    Default `only` (fetch only some fields) and `select_related`
+    """
+
+    list_needed_fields = ('backend', 'status', 'slug', 'name', 'last_fetch', 'avatar', 'score', 'url', 'homepage')
+    list_select_related = ()
+
+    def get_query_set(self):
+        return super(OptimForListAccountManager, self).get_query_set().only(*self.list_needed_fields).select_related(*self.list_select_related)
+
+
 class RepositoryManager(SyncableModelManager):
     """
     Manager for the Repository model
@@ -133,11 +137,14 @@ class RepositoryManager(SyncableModelManager):
         """
         return '/'.join([slugify(part) for part in project.split('/')])
 
-    def get_last_fetched(self, length=20):
-        """
-        Return the last fetch repositories, with owners
-        """
-        result = super(RepositoryManager, self).get_last_fetched(length=None).select_related('owner')
-        if length:
-            result = result[:length]
-        return result
+
+class OptimForListRepositoryManager(RepositoryManager):
+    """
+    Default `only` (fetch only some fields) and `select_related`
+    """
+
+    list_needed_fields = ('backend', 'status', 'project', 'slug', 'name', 'last_fetch', 'logo', 'score', 'is_fork', 'description', 'official_modified', 'owner', 'parent_fork', 'official_created')
+    list_select_related = ('owner', 'parent_fork', 'parent_fork__owner',)
+
+    def get_query_set(self):
+        return super(OptimForListRepositoryManager, self).get_query_set().only(*self.list_needed_fields).select_related(*self.list_select_related)

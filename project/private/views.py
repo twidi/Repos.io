@@ -9,6 +9,7 @@ from django.http import HttpResponseNotAllowed
 from notes.models import Note
 
 from private.forms import NoteForm, NoteDeleteForm, TagsForm, TagsDeleteForm
+from utils.models import get_app_and_model
 
 def get_user_note_for_object(obj):
     """
@@ -19,9 +20,14 @@ def get_user_note_for_object(obj):
     if not (user and user.is_authenticated()):
         return None
 
-    obj_type = ContentType.objects.get_for_model(obj)
-    notes = Note.objects.filter(author=user,
-                content_type__pk=obj_type.id, object_id=obj.id)
+    app_label, model_name = get_app_and_model(obj)
+
+    notes = Note.objects.filter(
+        author=user,
+        content_type__app_label = app_label,
+        content_type__model = model_name,
+        object_id=obj.id
+    )
     if notes:
         return notes[0]
 

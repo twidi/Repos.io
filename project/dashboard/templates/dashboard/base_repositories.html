@@ -31,7 +31,7 @@
         </div>
         <p>{% block repositories_intro %}{% endblock %}</p>
 
-        {% with user_accounts=accounts user_repositories=all_repositories|distinctify:"current_user_account_id" %}
+        {% with user_accounts_by_id=accounts user_repositories=all_repositories|distinctify:"current_user_account_id" %}
             {% prepare_private user_repositories %}
 
             <table class='zebra-striped repositories with_extras'>
@@ -40,7 +40,7 @@
                         {% include "core/sort_th.html" with color="orange" key="name" name="Name" param1_key="owner-only" param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key="distinct" param3_value=distinct param4_key="q" param4_value=query %}
                         {% include "core/sort_th.html" with color="blue" key="owner" name="Owner" param1_key="owner-only" param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key="distinct" param3_value=distinct param4_key="q" param4_value=query %}
                         {% include "core/sort_th.html" with color="green" key="updated" name="Updated" default_reverse=1 param1_key="owner-only" param1_value=owner_only param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key="distinct" param3_value=distinct param4_key="q" param4_value=query %}
-                        {% if user_accounts|length > 1 %}
+                        {% if user_accounts_by_id|length > 1 %}
                             <th>Your account(s)</th>
                         {% endif %}
                     </tr>
@@ -77,11 +77,11 @@
                             {% endif %}
                         </td>
                         <td>{% if repository.official_modified %}{{ repository.official_modified }}{% else %}-{% endif %}</td>
-                        {% if user_accounts|length > 1 %}
+                        {% if user_accounts_by_id|length > 1 %}
                             <td>
                                 {% if repository.current_user_account_id_list %}
                                     {% for user_account_id in repository.current_user_account_id_list %}
-                                        {% with user_account=user_accounts|dict_get:user_account_id %}
+                                        {% with user_account=user_accounts_by_id|dict_get:user_account_id %}
                                         <div>
                                             {% include "core/accounts/avatar.html" with account=user_account size=16 %}
                                             {% include "core/accounts/link.html" with account=user_account no_backend=1 %}

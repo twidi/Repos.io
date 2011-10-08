@@ -11,7 +11,7 @@ from model_utils.models import TimeStampedModel
 from model_utils.fields import StatusField
 
 from core.backends import BACKENDS, get_backend
-from core.managers import AccountManager, RepositoryManager
+from core.managers import AccountManager, RepositoryManager, OptimForListAccountManager, OptimForListRepositoryManager
 from core.utils import slugify
 from core.exceptions import MultipleBackendError
 
@@ -388,8 +388,9 @@ class Account(SyncableModel):
     # Count of contributed projects
     contributing_count = models.PositiveIntegerField(blank=True, null=True)
 
-    # The default manager
+    # The managers
     objects = AccountManager()
+    for_list = OptimForListAccountManager()
 
     # tags
     public_tags = TaggableManager(through=PublicTaggedAccount, related_name='public_on_accounts')
@@ -1026,8 +1027,9 @@ class Repository(SyncableModel):
     readme_type = models.CharField(max_length=10, blank=True, null=True)
     readme_modified = models.DateTimeField(blank=True, null=True)
 
-    # The default manager
+    # The managers
     objects = RepositoryManager()
+    for_list = OptimForListRepositoryManager()
 
     # tags
     public_tags = TaggableManager(through=PublicTaggedRepository, related_name='public_on_repositories')
@@ -1043,6 +1045,7 @@ class Repository(SyncableModel):
         ('contributors', True, True),
         ('readme', False, True),
     )
+
 
     def __unicode__(self):
         return u'%s' % self.get_project()

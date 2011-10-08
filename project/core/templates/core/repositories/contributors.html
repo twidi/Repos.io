@@ -1,5 +1,5 @@
 {% extends "core/repositories/base.html" %}
-{% load private_tags %}
+{% load private_tags tagging_tags %}
 {% block title %}Contributors of {{ block.super }}{% endblock %}
 {% block repository_content %}
 
@@ -7,6 +7,7 @@
 
         {% if sorted_contributors %}
             {% prepare_private sorted_contributors %}
+            {% prepare_public_tags sorted_contributors %}
 
             <p>{{ repository.slug }} (by {{ repository.owner.slug }}) has {{ repository.contributors_count }} contributors : <small>(last fetch on {{ repository.contributors_modified }})</small></p>
 

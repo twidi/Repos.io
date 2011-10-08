@@ -1,5 +1,5 @@
 from core.backends import BACKENDS_BY_AUTH
-from core.models import Account, Repository
+from core.utils import get_user_accounts
 
 def backends(request):
     return dict(
@@ -8,6 +8,5 @@ def backends(request):
 
 def objects(request):
     return dict(
-        accounts_manager = Account.objects,
-        repositories_manager = Repository.objects,
+        user_accounts = get_user_accounts()
     )

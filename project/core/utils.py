@@ -3,6 +3,8 @@ import unicodedata
 
 from django.utils.encoding import smart_unicode
 
+from django_globals import globals
+
 RE_SLUG = re.compile('[^\w-]')
 
 def slugify(value):
@@ -12,5 +14,10 @@ def slugify(value):
     return RE_SLUG.sub('-', value).replace('_', '-')
 
 
-
-
+def get_user_accounts():
+    if not hasattr(globals, 'accounts'):
+        if globals.user and globals.user.is_authenticated():
+                globals.accounts = globals.user.accounts.all()
+        else:
+            globals.accounts = []
+    return globals.accounts

@@ -1,5 +1,5 @@
 {% extends "core/accounts/base.html" %}
-{% load private_tags %}
+{% load private_tags tagging_tags %}
 {% block title %}Followers of {{ block.super }}{% endblock %}
 {% block account_content %}
 
@@ -7,6 +7,7 @@
 
         {% if sorted_followers %}
             {% prepare_private sorted_followers %}
+            {% prepare_public_tags sorted_followers %}
 
             <p>{{ account.slug }} is followed by {{ account.followers_count }} people : <small>(last fetch on {{ account.followers_modified }})</small></p>
 

@@ -6,8 +6,6 @@ from core.models import Account, Repository
 from core.backends import get_backend
 
 
-
-
 def check_account(function=None):
     """
     Check if an account identified by a backend and a slug exists
@@ -38,7 +36,7 @@ def check_repository(function=None):
         @wraps(view_func)
         def _view(request, backend, project, *args, **kwargs):
             try:
-                repository = Repository.objects.select_related('owner').get(backend=backend, project=project)
+                repository = Repository.objects.select_related('owner').select_related('owner', 'parent_fork', 'parent_fork_owner').get(backend=backend, project=project)
             except:
                 raise Http404
             else:

@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
 
+from core.models import Account
 from core.views.decorators import check_repository, check_support
 from core.views.sort import get_account_sort
 from private.forms import NoteForm, NoteDeleteForm, RepositoryTagsForm, TagsDeleteForm
@@ -48,10 +49,10 @@ def followers(request, backend, project, repository=None):
     """
 
     sort = get_account_sort(request.GET.get('sort_by', None), default=None)
+
+    sorted_followers = Account.for_list.filter(repositories=repository)
     if sort['key']:
-        sorted_followers = repository.followers.order_by(sort['db_sort'])
-    else:
-        sorted_followers = repository.followers.all()
+        sorted_followers = sorted_followers.order_by(sort['db_sort'])
 
     return render(request, 'core/repositories/followers.html', dict(
         repository = repository,
@@ -70,10 +71,10 @@ def contributors(request, backend, project, repository=None):
     """
 
     sort = get_account_sort(request.GET.get('sort_by', None), default=None)
+
+    sorted_contributors = Account.for_list.filter(contributing=repository)
     if sort['key']:
-        sorted_contributors = repository.contributors.order_by(sort['db_sort'])
-    else:
-        sorted_contributors = repository.contributors.all()
+        sorted_contributors = sorted_contributors.order_by(sort['db_sort'])
 
     return render(request, 'core/repositories/contributors.html', dict(
         repository = repository,
