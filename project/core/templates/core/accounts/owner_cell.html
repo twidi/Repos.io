@@ -1,5 +1,7 @@
-{% include "core/accounts/avatar.html" with account=repository.owner size=16 %}
-{% include "core/accounts/link.html" with no_backend=1 account=repository.owner %}
+{% with account=repository.owner %}
+    {% include "core/accounts/avatar_small.html" %}
+    {% include "core/accounts/link_no_backend.html" %}
+{% endwith %}
 {% if repository.distinct_others %}
     <br /><small><em>(and {{ repository.distinct_others|length }} more)</em></small>
 {% endif %}

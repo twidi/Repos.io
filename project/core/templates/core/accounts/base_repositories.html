@@ -40,11 +40,13 @@
     <table class='zebra-striped repositories with_extras'>
         <thead>
             <tr>
-                {% include "core/sort_th.html" with color="orange" key="name" name="Name" param1_key="owner-only" param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key="distinct" param3_value=distinct param4_key="q" param4_value=query %}
-                {% if account.backend|supports:'repository_owner' and not owner_only  %}
-                    {% include "core/sort_th.html" with color="blue" key="owner" name="Owner" param1_key="owner-only" param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key="distinct" param3_value=distinct param4_key="q" param4_value=query %}
-                {% endif %}
-                {% include "core/sort_th.html" with color="green" key="updated" name="Updated" default_reverse=1 param1_key="owner-only" param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key="distinct" param3_value=distinct param4_key="q" param4_value=query %}
+                {% with param1_key="owner-only" param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key="distinct" param3_value=distinct param4_key="q" param4_value=query %}
+                    {% include "core/repositories/sort_th_name.html" %}
+                    {% if account.backend|supports:'repository_owner' and not owner_only  %}
+                        {% include "core/repositories/sort_th_owner.html" %}
+                    {% endif %}
+                    {% include "core/repositories/sort_th_updated.html" %}
+                {% endwith %}
             </tr>
         </thead>
         <tbody>

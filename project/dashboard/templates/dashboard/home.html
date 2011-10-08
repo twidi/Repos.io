@@ -11,8 +11,8 @@
                 {% for account in user_accounts %}
                 <tr>
                     <td>
-                    {% include "core/accounts/avatar.html" with size=32 %}
-                    {% include "core/accounts/link.html" %}
+                        {% include "core/accounts/avatar.html" %}
+                        {% include "core/accounts/link.html" %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -72,19 +72,19 @@
             {% if last_notes.repository %}
                 <table>
                     <tbody>
-                        {% for obj in last_notes.repository %}
+                        {% for repository in last_notes.repository %}
                         <tr>
                             <td>
-                                {% include "core/repositories/logo.html" with repository=obj size=16 %}
-                                {% include "core/repositories/link.html" with repository=obj %}
+                                {% include "core/repositories/logo_small.html" %}
+                                {% include "core/repositories/link.html" %}
                             </td>
                             <td>
                                 <div class="rel_popover" data-popover-title="Your private note">
                                     <img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" />
                                     <div><div class="note_container">
-                                        <blockquote>{{ obj.current_user_rendered_note|safe }}</blockquote>
+                                        <blockquote>{{ repository.current_user_rendered_note|safe }}</blockquote>
                                         <hr />
-                                        <em>Last updated: {{ obj.current_user_note_modified }}</em>
+                                        <em>Last updated: {{ repository.current_user_note_modified }}</em>
                                     </div></div>
                                 </div>
                             </td>
@@ -103,11 +103,11 @@
             {% if last_notes.account %}
                 <table>
                     <tbody>
-                        {% for obj in last_notes.account %}
+                        {% for account in last_notes.account %}
                         <tr>
                             <td>
-                                {% include "core/accounts/avatar.html" with account=obj size=16 %}
-                                {% include "core/accounts/link.html" with account=obj %}
+                                {% include "core/accounts/avatar_small.html" %}
+                                {% include "core/accounts/link.html" %}
                             </td>
                             <td>
                                 <div class="rel_popover" data-popover-title="Your private note">
@@ -140,8 +140,8 @@
                     {% for account in best.accounts.followers %}
                         <tr>
                             <td>
-                                {% include "core/accounts/avatar.html" with account=account size=16 %}
-                                {% include "core/accounts/link.html" with account=account %}
+                                {% include "core/accounts/avatar_small.html" %}
+                                {% include "core/accounts/link.html" %}
                             </td>
                         </tr>
                     {% endfor %}
@@ -160,8 +160,8 @@
                     {% for account in best.accounts.following %}
                         <tr>
                             <td>
-                                {% include "core/accounts/avatar.html" with account=account size=16 %}
-                                {% include "core/accounts/link.html" with account=account %}
+                                {% include "core/accounts/avatar_small.html" %}
+                                {% include "core/accounts/link.html" %}
                             </td>
                         </tr>
                     {% endfor %}
@@ -180,8 +180,8 @@
                     {% for repository in best.repositories.owned %}
                         <tr>
                             <td>
-                                {% include "core/repositories/logo.html" with repository=repository size=16 %}
-                                {% include "core/repositories/link.html" with repository=repository %}
+                                {% include "core/repositories/logo_small.html" %}
+                                {% include "core/repositories/link.html" %}
                             </td>
                         </tr>
                     {% endfor %}
@@ -200,8 +200,8 @@
                     {% for repository in best.repositories.followed %}
                         <tr>
                             <td>
-                                {% include "core/repositories/logo.html" with repository=repository size=16 %}
-                                {% include "core/repositories/link.html" with repository=repository %}
+                                {% include "core/repositories/logo_small.html" %}
+                                {% include "core/repositories/link.html" %}
                             </td>
                         </tr>
                     {% endfor %}

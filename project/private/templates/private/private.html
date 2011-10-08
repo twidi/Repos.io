@@ -33,9 +33,9 @@
         {% if private_tags %}
             <a href="./?edit_tags" title="Edit your private tags"><small>edit your tags</small></a>
             {% if section == "user" %}
-                {% include "dashboard/include_tags.html" with obj_type="accounts" tags=private_tags %}
+                {% with obj_type="accounts" tags=private_tags %}{% include "dashboard/include_tags.html" %}{% endwith %}
             {% else %}
-                {% include "dashboard/include_tags.html" with obj_type="repositories" tags=private_tags %}
+                {% with obj_type="repositories" tags=private_tags %}{% include "dashboard/include_tags.html" %}{% endwith %}
             {% endif %}
         {% else %}
             <a href="./?edit_tags"><small>Add <strong>private</strong> tags</small></a>

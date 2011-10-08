@@ -1,11 +1,12 @@
-{% extends "core/list_extra.html" %}
-{% block specific_extra_class %}{% if obj.current_user_follows or obj.current_user_owns or obj.current_user_has_fork %} with_special_tags{% endif %}{% endblock %}
-{% block specific_extra %}
-    {% if obj.current_user_follows or obj.current_user_owns or obj.current_user_has_fork %}
-        <ul class="special-tags unstyled">
-            {% if obj.current_user_owns %}<li class="label success" title="{{ obj.project }} is your project">yours</li>{% endif %}
-            {% if obj.current_user_follows %}<li class="label notice" title="You follow {{ obj.project }}">following</li>{% endif %}
-            {% if obj.current_user_has_fork %}<li class="label warning" title="You have a fork of {{ obj.project }}">forked</li>{% endif %}
-        </ul>
-    {% endif %}
-{% endblock %}
+{% if repository.current_user_has_extra %}
+    <div class="extra{% if repository.current_user_has_note %} with_note {% endif %}{% if repository.current_user_has_tags %} with_tags{% endif %}{% if repository.current_user_follows or repository.current_user_owns or repository.current_user_has_fork %} with_special_tags{% endif %}">
+        {% with obj=repository %}{% include "core/list_extra.html" %}{% endwith %}
+        {% if repository.current_user_follows or repository.current_user_owns or repository.current_user_has_fork %}
+            <ul class="special-tags unstyled">
+                {% if repository.current_user_owns %}<li class="label success" title="{{ repository.project }} is your project">yours</li>{% endif %}
+                {% if repository.current_user_follows %}<li class="label notice" title="You follow {{ repository.project }}">following</li>{% endif %}
+                {% if repository.current_user_has_fork %}<li class="label warning" title="You have a fork of {{ repository.project }}">forked</li>{% endif %}
+            </ul>
+        {% endif %}
+    </div>
+{% endif %}

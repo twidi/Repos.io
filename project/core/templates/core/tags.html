@@ -1,7 +1,7 @@
 {% if tags %}
 <ul class="tags unstyled">
     {% for tag in tags %}
-        <li><a href="{% if tag_link %}{{ tag_link }}?q={{ tag }}{% if link_param1 %}&amp;{{ link_param1 }}{% endif %}{% if link_param2 %}&amp;{{ link_param2 }}{% endif %}{% else %}#{% endif %}" class="label {{ type_design|default:"default" }}">{{ tag }}</a></li>
+        <li><a href="{% if tag_link %}{{ tag_link }}?q={{ tag }}{% if link_param1 %}&amp;{{ link_param1 }}{% endif %}{% if link_param2 %}&amp;{{ link_param2 }}{% endif %}{% else %}#{% endif %}" class="label {{ tag_style|default:"default" }}">{{ tag }}</a></li>
     {% endfor %}
 </ul>
 {% endif %}

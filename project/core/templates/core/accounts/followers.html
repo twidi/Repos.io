@@ -14,23 +14,25 @@
             <table class='zebra-striped accounts with_extras'>
                 <thead>
                     <tr>
-                        {% include "core/sort_th.html" with color="orange" key="name" name="Name" %}
+                        {% with color="orange" key="name" name="Name" %}{% include "core/sort_th.html" %}{% endwith %}
                         <th class="blue">Reciprocity</th>
                         <th class="green">Links</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for follower in sorted_followers %}
+                    {% with viewed_account=account %}
+                    {% for account in sorted_followers %}
                     <tr>
                         <td>
-                            {% include "core/accounts/main_account_cell.html" with account=follower %}
+                            {% include "core/accounts/main_account_cell.html" %}
                         </td>
-                        {% if follower.id in account.following_ids %}<td title="{{ account.slug }} follows {{ follower.slug }} too !">&check;</td>{% else %}<td></td>{% endif %}
+                        {% if account.id in viewed_account.following_ids %}<td title="{{ viewed_account.slug }} follows {{ account.slug }} too !">&check;</td>{% else %}<td></td>{% endif %}
                         <td>
-                            {% include "core/accounts/links.html" with account=follower %}
+                            {% include "core/accounts/links.html" %}
                         </td>
                     </tr>
                     {% endfor %}
+                    {% endwith %}
                 </tbody>
             </table>
 

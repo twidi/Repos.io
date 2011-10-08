@@ -6,24 +6,28 @@
 
         <header class="row main_header">
             <div class="span-two-thirds">
-                {% include "core/repositories/logo.html" with size=80 %}
-                <h1>{% include "core/repositories/link.html" with no_owner=1 %}</h1>
-                {% include "core/score.html" with obj=repository max_score=125 ratio=4 %}
+                {% include "core/repositories/logo_big.html" %}
+                <h1>{% include "core/repositories/link_no_owner.html" %}</h1>
+                {% with obj=repository max_score=125 ratio=4 %}{% include "core/score.html"%}{% endwith %}
                 {% if repository.owner %}
                     <h2>
                         <small>
                             by
-                            {% include "core/accounts/avatar.html" with account=repository.owner size=16 %}
-                            {% include "core/accounts/link.html" with no_backend=1 account=repository.owner %}
+                            {% with account=repository.owner %}
+                                {% include "core/accounts/avatar_small.html" %}
+                                {% include "core/accounts/link_no_backend.html" %}
+                            {% endwith %}
                         </small>
                         {% if repository.backend|supports:'repository_parent_fork' and repository.is_fork %}
                             <small>
                                 /
                                 {% if repository.parent_fork %}
-                                <span class="label warning">Fork</span> of {% include "core/repositories/link.html" with repository=repository.parent_fork no_backend=1 no_owner=1 %}
+                                <span class="label warning">Fork</span> of {% with repository=repository.parent_fork %}{% include "core/repositories/link_no_owner_no_backend.html" %}{% endwith %}
                                     by
-                                    {% include "core/accounts/avatar.html" with account=repository.parent_fork.owner size=16 %}
-                                    {% include "core/accounts/link.html" with no_backend=1 account=repository.parent_fork.owner %}
+                                    {% with account=repository.parent_fork.owner %}
+                                        {% include "core/accounts/avatar_small.html" %}
+                                        {% include "core/accounts/link_no_backend.html" %}
+                                    {% endwith %}
                                 {% else %}
                                     it's a <span class="label warning">fork</span> but related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display.
                                 {% endif %}
@@ -37,14 +41,14 @@
                     {% if repository.homepage %}<a href="{{ repository.homepage }}" title="Go to the project's homepage: {{ repository.homepage }}"><img src="{{ STATIC_URL }}img/favicon_home.png" alt="His homepage" /></a>{% endif %}
                 </p>
                 <p>On {{ repository.backend }} since {{ repository.official_created }}, {% if repository.official_modified %}updated on {{ repository.official_modified }}{% else %}never updated{% endif %}</p>
-                {% include "core/repositories/tags.html" with type_design="success" %}
+                {% with tag_style="success" %}{% include "core/repositories/tags.html" %}{% endwith %}
             </div>
             <div class="span-one-third">
-                {% include "core/repositories/fetch_form.html" %}{% include "core/repositories/fetch_form.html" with for_related=1 %}
+                {% include "core/repositories/fetch_form.html" %}{% with for_related=1 %}{% include "core/repositories/fetch_form.html" %}{% endwith %}
             </div>
         </header>
 
-        {% if subsection == 'home' %}{% include "private/repository.html" with repository=repository %}{% endif %}
+        {% if subsection == 'home' %}{% include "private/repository.html" %}{% endif %}
 
         <ul class="tabs">
             <li{% if subsection == 'home' %} class="active"{% endif %}><a href="{{ repository.get_absolute_url }}">Home</a></li>

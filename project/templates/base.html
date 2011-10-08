@@ -49,7 +49,7 @@
                                 <ul class="dropdown-menu">
                                     {% for an_account in accounts %}
                                     <li{% if section == 'user' and account.id == an_account.id %} class="active"{% endif %}>
-                                        {% include "core/accounts/link.html" with account=an_account with_avatar=1 avatar_size=16 %}
+                                        {% with  with_avatar=1 avatar_size=16 account=an_account %}{% include "core/accounts/link.html" %}{% endwith %}
                                     </li>
                                     {% endfor %}
                                     <li class="divider"></li>

@@ -1,2 +1,2 @@
-{% load reposio_core %}{% if not for_related or repository.backend|supports:'repository_related' %}{% include "core/fetch_form.html" with fetch_type="repository" obj=repository request=request %}{% endif %}
+{% load reposio_core %}{% if not for_related or repository.backend|supports:'repository_related' %}{% with fetch_type="repository" obj=repository %}{% include "core/fetch_form.html" %}{% endwith %}{% endif %}
 

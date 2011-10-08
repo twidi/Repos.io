@@ -13,7 +13,7 @@
             <table class='zebra-striped accounts with_extras'>
                 <thead>
                     <tr>
-                        {% include "core/sort_th.html" with color="orange" key="name" name="Name" param1_key="q" param1_value=query %}
+                        {% with param1_key="q" param1_value=query %}{% include "core/accounts/sort_th_name.html" %}{% endwith %}
                         <th>Links</th>
                     </tr>
                 </thead>
@@ -21,10 +21,10 @@
                     {% for account in page.object_list %}
                         <tr>
                             <td>
-                                {% include "core/accounts/list_extra.html" with obj=account %}
+                                {% include "core/accounts/list_extra.html" %}
                                 {{ account.renderer_main|safe }}
-                                {% include "core/score.html" with obj=account score=account.internal_score %}
-                                {% include "core/accounts/tags.html" with account=account %}
+                                {% with score=account.internal_score %}{% include "core/accounts/score.html" %}{% endwith %}
+                                {% include "core/accounts/tags.html" %}
                             </td>
                             <td>
                                 {{ account.renderer_links|safe }}

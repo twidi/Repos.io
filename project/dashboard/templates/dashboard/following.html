@@ -14,7 +14,7 @@
             <table class='zebra-striped accounts with_extras'>
                 <thead>
                     <tr>
-                        {% include "core/sort_th.html" with color="orange" key="name" name="Name" %}
+                        {% include "core/accounts/sort_th_name.html" %}
                         <th class="blue">Reciprocity</th>
                         <th class="green">Links</th>
                         {% if user_accounts_by_id|length > 1 %}
@@ -23,23 +23,23 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for following in user_following %}
+                    {% for account in user_following %}
                     <tr>
                         <td>
-                            {% include "core/accounts/main_account_cell.html" with account=following %}
+                            {% include "core/accounts/main_account_cell.html" %}
                         </td>
-                        {% if following.id in followers_ids %}<td title="{{ following.slug }} follows you !">&check;</td>{% else %}<td></td>{% endif %}
+                        {% if account.id in followers_ids %}<td title="{{ account.slug }} follows you !">&check;</td>{% else %}<td></td>{% endif %}
                         <td>
-                            {% include "core/accounts/links.html" with account=following %}
+                            {% include "core/accounts/links.html" %}
                         </td>
                         {% if user_accounts_by_id|length > 1 %}
                             <td>
-                                {% if following.current_user_account_id_list %}
-                                    {% for user_account_id in following.current_user_account_id_list %}
-                                        {% with user_account=user_accounts_by_id|dict_get:user_account_id %}
+                                {% if account.current_user_account_id_list %}
+                                    {% for user_account_id in account.current_user_account_id_list %}
+                                        {% with account=user_accounts_by_id|dict_get:user_account_id %}
                                         <div>
-                                            {% include "core/accounts/avatar.html" with account=user_account size=16 %}
-                                            {% include "core/accounts/link.html" with account=user_account no_backend=1 %}
+                                            {% include "core/accounts/avatar_small.html" %}
+                                            {% include "core/accounts/link_no_backend.html" %}
                                         </div>
                                         {% endwith %}
                                     {% endfor %}
