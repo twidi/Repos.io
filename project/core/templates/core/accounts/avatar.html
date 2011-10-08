@@ -1,2 +1,2 @@
-<a href="{{ account.get_absolute_url }}" title="{% if account.last_fetch %}{{ account.name|default:account.slug }}{% else %}{{ account.slug }} (not fetched){% endif %}"><img width="{{ size|default:32 }}" height="{{ size|default:32 }}" src="{% if account.avatar %}{{ account.avatar }}{% else %}{{ STATIC_URL }}img/avatar_default_{{ account.backend }}.png{% endif %}" /></a>
+<a href="{{ account.get_absolute_url }}" title="{% if account.last_fetch %}{{ account.name|default:account.slug }}{% else %}{{ account.slug }} (not fetched){% endif %}"><img alt="{{ account.slug }}'s avatar" width="{{ size|default:32 }}" height="{{ size|default:32 }}" src="{% if account.avatar %}{{ account.avatar }}{% else %}{{ STATIC_URL }}img/avatar_default_{{ account.backend }}.png{% endif %}" /></a>
 

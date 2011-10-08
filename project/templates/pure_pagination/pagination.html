@@ -9,7 +9,7 @@
     {% for page in current_page.pages %}
         {% if page %}
             {% ifequal page current_page.number %}
-                <li class="active"><a href='#'>{{ page }}</a></span>
+                <li class="active"><a href='#'>{{ page }}</a></li>
             {% else %}
                 <li><a href="?{{ page.querystring }}" class="page">{{ page }}</a></li>
             {% endifequal %}

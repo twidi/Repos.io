@@ -12,7 +12,7 @@
 
         <p>
             {% for backend, auth_backend in backends_map.items %}
-            <a class="btn large" href="{% url socialauth_begin auth_backend %}"><img src="{{ STATIC_URL }}img/favicon_github.png" /> {{ backend }}</a>
+                <a class="btn large" href="{% url socialauth_begin auth_backend %}"><img alt='{{ backend }}' src="{{ STATIC_URL }}img/favicon_{{ backend }}.png" /> {{ backend }}</a>
             {% endfor %}
             <span>(more to come)</span>
         </p>
