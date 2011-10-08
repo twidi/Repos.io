@@ -1,0 +1,15 @@
+core/accounts/base.html
+core/accounts/base_repositories.html
+core/accounts/contributing.html
+core/accounts/followers.html
+core/accounts/following.html
+core/accounts/home.html
+core/accounts/repositories.html
+core/repositories/contributors.html
+core/repositories/followers.html
+dashboard/followers.html
+dashboard/following.html
+dashboard/noted_accounts.html
+dashboard/notes.html
+dashboard/tagged_accounts.html
+dashboard/tags.html

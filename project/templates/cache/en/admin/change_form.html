@@ -1,0 +1,166 @@
+{% load i18n adminmedia admin_modify%}<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{LANGUAGE_CODE|default:"en-us"}}" xml:lang="{{LANGUAGE_CODE|default:"en-us"}}" {%if LANGUAGE_BIDI%}dir="rtl"{%endif%}>
+<head>
+<title>{{title}} | Django site admin</title>
+<link rel="stylesheet" type="text/css" href="{%admin_media_prefix %}css/base.css" />
+<link rel="stylesheet" type="text/css" href="{%admin_media_prefix %}css/forms.css" />
+<!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="{%admin_media_prefix %}css/ie.css" /><![endif]-->
+{%if LANGUAGE_BIDI%}<link rel="stylesheet" type="text/css" href="{%admin_media_prefix %}css/rtl.css" />{%endif%}
+<script type="text/javascript">window.__admin_media_prefix__ = "{%filter escapejs %}{%admin_media_prefix %}{%endfilter %}";</script>
+
+{%url 'admin:jsi18n' as jsi18nurl %}
+<script type="text/javascript" src="{{jsi18nurl|default:"../../../jsi18n/"}}"></script>
+{{media}}
+
+<meta name="robots" content="NONE,NOARCHIVE" />
+</head>
+
+
+<body class="{%if is_popup%}popup {%endif%}{{opts.app_label}}-{{opts.object_name.lower}} change-form">
+
+<!-- Container -->
+<div id="container">
+
+    {%if not is_popup%}
+    <!-- Header -->
+    <div id="header">
+        <div id="branding">
+        
+<h1 id="site-name">Django administration</h1>
+
+        </div>
+        {%if user.is_active and user.is_staff%}
+        <div id="user-tools">
+            Welcome,
+            <strong>{%filter force_escape %}{%firstof user.first_name user.username %}{%endfilter %}</strong>.
+            
+                {%url 'django-admindocs-docroot' as docsroot %}
+                {%if docsroot%}
+                    <a href="{{docsroot}}">Documentation</a> /
+                {%endif%}
+                {%url 'admin:password_change' as password_change_url %}
+                {%if password_change_url%}
+                    <a href="{{password_change_url}}">
+                {%else%}
+                    <a href="{{root_path}}password_change/">
+                {%endif%}
+                Change password</a> /
+                {%url 'admin:logout' as logout_url %}
+                {%if logout_url%}
+                    <a href="{{logout_url}}">
+                {%else%}
+                    <a href="{{root_path}}logout/">
+                {%endif%}
+                Log out</a>
+            
+        </div>
+        {%endif%}
+        
+    </div>
+    <!-- END Header -->
+    {%if not is_popup%}
+<div class="breadcrumbs">
+     <a href="../../../">Home</a> &rsaquo;
+     <a href="../../">{{app_label|capfirst|escape}}</a> &rsaquo;
+     {%if has_change_permission%}<a href="../">{{opts.verbose_name_plural|capfirst}}</a>{%else%}{{opts.verbose_name_plural|capfirst}}{%endif%} &rsaquo;
+     {%if add%}Add {{opts.verbose_name}}{%else%}{{original|truncatewords:"18"}}{%endif%}
+</div>
+{%endif%}
+    {%endif%}
+
+        {%if messages%}
+        <ul class="messagelist">{%for message in messages %}
+          <li{%if message.tags%} class="{{message.tags}}"{%endif%}>{{message}}</li>
+	{%endfor %}</ul>
+        {%endif%}
+
+    <!-- Content -->
+    <div id="content" class="{%if ordered_objects%}colMS{%else%}colM{%endif%}">
+        
+        {%if title%}<h1>{{title}}</h1>{%endif%}
+        <div id="content-main">
+
+{%if change%}{%if not is_popup%}
+  <ul class="object-tools">
+    
+    <li><a href="history/" class="historylink">History</a></li>
+    {%if has_absolute_url%}<li><a href="../../../r/{{content_type_id}}/{{object_id}}/" class="viewsitelink">View on site</a></li>{%endif%}
+    
+  </ul>
+{%endif%}{%endif%}
+
+<form {%if has_file_field%}enctype="multipart/form-data" {%endif%}action="{{form_url}}" method="post" id="{{opts.module_name}}_form">{%csrf_token %}
+<div>
+{%if is_popup%}<input type="hidden" name="_popup" value="1" />{%endif%}
+{%if save_on_top%}{%submit_row %}{%endif%}
+{%if errors%}
+    <p class="errornote">
+    {%with errors|length as counter%}{%if counter > 1%}Please correct the errors below.{%else%}Please correct the error below.{%endif%}{%endwith%}
+    </p>
+    {{adminform.form.non_field_errors}}
+{%endif%}
+
+{%for fieldset in adminform %}
+  <fieldset class="module aligned {{fieldset.classes}}">
+    {%if fieldset.name%}<h2>{{fieldset.name}}</h2>{%endif%}
+    {%if fieldset.description%}
+        <div class="description">{{fieldset.description|safe}}</div>
+    {%endif%}
+    {%for line in fieldset %}
+        <div class="form-row{%if line.fields|length_is:'1' and line.errors%} errors{%endif%}{%for field in line %} {{field.field.name}}{%endfor %}">
+            {%if line.fields|length_is:'1'%}{{line.errors}}{%endif%}
+            {%for field in line %}
+                <div{%if not line.fields|length_is:'1'%} class="field-box{%if not field.is_readonly and field.errors%} errors{%endif%}"{%endif%}>
+                    {%if not line.fields|length_is:'1' and not field.is_readonly%}{{field.errors}}{%endif%}
+                    {%if field.is_checkbox%}
+                        {{field.field}}{{field.label_tag}}
+                    {%else%}
+                        {{field.label_tag}}
+                        {%if field.is_readonly%}
+                            <p>{{field.contents}}</p>
+                        {%else%}
+                            {{field.field}}
+                        {%endif%}
+                    {%endif%}
+                    {%if field.field.help_text%}
+                        <p class="help">{{field.field.help_text|safe}}</p>
+                    {%endif%}
+                </div>
+            {%endfor %}
+        </div>
+    {%endfor %}
+</fieldset>
+
+{%endfor %}
+
+
+
+{%for inline_admin_formset in inline_admin_formsets %}
+    {%include inline_admin_formset.opts.template%}
+{%endfor %}
+
+
+
+{%submit_row %}
+
+{%if adminform and add%}
+   <script type="text/javascript">document.getElementById("{{adminform.first_field.id_for_label}}").focus();</script>
+{%endif%}
+
+
+{%prepopulated_fields_js %}
+
+</div>
+</form></div>
+
+        
+        <br class="clear" />
+    </div>
+    <!-- END Content -->
+
+    <div id="footer"></div>
+</div>
+<!-- END Container -->
+
+</body>
+</html>
