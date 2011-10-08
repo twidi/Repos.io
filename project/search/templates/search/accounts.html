@@ -1,5 +1,4 @@
 {% extends 'search/base.html' %}
-{% load private_tags %}
 {% load private_tags tagging_tags %}
 {% block title %}Search for {% if query %}"{{ query }}" in {% endif %}accounts on {% endblock %}
 {% block search_content %}
@@ -8,7 +7,7 @@
 
         {% if page.paginator.count %}
             {% prepare_private page.object_list %}
-            {% prepare_public_tags sorted_following %}
+            {% prepare_public_tags page.object_list %}
             <h2>{{ page.paginator.count }} results for <em>{{ query }}</em></h2>
             <table class='zebra-striped accounts with_extras'>
                 <thead>

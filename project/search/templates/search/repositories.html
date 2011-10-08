@@ -34,8 +34,8 @@
                         {%  with param1_key="q" param1_value=query param2_key="show-forks" param2_value=show_forks %}
                             {% include "core/repositories/sort_th_name.html" %}
                             {% include "core/repositories/sort_th_owner.html" %}
-                            {% include "core/repositories/sort_th.html_updated" %}
-                        {% endwith 5}
+                            {% include "core/repositories/sort_th_updated.html" %}
+                        {% endwith %}
                     </tr>
                 </thead>
                 <tbody>
