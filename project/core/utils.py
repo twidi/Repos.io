@@ -15,9 +15,11 @@ def slugify(value):
 
 
 def get_user_accounts():
-    if not hasattr(globals, 'accounts'):
+    if not hasattr(globals, 'request'):
+        return []
+    if not hasattr(globals.request, '_accounts'):
         if globals.user and globals.user.is_authenticated():
-                globals.accounts = globals.user.accounts.all()
+                globals.request._accounts = globals.user.accounts.all()
         else:
-            globals.accounts = []
-    return globals.accounts
+            globals.request._accounts = []
+    return globals.request._accounts
