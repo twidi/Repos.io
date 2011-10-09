@@ -3,6 +3,15 @@
 {% block content %}
     <header class="main_header">
         <h1>Your dashboard <small>All your stuff on Repos.io, from you and for all your associated accounts</small></h1>
+        <ul class="unstyled" id="dashboard-accounts">
+            <li>Your accounts :</li>
+            {% for account in user_accounts %}
+                <li>{% include "core/accounts/minimal_cell_small.html" %}</li>
+            {% empty %}
+                <li>You have no accounts !</li>
+            {% endfor %}
+            <li><a href="{% url accounts_manage %}">Manage your accounts...</a></li>
+        </ul>
     </header>
 
 

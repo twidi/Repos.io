@@ -3,24 +3,6 @@
 {% block dashboard_content %}
 <div class="row">
 
-    <section id="d-accounts" class="span4">
-        <h2>Accounts</h2>
-        <p>Your associated accounts</p>
-        <table>
-            <tbody>
-                {% for account in user_accounts %}
-                <tr>
-                    <td>
-                        {% include "core/accounts/minimal_cell.html" %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <a href="{% url accounts_manage %}">Manage your accounts...</a>
-    </section>
-
     <section id="d-tags" class="span4">
         <h2>Tags</h2>
         <p>All your tags</p>
@@ -127,9 +109,9 @@
 
     </section>
 
-    <section id="d-people-repositories" class="span4">
+    <section id="d-people" class="span4">
 
-        <h2>People &amp; repositories</h2>
+        <h2>People</h2>
 
         <h3>Your best followers</h3>
         {% if best.accounts.followers %}
@@ -168,6 +150,12 @@
         {% endif %}
 
         <a href="{% url dashboard_following %}">More following...</a>
+
+    </section>
+
+    <section id="d-repositories" class="span4">
+
+        <h2>Repositories</h2>
 
         <h3>Your best owned repositories</h3>
         {% if best.repositories.owned %}

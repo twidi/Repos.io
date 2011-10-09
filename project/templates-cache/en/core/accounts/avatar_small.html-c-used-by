@@ -18,3 +18,4 @@ dashboard/repositories.html
 dashboard/tagged_repositories.html
 dashboard/tags.html
 home.html
+dashboard/base.html

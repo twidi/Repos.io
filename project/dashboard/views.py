@@ -97,7 +97,7 @@ def home(request):
     def get_tags():
         return _get_sorted_user_tags(request.user)
     def get_notes():
-        return _get_last_user_notes(request.user, 10)
+        return _get_last_user_notes(request.user, 5)
 
     best = dict(
         accounts = dict(

@@ -642,6 +642,34 @@ form#list-filter:last-child {
     margin-right: 0;
 }
 
+/* dashboard accounts */
+#dashboard-accounts {
+    border-top: solid 1px #ddd;
+    padding-top: 20px;
+    margin-bottom: 10px;
+}
+#dashboard-accounts li {
+    display: inline-block;
+    margin-right: 15px;
+}
+#dashboard-accounts li img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
+#dashboard-accounts li:last-child a {
+    font-style: italic;
+    font-size: smaller;
+    color: #bfbfbf;
+}
+#dashboard-accounts:hover li:last-child a {
+    color: #999
+}
+#dashboard-accounts li:last-child a:hover {
+    color: #00438A
+}
+
 /* dashboard home */
 body#dashboard-home #content > div > section h2 {
     font-size: 16px;
@@ -663,15 +691,6 @@ body#dashboard-home #content > div > section:hover > a {
 }
 body#dashboard-home #content > div > section > a:hover {
     color: #00438A
-}
-#d-accounts table tr:first-child td {
-    border-top: 1px solid #DDDDDD;
-}
-#d-accounts table td:first-child img {
-    vertical-align: middle;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
 }
 #d-tags > a {
     text-align: left !important;
@@ -698,13 +717,16 @@ body#dashboard-home .note_container hr {
 body#dashboard-home .note_container hr+em {
     font-size: smaller;
 }
-#d-people-repositories table td {
+#d-people table td,
+#d-repositories table td {
     padding: 5px;
 }
-#d-people-repositories table tr:first-child td {
+#d-people table tr:first-child td,
+#d-repositories table tr:first-child td {
     border-top: 1px solid #DDDDDD;
 }
-#d-people-repositories table td:first-child img {
+#d-people table td:first-child img,
+#d-repositories table td:first-child img {
     vertical-align: middle;
     -webkit-border-radius: 2px;
     -moz-border-radius: 2px;
