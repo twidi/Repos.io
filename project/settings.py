@@ -118,6 +118,8 @@ TEMPLATE_PREPROCESSOR_OPTIONS = {
 
 
 MIDDLEWARE_CLASSES = (
+    'johnny.middleware.LocalStoreClearMiddleware',
+    'johnny.middleware.QueryCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -232,6 +234,16 @@ HAYSTACK_SOLR_URL = 'http://url/to/solr'
 
 # notes
 NOTES_ALLOWED_MODELS = ('core.account', 'core.repository',)
+
+# johnny-cache
+CACHES = {
+    'default' : dict(
+        BACKEND = 'johnny.backends.memcached.PyLibMCCache',
+        LOCATION = ['127.0.0.1:11211'],
+        JOHNNY_CACHE = True,
+    )
+}
+JOHNNY_MIDDLEWARE_KEY_PREFIX='jc_reposio'
 
 # metasettings
 try:
