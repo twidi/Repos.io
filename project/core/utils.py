@@ -19,7 +19,7 @@ def get_user_accounts():
         return []
     if not hasattr(globals.request, '_accounts'):
         if globals.user and globals.user.is_authenticated():
-                globals.request._accounts = globals.user.accounts.all()
+                globals.request._accounts = globals.user.accounts.all().order_by('slug')
         else:
             globals.request._accounts = []
     return globals.request._accounts

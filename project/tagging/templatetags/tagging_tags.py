@@ -25,7 +25,7 @@ def prepare_public_tags(objects):
             return ''
 
         dict_objects = dict((int(obj.pk), obj) for obj in objects)
-        ids = dict_objects.keys()
+        ids = sorted(dict_objects.keys())
 
         items = tag_model.objects.filter(content_object__in=ids).select_related('tag')
         for item in items:
