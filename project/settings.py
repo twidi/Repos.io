@@ -1,4 +1,4 @@
-import os.path
+import os.path, sys
 PROJECT_PATH = os.path.dirname(__file__)
 
 DEBUG = True
@@ -49,7 +49,7 @@ USE_L10N = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media/')
+MEDIA_ROOT = os.path.normpath(os.path.join(PROJECT_PATH, 'media/'))
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
@@ -60,7 +60,7 @@ MEDIA_URL = '/media/'
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = os.path.join(PROJECT_PATH, 'static')
+STATIC_ROOT = os.path.normpath(os.path.join(PROJECT_PATH, 'static'))
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -76,7 +76,7 @@ STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(PROJECT_PATH, 'project_static'),
+    os.path.normpath(os.path.join(PROJECT_PATH, 'project_static')),
 )
 
 # List of finder classes that know how to find static files in
@@ -103,9 +103,9 @@ TEMPLATE_LOADERS = (
         TEMPLATE_LOADERS
     ),
 )
-MEDIA_CACHE_DIR = os.path.join(MEDIA_ROOT, 'cache/')
-MEDIA_CACHE_URL = os.path.join(MEDIA_URL, 'cache/')
-TEMPLATE_CACHE_DIR = os.path.join(PROJECT_PATH, 'templates/cache/')
+MEDIA_CACHE_DIR = os.path.normpath(os.path.join(MEDIA_ROOT, 'cache/'))
+MEDIA_CACHE_URL = os.path.normpath(os.path.join(MEDIA_URL, 'cache/'))
+TEMPLATE_CACHE_DIR = os.path.normpath(os.path.join(PROJECT_PATH, 'templates-cache/'))
 # Enabled modules of the template preprocessor
 TEMPLATE_PREPROCESSOR_OPTIONS = {
         # Default settings
@@ -137,6 +137,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.static',
     'django.contrib.messages.context_processors.messages',
     'project.context_processors.design',
+    'project.context_processors.caching',
     'project.core.context_processors.backends',
     'project.core.context_processors.objects',
 )
@@ -147,7 +148,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(PROJECT_PATH, 'templates'),
+    os.path.normpath(os.path.join(PROJECT_PATH, 'templates')),
 )
 
 INSTALLED_APPS = (
@@ -248,7 +249,7 @@ JOHNNY_MIDDLEWARE_KEY_PREFIX='jc_reposio'
 # metasettings
 try:
     import metasettings
-    METASETTINGS_DIR    = os.path.join(PROJECT_PATH, 'settings')
+    METASETTINGS_DIR    = os.path.normpath(os.path.join(PROJECT_PATH, 'settings'))
     try:
         from settings_rules import method, rules
     except ImportError, e:
@@ -257,10 +258,10 @@ try:
         METASETTINGS_PATTERNS = rules
         METASETTINGS_METHOD = getattr(metasettings, method)
         metasettings.init(globals())
-except:
+except Exception, e:
+    sys.stderr.write("Error while loading metasettings : %s\n" % e )
     try:
         from local_settings import *
-    except ImportError:
-        import sys
-        sys.stderr.write("Error: You should define your own settings, see settings_rules.py.sample (or just add a local_settings.py)\n")
+    except ImportError, e:
+        sys.stderr.write("Error: You should define your own settings, see settings_rules.py.sample (or just add a local_settings.py)\nError was : %s\n" % e)
         sys.exit(1)

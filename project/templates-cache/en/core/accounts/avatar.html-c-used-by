@@ -8,6 +8,8 @@ core/accounts/followers.html
 core/accounts/following.html
 core/accounts/home.html
 core/accounts/main_account_cell.html
+core/accounts/minimal_cell.html
+core/accounts/minimal_cell_small.html
 core/accounts/owner_cell.html
 core/accounts/repositories.html
 core/repositories/base.html

@@ -1,3 +1,5 @@
+{% load cache %}
+{% cache cache_timeout.account_extra account_extra account.pk user.id %}
 {% if account.current_user_has_extra %}
     <div class="extra{% if account.current_user_has_note %} with_note {% endif %}{% if account.current_user_has_tags %} with_tags{% endif %}{% if account.current_user_follows or account.current_user_followed or account.current_user_is_self %} with_special_tags{% endif %}">
         {% with obj=account %}{% include "core/list_extra.html" %}{% endwith %}
@@ -10,3 +12,4 @@
         {% endif %}
     </div>
 {% endif %}
+{% endcache %}

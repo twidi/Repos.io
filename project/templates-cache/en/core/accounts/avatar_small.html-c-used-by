@@ -1,5 +1,6 @@
 core/accounts/base_repositories.html
 core/accounts/contributing.html
+core/accounts/minimal_cell_small.html
 core/accounts/owner_cell.html
 core/accounts/repositories.html
 core/repositories/base.html
