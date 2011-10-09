@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load private_tags %}
+{% load cache %}
 {% block content %}
 
 <header class="main_header">
@@ -56,6 +56,7 @@
 
 </section>
 
+{% cache cache_timeout.home_last_accounts home_last_accounts %}
 <section class="span4">
 
     {% if last_accounts %}
@@ -75,7 +76,9 @@
     {% endif %}
 
 </section>
+{% endcache %}
 
+{% cache cache_timeout.home_last_repositories home_last_repositories %}
 <section class="span7">
 
     {% if last_repositories %}
@@ -96,6 +99,7 @@
     {% endif %}
 
 </section>
+{% endcache %}
 
 </div>
 
