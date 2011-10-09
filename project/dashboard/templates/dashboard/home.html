@@ -11,8 +11,7 @@
                 {% for account in user_accounts %}
                 <tr>
                     <td>
-                        {% include "core/accounts/avatar.html" %}
-                        {% include "core/accounts/link.html" %}
+                        {% include "core/accounts/minimal_cell.html" %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -106,8 +105,7 @@
                         {% for account in last_notes.account %}
                         <tr>
                             <td>
-                                {% include "core/accounts/avatar_small.html" %}
-                                {% include "core/accounts/link.html" %}
+                                {% include "core/accounts/minimal_cell_small.html" %}
                             </td>
                             <td>
                                 <div class="rel_popover" data-popover-title="Your private note">
@@ -140,8 +138,7 @@
                     {% for account in best.accounts.followers %}
                         <tr>
                             <td>
-                                {% include "core/accounts/avatar_small.html" %}
-                                {% include "core/accounts/link.html" %}
+                                {% include "core/accounts/minimal_cell_small.html" %}
                             </td>
                         </tr>
                     {% endfor %}
@@ -160,8 +157,7 @@
                     {% for account in best.accounts.following %}
                         <tr>
                             <td>
-                                {% include "core/accounts/avatar_small.html" %}
-                                {% include "core/accounts/link.html" %}
+                                {% include "core/accounts/minimal_cell_small.html" %}
                             </td>
                         </tr>
                     {% endfor %}

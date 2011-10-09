@@ -1,3 +1,5 @@
+{% load cache %}
+{% cache cache_timeout.repository_extra repository_extra repository.pk user.id %}
 {% if repository.current_user_has_extra %}
     <div class="extra{% if repository.current_user_has_note %} with_note {% endif %}{% if repository.current_user_has_tags %} with_tags{% endif %}{% if repository.current_user_follows or repository.current_user_owns or repository.current_user_has_fork %} with_special_tags{% endif %}">
         {% with obj=repository %}{% include "core/list_extra.html" %}{% endwith %}
@@ -10,3 +12,4 @@
         {% endif %}
     </div>
 {% endif %}
+{% endcache %}

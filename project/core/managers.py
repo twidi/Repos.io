@@ -74,7 +74,7 @@ class OptimForListAccountManager(AccountManager):
     Default `only` (fetch only some fields) and `select_related`
     """
 
-    list_needed_fields = ('backend', 'status', 'slug', 'name', 'last_fetch', 'avatar', 'score', 'url', 'homepage')
+    list_needed_fields = ('backend', 'status', 'slug', 'name', 'last_fetch', 'avatar', 'score', 'url', 'homepage', 'modified')
     list_select_related = ()
 
     def get_query_set(self):
@@ -143,7 +143,14 @@ class OptimForListRepositoryManager(RepositoryManager):
     Default `only` (fetch only some fields) and `select_related`
     """
 
-    list_needed_fields = ('backend', 'status', 'project', 'slug', 'name', 'last_fetch', 'logo', 'score', 'is_fork', 'description', 'official_modified', 'owner', 'parent_fork', 'official_created')
+    # default fields for wanted repositories
+    list_needed_fields = ['backend', 'status', 'project', 'slug', 'name', 'last_fetch', 'logo', 'score', 'is_fork', 'description', 'official_modified', 'owner', 'parent_fork', 'official_created', 'modified']
+    # same for the parent fork
+    list_needed_fields += ['parent_fork__%s' % field for field in list_needed_fields if field not in ('is_fork', 'parent_fork', 'description', 'official_created')]
+    # and needed ones for owners
+    list_needed_fields += ['owner__%s' % field for field in OptimForListAccountManager.list_needed_fields]
+    list_needed_fields += ['parent_fork__owner__%s' % field for field in ('name', 'slug', 'status', 'backend', 'last_fetch')]
+
     list_select_related = ('owner', 'parent_fork', 'parent_fork__owner',)
 
     def get_query_set(self):

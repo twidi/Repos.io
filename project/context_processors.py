@@ -1,5 +1,17 @@
 from django.core.urlresolvers import resolve
 
+def caching(request):
+    """
+    Returns timeout to use in template caching
+    """
+    return dict(cache_timeout=dict(
+        repository_main_cell = 86400,
+        account_main_cell = 86400,
+        repository_owner_cell = 86400,
+        repository_extra = 300,
+        account_extra = 300,
+    ))
+
 def design(request):
     """
     Some tools for design

@@ -1,0 +1,7 @@
+accounts/base.html
+base.html
+core/accounts/link.html
+core/accounts/minimal_cell.html
+core/accounts/avatar.html
+core/accounts/link.html
+accounts/include_about.html

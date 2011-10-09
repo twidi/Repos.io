@@ -1,4 +1,6 @@
+{% load cache %}
 {% include "core/repositories/list_extra.html" %}
+{% cache cache_timeout.repository_main_cell repository_main_cell_part1 repository.pk repository.modified %}
 {% include "core/repositories/logo.html" %}
 <strong>{% include "core/repositories/link_no_owner.html" %}</strong>
 {% if repository.is_fork %}
@@ -12,9 +14,11 @@
     {% endif %}
 </small>
 {% endif %}
+{% endcache %}
 {% if repository.distinct_others %}
     <small title="{{ repository.distinct_others|join:', '}}"><em>(and {{ repository.distinct_others|length }} more)</em></small>
 {% endif %}
+{% cache cache_timeout.repository_main_cell repository_main_cell_part2 repository.pk repository.modified %}
 {% with max_width=200 ratio=2 %}{% include "core/repositories/score.html" %}{% endwith %}
 {% if repository.description %}<blockquote>{{ repository.description }}</blockquote>{% endif %}
-
+{% endcache %}

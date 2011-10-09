@@ -32,7 +32,7 @@ def prepare_private(objects, ignore=None):
         user = globals.user
 
         dict_objects = dict((int(obj.pk), obj) for obj in objects)
-        ids = dict_objects.keys()
+        ids = sorted(dict_objects.keys())
         if not ids:
             return ''
 
