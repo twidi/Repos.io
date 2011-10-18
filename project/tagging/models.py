@@ -65,3 +65,12 @@ class PrivateTaggedAccount(PrivateTaggedItem):
 class PrivateTaggedRepository(PrivateTaggedItem):
     tag = models.ForeignKey(Tag, related_name="private_repository_tags")
     content_object = models.ForeignKey('core.Repository')
+
+def all_official_tags():
+    """
+    Return (and cache) the list of all official tags (as a set of slugs)
+    """
+    if not all_official_tags._cache:
+        all_official_tags._cache = set(Tag.objects.filter(official=True).values_list('slug', flat=True))
+    return all_official_tags._cache
+all_official_tags._cache = None

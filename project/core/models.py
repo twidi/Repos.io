@@ -15,7 +15,7 @@ from core.managers import AccountManager, RepositoryManager, OptimForListAccount
 from core.core_utils import slugify
 from core.exceptions import MultipleBackendError
 
-from tagging.models import PublicTaggedAccount, PublicTaggedRepository, Tag, PrivateTaggedAccount, PrivateTaggedRepository
+from tagging.models import PublicTaggedAccount, PublicTaggedRepository, PrivateTaggedAccount, PrivateTaggedRepository, all_official_tags
 from tagging.words import get_tags_for_repository
 from tagging.managers import TaggableManager
 
@@ -1546,7 +1546,7 @@ class Repository(SyncableModel):
         Update the public tags for this repository.
         """
         if not known_tags:
-            known_tags = set(Tag.objects.filter(official=True).values_list('slug', flat=True))
+            known_tags = all_official_tags()
         rep_tags = get_tags_for_repository(self, known_tags)
         tags = sorted(rep_tags.iteritems(), key=lambda t: t[1], reverse=True)
         self.public_tags.set(tags[:5])
