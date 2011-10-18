@@ -360,7 +360,7 @@ class SyncableModel(TimeStampedModel):
         self_str = '%s:%d' % ('.'.join(get_app_and_model(self)), self.pk)
 
         if async:
-            sys.stderr.write("SET ASYNC (%d) FOR FETCH FULL %s (depth=%d, token=%s)\n" % (depth, self, token))
+            sys.stderr.write("SET ASYNC (%d) FOR FETCH FULL %s (token=%s)\n" % (depth, self, token))
             # async : we serialize the params and put them into redis for future use
             data = dict(
                 object = self_str,

@@ -56,7 +56,7 @@ def fetch(request):
     else:
 
         # find a access token
-        token = AccessTokenManager.get_one()
+        token = AccessTokenManager.get_for_backend(obj.backend).get_one()
 
         if related:
             if obj.fetch_related_allowed():
