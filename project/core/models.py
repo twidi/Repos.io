@@ -1,14 +1,20 @@
 from datetime import datetime, timedelta
 from copy import copy
 import math
+import sys
+import traceback
 
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.utils import simplejson
 
 from model_utils import Choices
 from model_utils.models import TimeStampedModel
 from model_utils.fields import StatusField
+from haystack import site
+from redisco.containers import List
+
 
 from core.backends import BACKENDS, get_backend
 from core.managers import AccountManager, RepositoryManager, OptimForListAccountManager, OptimForListRepositoryManager
@@ -18,6 +24,8 @@ from core.exceptions import MultipleBackendError
 from tagging.models import PublicTaggedAccount, PublicTaggedRepository, PrivateTaggedAccount, PrivateTaggedRepository, all_official_tags
 from tagging.words import get_tags_for_repository
 from tagging.managers import TaggableManager
+
+from utils.models import get_app_and_model
 
 from private.views import get_user_note_for_object, get_user_tags_for_object
 
@@ -69,6 +77,11 @@ class SyncableModel(TimeStampedModel):
     name = models.CharField(max_length=255, blank=True, null=True)
     # The web url
     url = models.URLField(max_length=255, blank=True, null=True)
+
+    # backend errors
+    backend_last_status = models.PositiveIntegerField(default=200)
+    backend_same_status = models.PositiveIntegerField(default=0)
+    backend_last_message = models.TextField(blank=True, null=True)
 
     # Fetch operations
     backend_prefix = ''
@@ -222,7 +235,7 @@ class SyncableModel(TimeStampedModel):
 
         return False
 
-    def fetch_related(self, limit=None, update_related_objects=True, token=None, ignore=None):
+    def fetch_related(self, limit=None, update_related_objects=True, token=None, ignore=None, log_stderr=False):
         """
         If the object has some related content that need to be fetched, do
         it, but limit the fetch to the given limit (default 1)
@@ -237,7 +250,11 @@ class SyncableModel(TimeStampedModel):
                 continue
             if not self.fetch_related_allowed_for(name):
                 continue
+
             action = getattr(self, 'fetch_%s' % name)
+
+            if log_stderr:
+                sys.stderr.write("      - %s\n" % name)
 
             try:
                 params = dict(
@@ -248,6 +265,8 @@ class SyncableModel(TimeStampedModel):
                 if action(**params):
                     done += 1
             except Exception, e:
+                if log_stderr:
+                    sys.stderr.write("          => ERROR : %s\n" % e)
                 exceptions.append(e)
 
             if limit and done >= limit:
@@ -333,6 +352,163 @@ class SyncableModel(TimeStampedModel):
         if force_compute or not score:
             score = self.compute_score()
         return score/100.0
+
+    def fetch_full(self, token=None, depth=0, to_ignore=None, async=False):
+        """
+        Make a full fetch of the current object : fetch object and related
+        """
+        self_str = '%s:%d' % ('.'.join(get_app_and_model(self)), self.pk)
+
+        if async:
+            sys.stderr.write("SET ASYNC (%d) FOR FETCH FULL %s (depth=%d, token=%s)\n" % (depth, self, token))
+            # async : we serialize the params and put them into redis for future use
+            data = dict(
+                object = self_str,
+                token = token.uid if token else None,
+                depth = depth,
+                to_ignore = list(to_ignore)
+            )
+            # add the serialized data to redis
+            data_s = simplejson.dumps(data)
+            List(settings.FETCH_FULL_KEY % depth).append(data_s)
+
+            # return dummy data when asyc
+            return token, None
+
+        dmain = datetime.now()
+        fetch_error = None
+        try:
+
+            backend = self.get_backend()
+            token_manager = backend.token_manager()
+
+            token = token_manager.get_one(token)
+
+            sys.stderr.write("FETCH FULL %s (depth=%d, token=%s)\n" % (self, depth, token))
+
+            # start try to update the object
+            try:
+                df = datetime.now()
+                sys.stderr.write("  - fetch object (%s)\n" % self)
+                fetched = self.fetch(token=token)
+            except Exception, e:
+                if isinstance(e, BackendError):
+                    if ecode:
+                        if e.code in (401, 403):
+                            token.set_status(code, str(e))
+                        elif e.code == 404:
+                            self.set_backend_status(e.code, str(e))
+                fetch_error = e
+                ddf = datetime.now() - df
+                sys.stderr.write("      => ERROR (in %s) : %s\n" % (ddf, e))
+            else:
+                self.set_backend_status(200, 'ok')
+                ddf = datetime.now() - df
+                sys.stderr.write("      => OK (%s) in %s [%s]\n" % (fetched, ddf, self.fetch_full_self_message()))
+
+                # if ok, update score and search index
+                if fetched:
+                    try:
+                        sys.stderr.write("  - update score\n")
+                        self.update_score()
+                    except Exception, e:
+                        sys.stderr.write("      => ERROR : %s\n" % e)
+                    else:
+                        sys.stderr.write("      => OK (%s)\n" % self.score)
+
+                    try:
+                        sys.stderr.write("  - update search index\n")
+                        self.update_search_index()
+                    except Exception, e:
+                        sys.stderr.write("      => ERROR : %s\n" % e)
+                    else:
+                        sys.stderr.write("      => OK\n")
+
+                    try:
+                        sys.stderr.write("  - update tags\n")
+                        self.find_public_tags()
+                    except Exception, e:
+                        sys.stderr.write("      => ERROR : %s\n" % e)
+                    else:
+                        sys.stderr.write("      => OK (%s)\n" % ', '.join(self.all_public_tags().values_list('slug', flat=True)))
+
+                # then fetch related
+                try:
+                    dr = datetime.now()
+                    sys.stderr.write("  - fetch related (%s)\n" % self)
+                    nb_fetched = self.fetch_related(token=token, log_stderr=True)
+                except Exception, e:
+                    if isinstance(e, BackendError):
+                        if e.code and e.code in (401, 403):
+                            token.set_status(e.code, str(e))
+                    ddr = datetime.now() - dr
+                    sys.stderr.write("      => ERROR (in %s): %s\n" % (ddr, e))
+                    fetch_error = e
+                else:
+                    ddr = datetime.now() - dr
+                    sys.stderr.write("      => OK (%s) in %s [%s]\n" % (nb_fetched, ddr, self.fetch_full_related_message()))
+
+            # finally, perform a fetch full of related
+            if not fetch_error and depth > 0:
+                if to_ignore is None:
+                    to_ignore = set()
+                to_ignore.add(self_str)
+                self.fetch_full_specific(token=token, depth=depth, to_ignore=to_ignore, async=True)
+
+            try:
+                sys.stderr.write("  - update score (bis)\n")
+                self.update_score()
+            except Exception, e:
+                sys.stderr.write("      => ERROR : %s\n" % e)
+            else:
+                sys.stderr.write("      => OK (%s)\n" % self.score)
+
+            try:
+                sys.stderr.write("  - update tags (bis)\n")
+                self.find_public_tags()
+            except Exception, e:
+                sys.stderr.write("      => ERROR : %s\n" % e)
+            else:
+                sys.stderr.write("      => OK (%s)\n" % ', '.join(self.all_public_tags().values_list('slug', flat=True)))
+
+        except Exception, e:
+                sys.stderr.write("      => MAIN ERROR FOR FETCH FULL OF %s: %s (see below)\n" % (self, e))
+                sys.stderr.write("====================================================================\n")
+                sys.stderr.write('\n'.join(traceback.format_exception(*sys.exc_info())))
+                sys.stderr.write("====================================================================\n")
+
+        finally:
+            ddmain = datetime.now() - dmain
+            sys.stderr.write("END OF FETCH FULL %s in %s (depth=%d)\n" % (self, ddmain, depth))
+
+            if token:
+                token.release()
+
+            return token, fetch_error
+
+    def set_backend_status(self, code, message, save=True):
+        """
+        Save informations about last status
+        If the status is the same than the last one, keep the count
+        by incrementing the value.
+        """
+        if code == self.backend_last_status:
+            self.backend_same_status += 1
+        else:
+            self.backend_same_status = 1
+        self.backend_last_status = code
+        self.backend_last_message = message
+        if save:
+            self.save()
+
+    def update_search_index(self):
+        """
+        Update the search index for the current object
+        """
+        try:
+            self.get_search_index().update_object(self)
+        except:
+            pass
 
 
 class Account(SyncableModel):
@@ -959,6 +1135,74 @@ class Account(SyncableModel):
         Return the token object for this account
         """
         return self.get_backend().token_manager().get_for_account(self)
+
+    def fetch_full_self_message(self):
+        """
+        Return the message part to display after a fetch of the object during a fetch_full
+        """
+        return 'fwr=%s, fwg=%s' % (self.official_followers_count, self.official_following_count)
+
+    def fetch_full_related_message(self):
+        """
+        Return the message part to display after a fetch of the related during a fetch_full
+        """
+        return 'fwr=%s, fwg=%s, rep=%s' % (self.followers_count, self.following_count, self.repositories_count)
+
+    def fetch_full_specific(self, depth=0, token=None, to_ignore=None, async=False):
+        """
+        After the full fetch of the account, try to make a full fetch of all
+        related objects: repositories, followers, following
+        """
+        if depth > 0:
+            depth -= 1
+
+            if to_ignore is None:
+                to_ignore = set
+
+            # do fetch full for all repositories
+            sys.stderr.write(" - full fetch of repositories (for %s)\n" % self)
+            for repository in self.repositories.all():
+                repository_str = 'core.repository:%d' % repository.pk
+                if repository_str in to_ignore:
+                    continue
+                to_ignore.add(repository_str)
+                token, rep_fetch_error = repository.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                # access token invalidated, get a new one
+                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                    token = None
+
+            # do fetch for all followers
+            sys.stderr.write(" - full fetch of followers (for %s)\n" % self)
+            for account in self.followers.all():
+                account_str = 'core.account:%d' % account.pk
+                if account_str in to_ignore:
+                    continue
+                to_ignore.add(account_str)
+                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                # access token invalidated, get a new one
+                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                    token = None
+
+            # do fetch for all following
+            sys.stderr.write(" - full fetch of following (for %s)\n" % self)
+            for account in self.following.all():
+                account_str = 'core.account:%d' % account.pk
+                if account_str in to_ignore:
+                    continue
+                to_ignore.add(account_str)
+                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                # access token invalidated, get a new one
+                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                    token = None
+
+    def get_search_index(self):
+        """
+        Return the search index for this model
+        """
+        return site.get_index(Account)
 
 
 class Repository(SyncableModel):
@@ -1617,6 +1861,18 @@ class Repository(SyncableModel):
 
         return links
 
+    def fetch_full_self_message(self):
+        """
+        Return the message part to display after a fetch of the object during a fetch_full
+        """
+        return 'fwr=%s, frk=%s, is_frk=%s' % (self.official_followers_count, self.official_forks_count, self.is_fork)
+
+    def fetch_full_related_message(self):
+        """
+        Return the message part to display after a fetch of the related during a fetch_full
+        """
+        return 'fwr=%s, ctb=%s' % (self.followers_count, self.contributors_count)
+
     def get_default_token(self):
         """
         Return the token object for this repository's owner
@@ -1624,6 +1880,86 @@ class Repository(SyncableModel):
         if self.owner_id:
             return self.get_backend().token_manager().get_for_account(self.owner)
         return None
+
+    def fetch_full_specific(self, depth=0, token=None, to_ignore=None, async=False):
+        """
+        After the full fetch of the repository, try to make a full fetch of all
+        related objects: owner, parent_fork, forks, contributors, followers
+        """
+        if depth > 0:
+            depth -= 1
+
+            if to_ignore is None:
+                to_ignore = set
+
+            # do fetch for all followers
+            sys.stderr.write(" - full fetch of followers (for %s)\n" % self)
+            for account in self.followers.all():
+                account_str = 'core.account:%d' % account.pk
+                if account_str in to_ignore:
+                    continue
+                to_ignore.add(account_str)
+                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                # access token invalidated, get a new one
+                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                    token = None
+
+            # do fetch for owner
+            if self.owner_id:
+                account_str = 'core.account:%d' % self.owner_id
+                if account_str not in to_ignore:
+                    to_ignore.add(account_str)
+                    sys.stderr.write(" - full fetch of owner (for %s)\n" % self)
+                    token, rep_fetch_error = self.owner.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                    # access token invalidated, get a new one
+                    if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                        token = None
+
+            # do fetch for parent fork
+            if self.is_fork and self.parent_fork_id:
+                repository_str = 'core.repository:%d' % self.parent_fork_id
+                if repository_str not in to_ignore:
+                    to_ignore.add(repository_str)
+                    sys.stderr.write(" - full fetch of parent fork (for %s)\n" % self)
+                    token, rep_fetch_error = self.parent_fork.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                    # access token invalidated, get a new one
+                    if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                        token = None
+
+            # do fetch full for all forks
+            sys.stderr.write(" - full fetch of forks (for %s)\n" % self)
+            for repository in self.forks.all():
+                repository_str = 'core.repository:%d' % repository.pk
+                if repository_str in to_ignore:
+                    continue
+                to_ignore.add(repository_str)
+                token, rep_fetch_error = repository.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                # access token invalidated, get a new one
+                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                    token = None
+
+            # do fetch for all contributors
+            sys.stderr.write(" - full fetch of contributors (for %s)\n" % self)
+            for account in self.contributors.all():
+                account_str = 'core.account:%d' % account.pk
+                if account_str in to_ignore:
+                    continue
+                to_ignore.add(account_str)
+                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                # access token invalidated, get a new one
+                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                    token = None
+
+    def get_search_index(self):
+        """
+        Return the search index for this model
+        """
+        return site.get_index(Repository)
 
 
 from core.signals import *

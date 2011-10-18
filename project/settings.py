@@ -247,6 +247,9 @@ CACHES = {
 }
 JOHNNY_MIDDLEWARE_KEY_PREFIX='jc_reposio'
 
+# asynchronous
+FETCH_FULL_KEY = 'fetch_full:%d'
+
 # metasettings
 try:
     import metasettings
