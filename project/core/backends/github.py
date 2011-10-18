@@ -74,7 +74,58 @@ class GithubBackend(BaseBackend):
             self._github_instances[str_token] = self.create_github_instance(**params)
         return self._github_instances[str_token]
 
-    def user_fetch(self, account, access_token=None):
+    def get_result_list(self, method, arguments, error, allow_pages=False):
+        """
+        Try to retrieve all the result from the given `method` with some
+        `arguments`. If `allow_pages` if True, try to fetch all available pages.
+        """
+        # store all data from all pages
+        result = []
+        # start with page one
+        page = 1
+        # we don't know yet the max length of a page
+        max_length = 0
+        while True:
+            try:
+                # get data for the current page
+                if allow_pages:
+                    args = {'page': page }
+                else:
+                    args = {}
+                args.update(arguments)
+                page_result = method(**args)
+
+                # no result ? it's the end
+                if not page_result:
+                    break
+
+                # save the result
+                result += page_result
+
+                # stop here if we don't want to fetch more pages
+                if not allow_pages:
+                    break
+
+                # check length of result
+                l_page = len(page_result)
+                # if smaller than max, it's the last page
+                if l_page < max_length:
+                    break
+                # if bigger, it's the new max
+                if l_page > max_length:
+                    max_length = l_page
+                # go next page
+                page += 1
+
+            except Exception, e:
+                if allow_pages and page > 1 and getattr(e, 'code', None) == 404:
+                    break
+                else:
+                    raise self._get_exception(e, error)
+
+        return result
+
+    def user_fetch(self, account, token=None):
         """
         Fetch the account from the provider and update the object
         """
@@ -132,10 +183,7 @@ class GithubBackend(BaseBackend):
         github = self.github(token)
 
         # get users data from github
-        try:
-            gusers = github.users.following(account.slug)
-        except Exception, e:
-            raise self._get_exception(e, '%s\'s following' % account.slug)
+        gusers = self.get_result_list(github.users.following, dict(username=account.slug), '%s\'s following' % account.slug)
 
         result = []
 
@@ -152,10 +200,7 @@ class GithubBackend(BaseBackend):
         github = self.github(token)
 
         # get users data from github
-        try:
-            gusers = github.users.followers(account.slug)
-        except Exception, e:
-            raise self._get_exception(e, '%s\'s followers' % account.slug)
+        gusers = self.get_result_list(github.users.followers, dict(username=account.slug), '%s\'s followers' % account.slug)
 
         result = []
 
@@ -173,10 +218,7 @@ class GithubBackend(BaseBackend):
         github = self.github(token)
 
         # get repositories data from github
-        try:
-            grepos = github.repos.watching(account.slug)
-        except Exception, e:
-            raise self._get_exception(e, '%s\'s repositories' % account.slug)
+        grepos = self.get_result_list(github.repos.watching, dict(for_user=account.slug), '%s\'s repositories' % account.slug, allow_pages=True)
 
         result = []
 
@@ -266,10 +308,7 @@ class GithubBackend(BaseBackend):
         github = self.github(token)
 
         # get users data from github
-        try:
-            gusers = github.repos.watchers(repository.project)
-        except Exception, e:
-            raise self._get_exception(e, '%s\'s followers' % repository.project)
+        gusers = self.get_result_list(github.repos.watchers, dict(project=repository.project), '%s\'s followers' % repository.project)
 
         result = []
 
@@ -289,10 +328,7 @@ class GithubBackend(BaseBackend):
         github = self.github(token)
 
         # get users data from github
-        try:
-            gusers = github.repos.list_contributors(repository.project)
-        except Exception, e:
-            raise self._get_exception(e, '%s\'s contributors' % repository.project)
+        gusers = self.get_result_list(github.repos.list_contributors, dict(project=repository.project), '%s\'s contributors' % repository.project)
 
         result = []
 
