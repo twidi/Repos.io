@@ -8,6 +8,7 @@ from django.core.urlresolvers import reverse
 from core.backends import get_backend
 from core.models import Account, Repository
 from core.exceptions import BackendError, MultipleBackendError
+from core.tokens import AccessTokenManager
 
 def default(request, identifier):
     """
@@ -55,17 +56,12 @@ def fetch(request):
     else:
 
         # find a access token
-        access_token = None
-        accounts = request.user.accounts.filter(backend=backend.name, access_token__isnull=False)
-        for account in accounts:
-            if account.access_token:
-                access_token = account.access_token
-                break
+        token = AccessTokenManager.get_one()
 
         if related:
             if obj.fetch_related_allowed():
                 try:
-                    obj.fetch_related(access_token=access_token)
+                    obj.fetch_related(token=token)
                 except MultipleBackendError, e:
                     for message in e.messages:
                         messages.error(request, message)
@@ -79,7 +75,7 @@ def fetch(request):
         else:
             if obj.fetch_allowed():
                 try:
-                    obj.fetch(access_token=access_token)
+                    obj.fetch(token=token)
                 except BackendError, e:
                     messages.error(request, e.message)
                 else:

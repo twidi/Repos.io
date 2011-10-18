@@ -59,3 +59,10 @@ haystack
 
 #-e git+git://github.com/twidi/django-favorites.git#egg=django-favorites
 
+############################
+### background and redis ###
+############################
+
+redis
+-e git+git://github.com/twidi/redisco.git#egg=redisco
+

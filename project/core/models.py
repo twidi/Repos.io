@@ -157,7 +157,7 @@ class SyncableModel(TimeStampedModel):
         """
         return bool(not self.last_fetch or self.last_fetch < datetime.now() - self.MIN_FETCH_DELTA)
 
-    def fetch(self, access_token=None):
+    def fetch(self, token=None):
         """
         Fetch data from the provider (need to be implemented in subclass)
         """
@@ -222,7 +222,7 @@ class SyncableModel(TimeStampedModel):
 
         return False
 
-    def fetch_related(self, limit=None, update_related_objects=True, access_token=None, ignore=None):
+    def fetch_related(self, limit=None, update_related_objects=True, token=None, ignore=None):
         """
         If the object has some related content that need to be fetched, do
         it, but limit the fetch to the given limit (default 1)
@@ -241,7 +241,7 @@ class SyncableModel(TimeStampedModel):
 
             try:
                 params = dict(
-                    access_token = access_token
+                    token = token
                 )
                 if with_count:
                     params['update_related_objects'] = update_related_objects
@@ -411,14 +411,14 @@ class Account(SyncableModel):
             ('backend', 'slug_lower')
         )
 
-    def fetch(self, access_token=None):
+    def fetch(self, token=None):
         """
         Fetch data from the provider
         """
-        if not super(Account, self).fetch(access_token=access_token):
+        if not super(Account, self).fetch(token=token):
             return False
 
-        self.get_backend().user_fetch(self, access_token=access_token)
+        self.get_backend().user_fetch(self, token=token)
         self.last_fetch = datetime.now()
 
         if not self.official_following_count:
@@ -447,7 +447,7 @@ class Account(SyncableModel):
             self.slug_lower = self.slug.lower()
         super(Account, self).save(*args, **kwargs)
 
-    def fetch_following(self, update_related_objects=True, access_token=None):
+    def fetch_following(self, update_related_objects=True, token=None):
         """
         Fetch the accounts followed by this account
         """
@@ -465,7 +465,7 @@ class Account(SyncableModel):
             new_following = {}
 
         # get and save new followings
-        following_list = self.get_backend().user_following(self, access_token=access_token)
+        following_list = self.get_backend().user_following(self, token=token)
         count = 0
         for gaccount in following_list:
             account = self.add_following(gaccount, False, update_related_objects)
@@ -554,7 +554,7 @@ class Account(SyncableModel):
         if save:
             self.save()
 
-    def fetch_followers(self, update_related_objects=True, access_token=None):
+    def fetch_followers(self, update_related_objects=True, token=None):
         """
         Fetch the accounts following this account
         """
@@ -572,7 +572,7 @@ class Account(SyncableModel):
             new_followers = {}
 
         # get and save new followings
-        followers_list = self.get_backend().user_followers(self, access_token=access_token)
+        followers_list = self.get_backend().user_followers(self, token=token)
         count = 0
         for gaccount in followers_list:
             account = self.add_follower(gaccount, False, update_related_objects)
@@ -659,7 +659,7 @@ class Account(SyncableModel):
         if save:
             self.save()
 
-    def fetch_repositories(self, update_related_objects=True, access_token=None):
+    def fetch_repositories(self, update_related_objects=True, token=None):
         """
         Fetch the repositories owned/watched by this account
         """
@@ -673,7 +673,7 @@ class Account(SyncableModel):
             new_repositories = {}
 
         # get and save new repositories
-        repositories_list = self.get_backend().user_repositories(self, access_token=access_token)
+        repositories_list = self.get_backend().user_repositories(self, token=token)
         count = 0
         for grepo in repositories_list:
             repository = self.add_repository(grepo, False, update_related_objects)
@@ -954,6 +954,11 @@ class Account(SyncableModel):
 
         return links
 
+    def get_default_token(self):
+        """
+        Return the token object for this account
+        """
+        return self.get_backend().token_manager().get_for_account(self)
 
 
 class Repository(SyncableModel):
@@ -1080,14 +1085,14 @@ class Repository(SyncableModel):
         """
         return self.project or self.get_backend().repository_project(self)
 
-    def fetch(self, access_token=None):
+    def fetch(self, token=None):
         """
         Fetch data from the provider
         """
-        if not super(Repository, self).fetch(access_token=access_token):
+        if not super(Repository, self).fetch(token=token):
             return False
 
-        self.get_backend().repository_fetch(self, access_token=access_token)
+        self.get_backend().repository_fetch(self, token=token)
         self.last_fetch = datetime.now()
 
         if not self.official_followers_count:
@@ -1130,7 +1135,7 @@ class Repository(SyncableModel):
 
         super(Repository, self).save(*args, **kwargs)
 
-    def fetch_owner(self, access_token=None):
+    def fetch_owner(self, token=None):
         """
         Create or update the repository's owner
         """
@@ -1153,7 +1158,7 @@ class Repository(SyncableModel):
             owner = self.owner
 
         if owner.fetch_needed():
-            owner.fetch(access_token=access_token)
+            owner.fetch(token=token)
             fetched = True
 
         if save_needed:
@@ -1163,7 +1168,7 @@ class Repository(SyncableModel):
 
         return fetched
 
-    def fetch_parent_fork(self, access_token=None):
+    def fetch_parent_fork(self, token=None):
         """
         Create of update the parent fork, only if needed and if we have the
         parent fork's name
@@ -1188,7 +1193,7 @@ class Repository(SyncableModel):
             parent_fork = self.parent_fork
 
         if parent_fork.fetch_needed():
-            parent_fork.fetch(access_token=access_token)
+            parent_fork.fetch(token=token)
             fetched = True
 
         if save_needed:
@@ -1198,7 +1203,7 @@ class Repository(SyncableModel):
 
         return fetched
 
-    def fetch_followers(self, update_related_objects=True, access_token=None):
+    def fetch_followers(self, update_related_objects=True, token=None):
         """
         Fetch the accounts following this repository
         """
@@ -1216,7 +1221,7 @@ class Repository(SyncableModel):
             new_followers = {}
 
         # get and save new followings
-        followers_list = self.get_backend().repository_followers(self, access_token=access_token)
+        followers_list = self.get_backend().repository_followers(self, token=token)
         count = 0
         for gaccount in followers_list:
             account = self.add_follower(gaccount, False, update_related_objects)
@@ -1303,7 +1308,7 @@ class Repository(SyncableModel):
         if save:
             self.save()
 
-    def fetch_contributors(self, update_related_objects=True, access_token=None):
+    def fetch_contributors(self, update_related_objects=True, token=None):
         """
         Fetch the accounts following this repository
         """
@@ -1317,7 +1322,7 @@ class Repository(SyncableModel):
             new_contributors = {}
 
         # get and save new followings
-        contributors_list = self.get_backend().repository_contributors(self, access_token=access_token)
+        contributors_list = self.get_backend().repository_contributors(self, token=token)
         count = 0
         for gaccount in contributors_list:
             account = self.add_contributor(gaccount, False, update_related_objects)
@@ -1454,14 +1459,14 @@ class Repository(SyncableModel):
             self._contributors_ids = self.contributors.values_list('id', flat=True)
         return self._contributors_ids
 
-    def fetch_readme(self, access_token=None):
+    def fetch_readme(self, token=None):
         """
         Try to get a readme in the repository
         """
         if not self.get_backend().supports('repository_readme'):
             return False
 
-        readme = self.get_backend().repository_readme(self, access_token=access_token)
+        readme = self.get_backend().repository_readme(self, token=token)
 
         if readme is not None:
             if isinstance(readme, (list, tuple)):
@@ -1611,6 +1616,14 @@ class Repository(SyncableModel):
                 links['contributing'] = contributing
 
         return links
+
+    def get_default_token(self):
+        """
+        Return the token object for this repository's owner
+        """
+        if self.owner_id:
+            return self.get_backend().token_manager().get_for_account(self.owner)
+        return None
 
 
 from core.signals import *

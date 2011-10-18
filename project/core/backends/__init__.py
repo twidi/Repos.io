@@ -6,6 +6,7 @@ from django.utils.importlib import import_module
 from django.utils.functional import memoize
 
 from core.exceptions import InvalidIdentifiersForProject, BackendError
+from core.tokens import AccessTokenManager
 
 #https://github.com/github/markup/
 README_NAMES = ('README', 'readme',)
@@ -41,10 +42,20 @@ class BaseBackend(object):
         related for users or repositories
         """
         super(BaseBackend, self).__init__(*args, **kwargs)
+        self._token_manager = None
+
         self.support['user_related'] = any([self.support.get('user_%s' % s, False)
             for s in ('followers', 'following', 'repositories')])
         self.support['repository_related'] = any([self.support.get('repository_%s' % s, False)
             for s in ('owner', 'fork', 'followers', 'contributors')])
+
+    def token_manager(self):
+        """
+        Return the token manager for this backend
+        """
+        if not self._token_manager:
+            self._token_manager = AccessTokenManager(self.name)
+        return self._token_manager
 
     def supports(self, functionnality):
         """
@@ -73,25 +84,25 @@ class BaseBackend(object):
         """
         raise NotImplementedError('Implement in subclass')
 
-    def user_following(self, account, access_token=None):
+    def user_following(self, account, token=None):
         """
         Fetch the accounts followed by the given one
         """
         raise NotImplementedError('Implement in subclass')
 
-    def user_followers(self, account, access_token=None):
+    def user_followers(self, account, token=None):
         """
         Fetch the accounts following the given one
         """
         raise NotImplementedError('Implement in subclass')
 
-    def user_repositories(self, account, access_token=None):
+    def user_repositories(self, account, token=None):
         """
         Fetch the repositories owned/watched by the given accont
         """
         raise NotImplementedError('Implement in subclass')
 
-    def repository_project(self, repository, access_token=None):
+    def repository_project(self, repository, token=None):
         """
         Return a project name the provider can use
         """
@@ -112,19 +123,19 @@ class BaseBackend(object):
         """
         raise NotImplementedError('Implement in subclass')
 
-    def repository_fetch(self, repository, access_token=None):
+    def repository_fetch(self, repository, token=None):
         """
         Fetch the repository from the provider and update the object
         """
         raise NotImplementedError('Implement in subclass')
 
-    def repository_followers(self, repository, access_token=None):
+    def repository_followers(self, repository, token=None):
         """
         Fetch the accounts following the given repository
         """
         raise NotImplementedError('Implement in subclass')
 
-    def repository_contributors(self, repository, access_token=None):
+    def repository_contributors(self, repository, token=None):
         """
         Fetch the accounts contributing the given repository
         For each account (dict) returned, the number of contributions is stored
