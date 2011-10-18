@@ -217,6 +217,7 @@ GITHUB_EXTRA_DATA = [
     ('login', 'original_login'),
     ('avatar_url', 'avatar_url'),
 ]
+GITHUB_AUTH_EXTRA_ARGUMENTS = {'scope': 'user,public_repo'}
 SOCIAL_AUTH_ASSOCIATE_BY_MAIL = True
 SOCIAL_AUTH_ERROR_KEY = 'social_errors'
 
