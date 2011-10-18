@@ -331,7 +331,7 @@ class SyncableModel(TimeStampedModel):
         """
         score = self.score
         if force_compute or not score:
-            score = self.compute_score
+            score = self.compute_score()
         return score/100.0
 
 
@@ -865,7 +865,7 @@ class Account(SyncableModel):
                 parts['repositories_score'] += repository.compute_popularity()
             parts['repositories_score'] = min(parts['repositories_score'] / 10.0, 100)
         if self.contributing_count:
-            parts['contributing'] = self.contributing.count / 20.0
+            parts['contributing'] = self.contributing_count / 20.0
 
         #print parts
         score += sum(parts.values())
