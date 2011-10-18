@@ -21,7 +21,7 @@ def get_ignore_words():
         # stop words from postgresql files
 
         #import codecs
-        #from core.utils import slugify
+        #from core.core_utils import slugify
         #get_ignore_words._ignore_cache = set()
         #for filename in ('english', 'french', 'german', 'spanish',):
         #    f=codecs.open('/usr/share/postgresql/8.4/tsearch_data/%s.stop' % filename, 'r', 'utf-8')

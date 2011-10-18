@@ -1,5 +1,5 @@
 from core.backends import BACKENDS_BY_AUTH
-from core.utils import get_user_accounts
+from core.core_utils import get_user_accounts
 
 def backends(request):
     return dict(

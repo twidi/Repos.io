@@ -12,7 +12,7 @@ from model_utils.fields import StatusField
 
 from core.backends import BACKENDS, get_backend
 from core.managers import AccountManager, RepositoryManager, OptimForListAccountManager, OptimForListRepositoryManager
-from core.utils import slugify
+from core.core_utils import slugify
 from core.exceptions import MultipleBackendError
 
 from tagging.models import PublicTaggedAccount, PublicTaggedRepository, Tag, PrivateTaggedAccount, PrivateTaggedRepository

@@ -6,7 +6,7 @@ from notes.models import Note
 
 from core.models import Account, Repository
 from core.views.sort import get_repository_sort,get_account_sort
-from core.utils import get_user_accounts
+from core.core_utils import get_user_accounts
 from utils.sort import prepare_sort
 from search.views import parse_keywords, make_query, RepositorySearchView
 

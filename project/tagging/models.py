@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 from taggit.models import ItemBase, TagBase
 
-from core.utils import slugify as core_slugify
+from core.core_utils import slugify as core_slugify
 from tagging.managers import prepare_tag
 
 class Tag(TagBase):
