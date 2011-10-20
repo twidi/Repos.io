@@ -248,7 +248,14 @@ CACHES = {
 JOHNNY_MIDDLEWARE_KEY_PREFIX='jc_reposio'
 
 # asynchronous
+REDIS_PARAMS = dict(
+    host = 'localhost',
+    port = 6379,
+    db = 0,
+)
 WORKER_FETCH_FULL_KEY = 'fetch_full:%d'
+WORKER_FETCH_FULL_MAX_DEPTH = 10
+WORKER_FETCH_FULL_ERROR_KEY = 'fetch_full_error'
 
 WORKER_UPDATE_RELATED_DATA_KEY = 'update_related_data'
 WORKER_UPDATE_RELATED_DATA_SET_KEY = 'update_related_data_set'
