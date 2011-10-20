@@ -1,4 +1,5 @@
 import random
+import time
 
 from redisco import models
 
@@ -7,7 +8,10 @@ def manager_get_random(self, **kwargs):
     Add a method for the redisco Manager to return a rendomly picked object
     Must be used directly from objects (no filter or exclude)
     """
-    return random.choice(self.filter(**kwargs))
+    token_list = self.filter(**kwargs)
+    if not token_list:
+        return None
+    return random.choice(token_list)
 models.managers.Manager.get_random = manager_get_random
 
 class AccessToken(models.Model):
@@ -42,6 +46,7 @@ class AccessToken(models.Model):
         Set the token as currently used
         """
         self.using = True
+        self.save()
 
     def release(self):
         """
@@ -76,7 +81,7 @@ class AccessTokenManager(object):
     def __init__(self, backend_name):
         self.backend_name = backend_name
 
-    def get_one(self, default_token=None):
+    def get_one(self, default_token=None, wait=True):
         """
         Return an available token for the current backend and lock it
         If `default_token` is given, check it's a good one
@@ -88,14 +93,19 @@ class AccessTokenManager(object):
             else:
                 token = default_token
 
-        if not token:
+        while not token:
             token = AccessToken.objects.get_random(
                 backend = self.backend_name,
                 using   = False,
                 status  = 200
             )
+            if not token:
+                if not wait:
+                    break
+                time.sleep(0.5)
 
-        token.lock()
+        if token:
+            token.lock()
         return token
 
     def get_for_account(self, account):
@@ -109,3 +119,11 @@ class AccessTokenManager(object):
             login = account.slug,
             token = account.access_token,
         ).first()
+
+    def get_by_uid(self, uid):
+        """
+        Return the token for a given uid
+        """
+        if not uid:
+            return None
+        return AccessToken.objects.filter(backend=self.backend_name, uid=uid).first()

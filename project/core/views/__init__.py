@@ -56,9 +56,12 @@ def fetch(request):
     else:
 
         # find a access token
-        token = AccessTokenManager.get_for_backend(obj.backend).get_one()
+        token = AccessTokenManager.get_for_backend(obj.backend).get_one(wait=False)
 
-        if related:
+        if not token:
+            messages.error(request, 'Fetch is not possible right now, all the workers are working hard...')
+
+        elif related:
             if obj.fetch_related_allowed():
                 try:
                     obj.fetch_related(token=token)
