@@ -232,11 +232,23 @@ class GithubBackend(BaseBackend):
         """
         Return a project name the provider can use
         """
-        if repository.owner_id:
-            owner = repository.owner.slug
+        if isinstance(repository, dict):
+            if 'official_owner' in repository:
+                # a mapped dict
+                owner = repository['official_owner']
+                slug = repository['slug']
+            else:
+                # an original dict from the github api
+                owner = repository['owner']
+                slug = repository['name']
         else:
-            owner = repository.official_owner
-        return self.github().project_for_user_repo(owner, repository.slug)
+            # a Repository object (from core.models)
+            if repository.owner_id:
+                owner = repository.owner.slug
+            else:
+                owner = repository.official_owner
+            slug = repository.slug
+        return self.github().project_for_user_repo(owner, slug)
 
     def parse_project(self, project):
         """
@@ -292,11 +304,12 @@ class GithubBackend(BaseBackend):
 
         result = {}
 
-
         for internal_key, backend_key in simple_mapping.items():
             value = getattr(repository, backend_key, None)
             if value is not None:
                 result[internal_key] = value
+
+        result['project'] = self.repository_project(result)
 
         return result
 
