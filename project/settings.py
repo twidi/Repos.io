@@ -253,6 +253,8 @@ WORKER_FETCH_FULL_KEY = 'fetch_full:%d'
 WORKER_UPDATE_RELATED_DATA_KEY = 'update_related_data'
 WORKER_UPDATE_RELATED_DATA_SET_KEY = 'update_related_data_set'
 
+WORKER_UPDATE_COUNT_KEY = 'update_count'
+
 # metasettings
 try:
     import metasettings
