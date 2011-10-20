@@ -248,7 +248,10 @@ CACHES = {
 JOHNNY_MIDDLEWARE_KEY_PREFIX='jc_reposio'
 
 # asynchronous
-FETCH_FULL_KEY = 'fetch_full:%d'
+WORKER_FETCH_FULL_KEY = 'fetch_full:%d'
+
+WORKER_UPDATE_RELATED_DATA_KEY = 'update_related_data'
+WORKER_UPDATE_RELATED_DATA_SET_KEY = 'update_related_data_set'
 
 # metasettings
 try:

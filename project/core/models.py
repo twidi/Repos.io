@@ -13,8 +13,7 @@ from model_utils import Choices
 from model_utils.models import TimeStampedModel
 from model_utils.fields import StatusField
 from haystack import site
-from redisco.containers import List
-
+from redisco.containers import List, Set
 
 from core.backends import BACKENDS, get_backend
 from core.managers import AccountManager, RepositoryManager, OptimForListAccountManager, OptimForListRepositoryManager
@@ -25,7 +24,7 @@ from tagging.models import PublicTaggedAccount, PublicTaggedRepository, PrivateT
 from tagging.words import get_tags_for_repository
 from tagging.managers import TaggableManager
 
-from utils.models import get_app_and_model
+from utils.models import get_app_and_model, update as model_update
 
 from private.views import get_user_note_for_object, get_user_tags_for_object
 
@@ -92,6 +91,8 @@ class SyncableModel(TimeStampedModel):
     class Meta:
         abstract = True
 
+    update = model_update
+
     def __unicode__(self):
         return u'%s' % self.slug
 
@@ -147,11 +148,28 @@ class SyncableModel(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         """
-        Save is forbidden while in the backend...
-        Also update the status before saving
+        Update the status before saving, and update some stuff (score, search index, tags)
         """
         self.status = self.get_new_status(for_save=True)
         super(SyncableModel, self).save(*args, **kwargs)
+        self.update_related_data(async=True)
+
+    def update_related_data(self, async=False):
+        """
+        Update data related to this object, as score,
+        search index, public tags
+        """
+        if async:
+            self_str = self.simple_str()
+            to_update_set = Set(settings.WORKER_UPDATE_RELATED_DATA_SET_KEY)
+            if self_str not in to_update_set:
+                to_update_set.add(self_str)
+                List(settings.WORKER_UPDATE_RELATED_DATA_KEY).append(self_str)
+            return
+
+        self.update_score()
+        self.update_search_index()
+        self.find_public_tags()
 
     def fetch_needed(self):
         """
@@ -342,7 +360,7 @@ class SyncableModel(TimeStampedModel):
         """
         self.score = self.compute_score()
         if save:
-            self.save()
+            self.update(score=self.score)
 
     def score_to_boost(self, force_compute=False):
         """
@@ -353,24 +371,30 @@ class SyncableModel(TimeStampedModel):
             score = self.compute_score()
         return score/100.0
 
+    def simple_str(self):
+        """
+        Return a unique string for this object, usable as a key (in redis or...)
+        """
+        return '%s:%d' % ('.'.join(get_app_and_model(self)), self.pk)
+
     def fetch_full(self, token=None, depth=0, to_ignore=None, async=False):
         """
         Make a full fetch of the current object : fetch object and related
         """
-        self_str = '%s:%d' % ('.'.join(get_app_and_model(self)), self.pk)
+        self_str = self.simple_str()
 
         if async:
-            sys.stderr.write("SET ASYNC (%d) FOR FETCH FULL %s (token=%s)\n" % (depth, self, token))
+            sys.stderr.write("SET ASYNC (%d) FOR FETCH FULL %s #%d (token=%s)\n" % (depth, self, self.pk, token))
             # async : we serialize the params and put them into redis for future use
             data = dict(
                 object = self_str,
                 token = token.uid if token else None,
                 depth = depth,
-                to_ignore = list(to_ignore)
+                to_ignore = list(to_ignore or set())
             )
             # add the serialized data to redis
             data_s = simplejson.dumps(data)
-            List(settings.FETCH_FULL_KEY % depth).append(data_s)
+            List(settings.WORKER_FETCH_FULL_KEY % depth).append(data_s)
 
             # return dummy data when asyc
             return token, None
@@ -384,7 +408,7 @@ class SyncableModel(TimeStampedModel):
 
             token = token_manager.get_one(token)
 
-            sys.stderr.write("FETCH FULL %s (depth=%d, token=%s)\n" % (self, depth, token))
+            sys.stderr.write("FETCH FULL %s #%d (depth=%d, token=%s)\n" % (self, self.pk, depth, token))
 
             # start try to update the object
             try:
@@ -405,32 +429,6 @@ class SyncableModel(TimeStampedModel):
                 self.set_backend_status(200, 'ok')
                 ddf = datetime.now() - df
                 sys.stderr.write("      => OK (%s) in %s [%s]\n" % (fetched, ddf, self.fetch_full_self_message()))
-
-                # if ok, update score and search index
-                if fetched:
-                    try:
-                        sys.stderr.write("  - update score\n")
-                        self.update_score()
-                    except Exception, e:
-                        sys.stderr.write("      => ERROR : %s\n" % e)
-                    else:
-                        sys.stderr.write("      => OK (%s)\n" % self.score)
-
-                    try:
-                        sys.stderr.write("  - update search index\n")
-                        self.update_search_index()
-                    except Exception, e:
-                        sys.stderr.write("      => ERROR : %s\n" % e)
-                    else:
-                        sys.stderr.write("      => OK\n")
-
-                    try:
-                        sys.stderr.write("  - update tags\n")
-                        self.find_public_tags()
-                    except Exception, e:
-                        sys.stderr.write("      => ERROR : %s\n" % e)
-                    else:
-                        sys.stderr.write("      => OK (%s)\n" % ', '.join(self.all_public_tags().values_list('slug', flat=True)))
 
                 # then fetch related
                 try:
@@ -454,22 +452,6 @@ class SyncableModel(TimeStampedModel):
                     to_ignore = set()
                 to_ignore.add(self_str)
                 self.fetch_full_specific(token=token, depth=depth, to_ignore=to_ignore, async=True)
-
-            try:
-                sys.stderr.write("  - update score (bis)\n")
-                self.update_score()
-            except Exception, e:
-                sys.stderr.write("      => ERROR : %s\n" % e)
-            else:
-                sys.stderr.write("      => OK (%s)\n" % self.score)
-
-            try:
-                sys.stderr.write("  - update tags (bis)\n")
-                self.find_public_tags()
-            except Exception, e:
-                sys.stderr.write("      => ERROR : %s\n" % e)
-            else:
-                sys.stderr.write("      => OK (%s)\n" % ', '.join(self.all_public_tags().values_list('slug', flat=True)))
 
         except Exception, e:
                 sys.stderr.write("      => MAIN ERROR FOR FETCH FULL OF %s: %s (see below)\n" % (self, e))
