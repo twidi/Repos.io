@@ -63,6 +63,7 @@ haystack
 ### background and redis ###
 ############################
 
+hiredis
 redis
 -e git+git://github.com/twidi/redisco.git#egg=redisco
 
