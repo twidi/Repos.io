@@ -3,20 +3,10 @@
 Full fetch of objects (core.models.SyncableModel.fetch_full)
 """
 
-import sys, os
+from workers_tools import init_django, stop_signal
+init_django()
 
-# init settings path
-
-BASE_PATH = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-PROJECT_PATH = os.path.normpath(os.path.join(BASE_PATH, 'oms_project'))
-sys.path[0:0] = [BASE_PATH, PROJECT_PATH]
-
-# init django
-from django.core.management import setup_environ
-import settings
-setup_environ(settings)
-from django.conf import settings
-from django.utils import simplejson
+import sys
 
 import traceback
 from datetime import datetime
@@ -26,10 +16,16 @@ from haystack import site
 import redis
 from redisco.containers import List
 
+from django.conf import settings
+from django.utils import simplejson
+
 from core.models import Account, Repository
 from core.tokens import AccessTokenManager
 
 RE_IGNORE_IMPORT = re.compile(r'(?:, )?"to_ignore": \[[^\]]*\]')
+
+current_token = None
+run_ok = True
 
 def parse_json(json):
     """
@@ -68,15 +64,16 @@ def main():
     """
     Main function to run forever...
     """
+    global current_token
+
     lists = [settings.WORKER_FETCH_FULL_KEY % depth for depth in range(settings.WORKER_FETCH_FULL_MAX_DEPTH, -1, -1)]
     redis_instance = redis.Redis(**settings.REDIS_PARAMS)
 
     nb = 0
-    while True:
+    while run_ok:
 
         # wait for new data
         list_name, json = redis_instance.blpop(lists)
-
 
         nb += 1
         len_list = redis_instance.llen(list_name)
@@ -92,9 +89,10 @@ def main():
             sys.stderr.write("\n".join(traceback.format_exception(*sys.exc_info())))
 
             List(settings.WORKER_FETCH_FULL_ERROR_KEY).append(json)
-            break;
 
         else:
+            current_token = data['token']
+
             # we're good
             data['object'].fetch_full(
                 token = data['token'],
@@ -104,5 +102,14 @@ def main():
             )
 
 
+def signal_handler(signum, frame):
+    global current_token, run_ok
+    if current_token:
+        current_token.release()
+    run_ok = False
+    sys.exit(0)
+
+
 if __name__ == "__main__":
+    stop_signal(signal_handler)
     main()

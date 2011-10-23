@@ -3,18 +3,11 @@
 Update count for objects (core.models.SyncableModel.update_count)
 """
 
-import sys, os
+from workers_tools import init_django, stop_signal
+init_django()
 
-# init settings path
+import sys
 
-BASE_PATH = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-PROJECT_PATH = os.path.normpath(os.path.join(BASE_PATH, 'oms_project'))
-sys.path[0:0] = [BASE_PATH, PROJECT_PATH]
-
-# init django
-from django.core.management import setup_environ
-import settings
-setup_environ(settings)
 from django.conf import settings
 from django.utils import simplejson
 
@@ -25,6 +18,8 @@ from haystack import site
 import redis
 
 from core.models import Account, Repository
+
+run_ok = True
 
 def parse_json(json):
     """
@@ -55,7 +50,7 @@ def main():
     redis_instance = redis.Redis(**settings.REDIS_PARAMS)
 
     nb = 0
-    while True:
+    while run_ok:
         list_name, json = redis_instance.blpop(settings.WORKER_UPDATE_COUNT_KEY)
 
         nb += 1
@@ -87,8 +82,11 @@ def main():
                 count = 'ERROR'
             sys.stderr.write(" in %s (%s)\n" % (datetime.now()-d, count))
 
+def signal_handler(signum, frame):
+    global run_ok
+    run_ok = False
+    sys.exit(0)
 
 if __name__ == "__main__":
+    stop_signal(signal_handler)
     main()
-
-
