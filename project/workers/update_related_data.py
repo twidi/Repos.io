@@ -14,7 +14,6 @@ from django.conf import settings
 
 from haystack import site
 import redis
-from redisco.containers import Set
 
 from core.models import Account, Repository
 
@@ -24,19 +23,26 @@ def main():
     """
     Main function to run forever...
     """
+    global run_ok
+
     redis_instance = redis.Redis(**settings.REDIS_PARAMS)
-    to_update_set = Set(settings.WORKER_UPDATE_RELATED_DATA_SET_KEY)
+
+    models = {
+        'core.account': (Account, ()),
+        'core.repository': (Repository, ('owner',)),
+    }
 
     nb = 0
-    while True:
+    max_nb = 500
+    while run_ok:
         list_name, obj_str = redis_instance.blpop(settings.WORKER_UPDATE_RELATED_DATA_KEY)
         try:
-            to_update_set.remove(obj_str)
+            redis_instance.srem(settings.WORKER_UPDATE_RELATED_DATA_SET_KEY, obj_str)
         except:
             pass
 
         nb += 1
-        len_to_update = len(to_update_set)
+        len_to_update = redis_instance.scard(settings.WORKER_UPDATE_RELATED_DATA_SET_KEY)
 
         d = datetime.now()
         sys.stderr.write("[%s  #%d | left : %d] %s" % (d, nb, len_to_update, obj_str))
@@ -45,14 +51,7 @@ def main():
             # find the object
 
             model_name, id = obj_str.split(':')
-            select_related = ()
-            if model_name == 'core.account':
-                model = Account
-            elif model_name == 'core.repository':
-                model = Repository
-                select_related = ('owner',)
-            else:
-                raise Exception('Invalid object string')
+            model, select_related = models[model_name]
 
             obj = model.objects
             if select_related:
@@ -72,6 +71,9 @@ def main():
 
         else:
             sys.stderr.write(" in %s =>  score=%d, tags=(%s)\n" % (datetime.now()-d, obj.score, ', '.join(obj.all_public_tags().values_list('slug', flat=True))))
+
+        if nb >= max_nb:
+            run_ok = False
 
 def signal_handler(signum, frame):
     global run_ok

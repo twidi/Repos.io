@@ -47,9 +47,12 @@ def main():
     """
     Main function to run forever...
     """
+    global run_ok
+
     redis_instance = redis.Redis(**settings.REDIS_PARAMS)
 
     nb = 0
+    max_nb = 500
     while run_ok:
         list_name, json = redis_instance.blpop(settings.WORKER_UPDATE_COUNT_KEY)
 
@@ -81,6 +84,9 @@ def main():
             except:
                 count = 'ERROR'
             sys.stderr.write(" in %s (%s)\n" % (datetime.now()-d, count))
+
+        if nb >= max_nb:
+            run_ok = False
 
 def signal_handler(signum, frame):
     global run_ok

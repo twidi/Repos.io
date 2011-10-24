@@ -64,12 +64,13 @@ def main():
     """
     Main function to run forever...
     """
-    global current_token
+    global current_token, run_ok
 
     lists = [settings.WORKER_FETCH_FULL_KEY % depth for depth in range(settings.WORKER_FETCH_FULL_MAX_DEPTH, -1, -1)]
     redis_instance = redis.Redis(**settings.REDIS_PARAMS)
 
     nb = 0
+    max_nb = 500
     while run_ok:
 
         # wait for new data
@@ -100,6 +101,9 @@ def main():
                 to_ignore = data['to_ignore'],
                 async = False
             )
+
+        if nb >= max_nb:
+            run_ok = False
 
 
 def signal_handler(signum, frame):
