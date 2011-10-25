@@ -52,7 +52,7 @@ def main():
     redis_instance = redis.Redis(**settings.REDIS_PARAMS)
 
     nb = 0
-    max_nb = 500
+    max_nb = 2500
     while run_ok:
         list_name, json = redis_instance.blpop(settings.WORKER_UPDATE_COUNT_KEY)
 

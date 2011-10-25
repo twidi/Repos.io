@@ -33,7 +33,7 @@ def main():
     }
 
     nb = 0
-    max_nb = 500
+    max_nb = 2500
     while run_ok:
         list_name, obj_str = redis_instance.blpop(settings.WORKER_UPDATE_RELATED_DATA_KEY)
         try:
