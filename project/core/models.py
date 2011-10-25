@@ -412,9 +412,9 @@ class SyncableModel(TimeStampedModel):
                 fetched = self.fetch(token=token, log_stderr=True)
             except Exception, e:
                 if isinstance(e, BackendError):
-                    if ecode:
+                    if e.code:
                         if e.code in (401, 403):
-                            token.set_status(code, str(e))
+                            token.set_status(e.code, str(e))
                         elif e.code == 404:
                             self.set_backend_status(e.code, str(e))
                 fetch_error = e
