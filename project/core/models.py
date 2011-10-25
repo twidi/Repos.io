@@ -966,17 +966,18 @@ class Account(SyncableModel):
         Update the public tags for this accounts.
         """
         tags = {}
-        rep_tagged_items = PublicTaggedRepository.objects.filter(content_object__followers=self).select_related('content_object', 'tag')
+        # we use values for a big memory optimization on accounts with a lot of repositories
+        rep_tagged_items = PublicTaggedRepository.objects.filter(content_object__followers=self).values('content_object__is_fork', 'content_object__owner__id', 'tag__slug', 'weight')
         for tagged_item in rep_tagged_items:
-            repository = tagged_item.content_object
             divider = 1.0
-            if repository.is_fork:
+            slug = tagged_item['tag__slug']
+            if tagged_item['content_object__is_fork']:
                 divider = 2
-            if repository.owner_id != self.id:
+            if tagged_item['content_object__owner__id'] != self.id:
                 divider = divider * 3
-            if tagged_item.tag.slug not in tags:
-                tags[tagged_item.tag.slug] = 0
-            tags[tagged_item.tag.slug] += (tagged_item.weight or 1) / divider
+            if slug not in tags:
+                tags[slug] = 0
+            tags[slug] += (tagged_item['weight'] or 1) / divider
 
         tags = sorted(tags.iteritems(), key=lambda t: t[1], reverse=True)
 
