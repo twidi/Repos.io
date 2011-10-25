@@ -88,7 +88,8 @@ class AccessTokenManager(object):
         """
         token = None
         if default_token:
-            if default_token.using or default_token.status != 200:
+            default_token = self.get_by_uid(default_token.uid)
+            if not default_token or default_token.using or default_token.status != 200:
                 token = None
             else:
                 token = default_token
