@@ -1,18 +1,9 @@
-import random
 import time
 
-from redisco import models
+from redisco import models, connection
 
-def manager_get_random(self, **kwargs):
-    """
-    Add a method for the redisco Manager to return a rendomly picked object
-    Must be used directly from objects (no filter or exclude)
-    """
-    token_list = self.filter(**kwargs)
-    if not token_list:
-        return None
-    return random.choice(token_list)
-models.managers.Manager.get_random = manager_get_random
+AVAILABLE_LIST_KEY = 'available_tokens'
+
 
 class AccessToken(models.Model):
     """
@@ -23,7 +14,6 @@ class AccessToken(models.Model):
     token = models.Attribute(required=True, indexed=True)
     backend = models.Attribute(required=True, indexed=True)
     status = models.IntegerField(required=True, indexed=True, default=200)
-    using = models.BooleanField(required=True, indexed=True, default=False)
     last_use = models.DateTimeField(auto_now_add=True, auto_now=True)
     last_message = models.Attribute()
 
@@ -32,6 +22,13 @@ class AccessToken(models.Model):
 
     def __str__(self):
         return self.uid
+
+    def save(self):
+        is_new = self.is_new()
+        result = super(AccessToken, self).save()
+        if result == True and is_new:
+            self.release()
+        return result
 
     def is_valid(self):
         """
@@ -45,15 +42,13 @@ class AccessToken(models.Model):
         """
         Set the token as currently used
         """
-        self.using = True
-        self.save()
+        return connection.srem(AVAILABLE_LIST_KEY, self.uid)
 
     def release(self):
         """
         Set the token as not currently used
         """
-        self.using = False
-        self.save()
+        return connection.sadd(AVAILABLE_LIST_KEY, self.uid)
 
     def set_status(self, code, message):
         """
@@ -79,6 +74,9 @@ class AccessTokenManager(object):
         return cls.by_backend[backend_name]
 
     def __init__(self, backend_name):
+        """
+        A manager is for a specific backend
+        """
         self.backend_name = backend_name
 
     def get_one(self, default_token=None, wait=True):
@@ -86,28 +84,22 @@ class AccessTokenManager(object):
         Return an available token for the current backend and lock it
         If `default_token` is given, check it's a good one
         """
-        token = None
         if default_token:
             default_token = self.get_by_uid(default_token.uid)
-            if not default_token or default_token.using or default_token.status != 200:
-                token = None
-            else:
-                token = default_token
+            if default_token and default_token.status == 200:
+                if default_token.lock():
+                    return default_token
 
-        while not token:
-            token = AccessToken.objects.get_random(
-                backend = self.backend_name,
-                using   = False,
-                status  = 200
-            )
-            if not token:
-                if not wait:
-                    break
-                time.sleep(0.5)
+        while True:
+            uid = connection.spop(AVAILABLE_LIST_KEY)
+            token = self.get_by_uid(uid)
+            if token and token.status == 200:
+                return token
 
-        if token:
-            token.lock()
-        return token
+            if not wait:
+                return None
+
+            time.sleep(0.5)
 
     def get_for_account(self, account):
         """

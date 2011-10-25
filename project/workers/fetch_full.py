@@ -24,7 +24,6 @@ from core.tokens import AccessTokenManager
 
 RE_IGNORE_IMPORT = re.compile(r'(?:, )?"to_ignore": \[[^\]]*\]')
 
-current_token = None
 run_ok = True
 
 def parse_json(json):
@@ -64,7 +63,7 @@ def main():
     """
     Main function to run forever...
     """
-    global current_token, run_ok
+    global run_ok
 
     lists = [settings.WORKER_FETCH_FULL_KEY % depth for depth in range(settings.WORKER_FETCH_FULL_MAX_DEPTH, -1, -1)]
     redis_instance = redis.Redis(**settings.REDIS_PARAMS)
@@ -92,7 +91,6 @@ def main():
             List(settings.WORKER_FETCH_FULL_ERROR_KEY).append(json)
 
         else:
-            current_token = data['token']
 
             # we're good
             data['object'].fetch_full(
@@ -107,9 +105,7 @@ def main():
 
 
 def signal_handler(signum, frame):
-    global current_token, run_ok
-    if current_token:
-        current_token.release()
+    global run_ok
     run_ok = False
     sys.exit(0)
 
