@@ -86,6 +86,9 @@ def fetch(request):
             else:
                 messages.error(request, 'Fetch is not allowed (maybe the last one is too recent)')
 
+        if token:
+            token.release()
+
     redirect_url = request.POST.get('next', '/')
     if not redirect_url.startswith('/'):
         redirect_url = '/'
