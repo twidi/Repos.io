@@ -1,23 +1,30 @@
 from datetime import datetime, timedelta
 from copy import copy
 import math
+import sys
+import traceback
 
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.utils import simplejson
 
 from model_utils import Choices
 from model_utils.models import TimeStampedModel
 from model_utils.fields import StatusField
+from haystack import site
+from redisco.containers import List, Set
 
 from core.backends import BACKENDS, get_backend
 from core.managers import AccountManager, RepositoryManager, OptimForListAccountManager, OptimForListRepositoryManager
-from core.utils import slugify
+from core.core_utils import slugify
 from core.exceptions import MultipleBackendError
 
-from tagging.models import PublicTaggedAccount, PublicTaggedRepository, Tag, PrivateTaggedAccount, PrivateTaggedRepository
+from tagging.models import PublicTaggedAccount, PublicTaggedRepository, PrivateTaggedAccount, PrivateTaggedRepository, all_official_tags
 from tagging.words import get_tags_for_repository
 from tagging.managers import TaggableManager
+
+from utils.models import get_app_and_model, update as model_update
 
 from private.views import get_user_note_for_object, get_user_tags_for_object
 
@@ -70,6 +77,11 @@ class SyncableModel(TimeStampedModel):
     # The web url
     url = models.URLField(max_length=255, blank=True, null=True)
 
+    # backend errors
+    backend_last_status = models.PositiveIntegerField(default=200)
+    backend_same_status = models.PositiveIntegerField(default=0)
+    backend_last_message = models.TextField(blank=True, null=True)
+
     # Fetch operations
     backend_prefix = ''
     related_operations = (
@@ -78,6 +90,8 @@ class SyncableModel(TimeStampedModel):
 
     class Meta:
         abstract = True
+
+    update = model_update
 
     def __unicode__(self):
         return u'%s' % self.slug
@@ -134,11 +148,28 @@ class SyncableModel(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         """
-        Save is forbidden while in the backend...
-        Also update the status before saving
+        Update the status before saving, and update some stuff (score, search index, tags)
         """
         self.status = self.get_new_status(for_save=True)
         super(SyncableModel, self).save(*args, **kwargs)
+        self.update_related_data(async=True)
+
+    def update_related_data(self, async=False):
+        """
+        Update data related to this object, as score,
+        search index, public tags
+        """
+        if async:
+            self_str = self.simple_str()
+            to_update_set = Set(settings.WORKER_UPDATE_RELATED_DATA_SET_KEY)
+            if self_str not in to_update_set:
+                to_update_set.add(self_str)
+                List(settings.WORKER_UPDATE_RELATED_DATA_KEY).append(self_str)
+            return
+
+        self.update_score()
+        self.update_search_index()
+        self.find_public_tags()
 
     def fetch_needed(self):
         """
@@ -157,7 +188,7 @@ class SyncableModel(TimeStampedModel):
         """
         return bool(not self.last_fetch or self.last_fetch < datetime.now() - self.MIN_FETCH_DELTA)
 
-    def fetch(self, access_token=None):
+    def fetch(self, token=None, log_stderr=False):
         """
         Fetch data from the provider (need to be implemented in subclass)
         """
@@ -222,7 +253,7 @@ class SyncableModel(TimeStampedModel):
 
         return False
 
-    def fetch_related(self, limit=None, update_related_objects=True, access_token=None, ignore=None):
+    def fetch_related(self, limit=None, token=None, ignore=None, log_stderr=False):
         """
         If the object has some related content that need to be fetched, do
         it, but limit the fetch to the given limit (default 1)
@@ -237,17 +268,18 @@ class SyncableModel(TimeStampedModel):
                 continue
             if not self.fetch_related_allowed_for(name):
                 continue
+
             action = getattr(self, 'fetch_%s' % name)
 
+            if log_stderr:
+                sys.stderr.write("      - %s\n" % name)
+
             try:
-                params = dict(
-                    access_token = access_token
-                )
-                if with_count:
-                    params['update_related_objects'] = update_related_objects
-                if action(**params):
+                if action(token=token):
                     done += 1
             except Exception, e:
+                if log_stderr:
+                    sys.stderr.write("          => ERROR : %s\n" % e)
                 exceptions.append(e)
 
             if limit and done >= limit:
@@ -323,7 +355,7 @@ class SyncableModel(TimeStampedModel):
         """
         self.score = self.compute_score()
         if save:
-            self.save()
+            self.update(score=self.score)
 
     def score_to_boost(self, force_compute=False):
         """
@@ -331,8 +363,319 @@ class SyncableModel(TimeStampedModel):
         """
         score = self.score
         if force_compute or not score:
-            score = self.compute_score
+            score = self.compute_score()
         return score/100.0
+
+    def simple_str(self):
+        """
+        Return a unique string for this object, usable as a key (in redis or...)
+        """
+        return '%s:%d' % ('.'.join(get_app_and_model(self)), self.pk)
+
+    def fetch_full(self, token=None, depth=0, to_ignore=None, async=False):
+        """
+        Make a full fetch of the current object : fetch object and related
+        """
+        self_str = self.simple_str()
+
+        if async:
+            sys.stderr.write("SET ASYNC (%d) FOR FETCH FULL %s #%d (token=%s)\n" % (depth, self, self.pk, token))
+            # async : we serialize the params and put them into redis for future use
+            data = dict(
+                object = self_str,
+                token = token.uid if token else None,
+                depth = depth,
+                to_ignore = list(to_ignore or set())
+            )
+            # add the serialized data to redis
+            data_s = simplejson.dumps(data)
+            List(settings.WORKER_FETCH_FULL_KEY % depth).append(data_s)
+
+            # return dummy data when asyc
+            return token, None
+
+        dmain = datetime.now()
+        fetch_error = None
+        try:
+
+            backend = self.get_backend()
+            token_manager = backend.token_manager()
+
+            token = token_manager.get_one(token)
+
+            sys.stderr.write("FETCH FULL %s #%d (depth=%d, token=%s)\n" % (self, self.pk, depth, token))
+
+            # start try to update the object
+            try:
+                df = datetime.now()
+                sys.stderr.write("  - fetch object (%s)\n" % self)
+                fetched = self.fetch(token=token, log_stderr=True)
+            except Exception, e:
+                if isinstance(e, BackendError):
+                    if e.code:
+                        if e.code in (401, 403):
+                            token.set_status(e.code, str(e))
+                        elif e.code == 404:
+                            self.set_backend_status(e.code, str(e))
+                fetch_error = e
+                ddf = datetime.now() - df
+                sys.stderr.write("      => ERROR (in %s) : %s\n" % (ddf, e))
+            else:
+                self.set_backend_status(200, 'ok')
+                ddf = datetime.now() - df
+                sys.stderr.write("      => OK (%s) in %s [%s]\n" % (fetched, ddf, self.fetch_full_self_message()))
+
+                # then fetch related
+                try:
+                    dr = datetime.now()
+                    sys.stderr.write("  - fetch related (%s)\n" % self)
+                    nb_fetched = self.fetch_related(token=token, log_stderr=True)
+                except Exception, e:
+                    if isinstance(e, BackendError):
+                        if e.code and e.code in (401, 403):
+                            token.set_status(e.code, str(e))
+                    ddr = datetime.now() - dr
+                    sys.stderr.write("      => ERROR (in %s): %s\n" % (ddr, e))
+                    fetch_error = e
+                else:
+                    ddr = datetime.now() - dr
+                    sys.stderr.write("      => OK (%s) in %s [%s]\n" % (nb_fetched, ddr, self.fetch_full_related_message()))
+
+            # finally, perform a fetch full of related
+            if not fetch_error and depth > 0:
+                if to_ignore is None:
+                    to_ignore = set()
+                to_ignore.add(self_str)
+                self.fetch_full_specific(token=token, depth=depth, to_ignore=to_ignore, async=True)
+
+        except Exception, e:
+                sys.stderr.write("      => MAIN ERROR FOR FETCH FULL OF %s: %s (see below)\n" % (self, e))
+                sys.stderr.write("====================================================================\n")
+                sys.stderr.write('\n'.join(traceback.format_exception(*sys.exc_info())))
+                sys.stderr.write("====================================================================\n")
+
+        finally:
+            ddmain = datetime.now() - dmain
+            sys.stderr.write("END OF FETCH FULL %s in %s (depth=%d)\n" % (self, ddmain, depth))
+
+            if token:
+                token.release()
+
+            return token, fetch_error
+
+    def set_backend_status(self, code, message, save=True):
+        """
+        Save informations about last status
+        If the status is the same than the last one, keep the count
+        by incrementing the value.
+        """
+        if code == self.backend_last_status:
+            self.backend_same_status += 1
+        else:
+            self.backend_same_status = 1
+        self.backend_last_status = code
+        self.backend_last_message = message
+        if save:
+            self.save()
+
+    def update_search_index(self):
+        """
+        Update the search index for the current object
+        """
+        try:
+            self.get_search_index().update_object(self)
+        except:
+            pass
+
+    def update_count(self, name, save=True, use_count=None, async=False):
+
+        """
+        Update a saved count
+        """
+        if async and save:
+            # async : we serialize the params and put them into redis for future use
+            data = dict(
+                object = self.simple_str(),
+                count_type = name,
+                use_count = use_count
+            )
+            # add the serialized data to redis
+            data_s = simplejson.dumps(data)
+            List(settings.WORKER_UPDATE_COUNT_KEY).append(data_s)
+            return
+
+        field = '%s_count' % name
+        count = use_count if use_count is not None else getattr(self, name).count()
+        if save:
+            self.update(**{field: count})
+        else:
+            setattr(self, field, count)
+
+    def fetch_related_entries(self, functionality, entry_name, entries_name, key, token=None):
+        """
+        Fech entries of type `entries_name` from the backend by calling the `functionality` method after
+        testing its support.
+        The `entry_name` is used for the needed add_%s and remove_%s methods
+        """
+        if not self.get_backend().supports(functionality):
+            return False
+
+        official_count_field = 'official_%s_count' % entries_name
+        if hasattr(self, official_count_field) and not getattr(self, official_count_field) and (
+            not self.last_fetch or self.last_fetch > datetime.now()-timedelta(hours=1)):
+                return False
+
+        method_add_entry = getattr(self, 'add_%s' % entry_name)
+        method_rem_entry = getattr(self, 'remove_%s' % entry_name)
+
+        # get all previous entries
+        check_diff = bool(getattr(self, '%s_count' % entries_name))
+        if check_diff:
+            old_entries = dict((getattr(obj, key), obj) for obj in getattr(self, entries_name).all())
+            new_entries = set()
+
+        # get and save new entries
+        entries_list = getattr(self.get_backend(), functionality)(self, token=token)
+        count = 0
+        for gobj in entries_list:
+            if check_diff and gobj[key] in old_entries:
+                count += 1
+                if check_diff:
+                    new_entries.add(gobj[key])
+            else:
+                obj = method_add_entry(gobj, False)
+                if obj:
+                    count += 1
+                    if check_diff:
+                        new_entries.add(getattr(obj, key))
+
+        # remove old entries
+        if check_diff:
+            removed = set(old_entries.keys()).difference(new_entries)
+            for key_ in removed:
+                method_rem_entry(old_entries[key_], False)
+
+        setattr(self, '%s_modified' % entries_name, datetime.now())
+        self.update_count(entries_name, use_count=count, async=True)
+
+        return True
+
+    def add_related_account_entry(self, account, self_entries_name, reverse_entries_name, update_self_count=True):
+        """
+        Make a call to `add_related_entry` with `repository` as `obj`.
+        `account` can be an Account object, or a dict. In this case, it
+        must contain a `slug` field.
+        All other fields in `account` will only be used to fill
+        the new Account fields if we must create it.
+        """
+        # we have a dict : get the account
+        if isinstance(account, dict):
+            if not account.get('slug', False):
+                return None
+            account = Account.objects.get_or_new(
+                self.backend, account.pop('slug'), **account)
+
+        # we have something else but an account : exit
+        elif not isinstance(account, Account):
+            return None
+
+        return self.add_related_entry(account, self_entries_name, reverse_entries_name, update_self_count)
+
+    def add_related_repository_entry(self, repository, self_entries_name, reverse_entries_name, update_self_count=True):
+        """
+        Make a call to `add_related_entry` with `repository` as `obj`.
+        `repository` can be an Repository object, or a dict. In this case, it
+        must contain enouhg identifiers (see `needed_repository_identifiers`)
+        All other fields in `repository` will only be used to fill
+        the new Repository fields if we must create it.
+        """
+        # we have a dict : get the repository
+        if isinstance(repository, dict):
+            try:
+                self.get_backend().assert_valid_repository_identifiers(**repository)
+            except:
+                return None
+            else:
+                repository = Repository.objects.get_or_new(
+                    self.backend, repository.pop('project', None), **repository)
+
+        # we have something else but a repository : exit
+        elif not isinstance(repository, Repository):
+            return None
+
+        return self.add_related_entry(repository, self_entries_name, reverse_entries_name, update_self_count)
+
+    def add_related_entry(self, obj, self_entries_name, reverse_entries_name, update_self_count=True):
+        """
+        Try to add the `obj` in the `self_entries_name` list of the current object.
+        `reverse_entries_name` is the name of the obj's list to put the current
+        object in (reverse list)
+        `obj` must be an object of the good type (Account or Repository). It's
+        recommended to call add_related_account_entry and add_related_repository_entry
+        instead of this method.
+        """
+        # save the object if it's a new one
+        is_new = obj.is_new()
+        if is_new:
+            setattr(obj, '%s_count' % reverse_entries_name, 1)
+            obj.save()
+
+        # add the entry
+        getattr(self, self_entries_name).add(obj)
+
+        # update the count if we can
+        if update_self_count:
+            self.update_count(self_entries_name)
+
+        # update the reverse count for the other object
+        if not is_new:
+            obj.update_count(reverse_entries_name, async=True)
+
+        return obj
+
+    def remove_related_account_entry(self, account, self_entries_name, reverse_entries_name, update_self_count=True):
+        """
+        Make a call to `remove_related_entry` with `account` as `obj`.
+        `account` must be an Account instance
+        """
+        # we have something else but an account : exit
+        if not isinstance(account, Account):
+            return
+
+        return self.remove_related_entry(account, self_entries_name, reverse_entries_name, update_self_count)
+
+    def remove_related_repository_entry(self, repository, self_entries_name, reverse_entries_name, update_self_count=True):
+        """
+        Make a call to `remove_related_entry` with `repository` as `obj`.
+        `repository` must be an Repository instance
+        """
+        # we have something else but a repository : exit
+        if not isinstance(repository, Repository):
+            return None
+
+        return self.remove_related_entry(repository, self_entries_name, reverse_entries_name, update_self_count)
+
+    def remove_related_entry(self, obj, self_entries_name, reverse_entries_name, update_self_count=True):
+        """
+        Remove the given object from the ones in the `self_entries_name` of the
+        current object.
+        `reverse_entries_name` is the name of the obj's list to remove the current
+        object from (reverse list)
+        `obj` must be an object of the good type (Account or Repository). It's
+        recommended to call remove_related_account_entry and
+        remove_related_repository_entry instead of this method.
+        """
+        # remove from the list
+        getattr(self, self_entries_name).remove(obj)
+
+        # update the count if we can
+        if update_self_count:
+            self.update_count(self_entries_name)
+
+        # update the reverse count for the other object
+        obj.update_count(reverse_entries_name)
+
+        return obj
 
 
 class Account(SyncableModel):
@@ -411,14 +754,14 @@ class Account(SyncableModel):
             ('backend', 'slug_lower')
         )
 
-    def fetch(self, access_token=None):
+    def fetch(self, token=None, log_stderr=False):
         """
         Fetch data from the provider
         """
-        if not super(Account, self).fetch(access_token=access_token):
+        if not super(Account, self).fetch(token, log_stderr):
             return False
 
-        self.get_backend().user_fetch(self, access_token=access_token)
+        self.get_backend().user_fetch(self, token=token)
         self.last_fetch = datetime.now()
 
         if not self.official_following_count:
@@ -426,16 +769,17 @@ class Account(SyncableModel):
             self.following_count = 0
             if self.following_count:
                 for following in self.following.all():
-                    self.remove_following(following, False, True)
+                    self.remove_following(following, False)
 
         if not self.official_followers_count:
             self.followers_modified = self.last_fetch
             self.followers_count = 0
             if self.followers_count:
                 for follower in self.followers.all():
-                    self.remove_follower(follower, False, True)
+                    self.remove_follower(follower, False)
 
         self.save()
+
         return True
 
     def save(self, *args, **kwargs):
@@ -447,328 +791,64 @@ class Account(SyncableModel):
             self.slug_lower = self.slug.lower()
         super(Account, self).save(*args, **kwargs)
 
-    def fetch_following(self, update_related_objects=True, access_token=None):
+    def fetch_following(self, token=None):
         """
         Fetch the accounts followed by this account
         """
-        if not self.get_backend().supports('user_following'):
-            return False
+        return self.fetch_related_entries('user_following', 'following', 'following', 'slug', token=token)
 
-        if not self.official_following_count and (
-            not self.last_fetch or self.last_fetch > datetime.now()-timedelta(hours=1)):
-                return False
-
-        # get all previous following
-        check_diff = bool(self.following_count)
-        if check_diff:
-            old_following = dict((a.slug, a) for a in self.following.all())
-            new_following = {}
-
-        # get and save new followings
-        following_list = self.get_backend().user_following(self, access_token=access_token)
-        count = 0
-        for gaccount in following_list:
-            account = self.add_following(gaccount, False, update_related_objects)
-            if account:
-                count += 1
-                if check_diff:
-                    new_following[account.slug] = account
-
-        # remove old following
-        if check_diff:
-            removed = set(old_following.keys()).difference(set(new_following.keys()))
-            for slug in removed:
-                self.remove_following(old_following[slug], False, update_related_objects)
-
-        self.following_modified = datetime.now()
-        self.update_following_count(save=True, use_count=count)
-
-        return True
-
-    def add_following(self, account, update_self_count, update_following):
+    def add_following(self, account, update_self_count=True):
         """
         Try to add the account described by `account` as followed by
         the current account.
-        `account` can be an Account object, or a dict. In this case, it
-        must contain a `slug` field.
-        All other fields in `account` will only be used to fill
-        the new Account fields if we must create it.
         """
-        # we have a dict : get the account
-        if isinstance(account, dict):
-            if not account.get('slug', False):
-                return None
-            account = Account.objects.get_or_new(
-                self.backend, account.pop('slug'), **account)
+        return self.add_related_account_entry(account, 'following', 'followers', update_self_count)
 
-        # we have something else but an account : exit
-        elif not isinstance(account, Account):
-            return None
-
-        # save the account if it's a new one
-        is_new = account.is_new()
-        if is_new:
-            account.followers_count = 1
-            account.save()
-
-        # add the following
-        self.following.add(account)
-
-        # update the count if we can
-        if update_self_count:
-            self.update_following_count(save=True)
-
-        # update the followers count for the other account
-        if update_following and not is_new:
-            account.update_followers_count(save=True)
-
-        return account
-
-    def remove_following(self, account, update_self_count, update_following=True):
+    def remove_following(self, account, update_self_count=True):
         """
         Remove the given account from the ones followed by
         the current account
         """
-        # we have something else but an account : exit
-        if not isinstance(account, Account):
-            return
+        return self.remove_related_account_entry(account, 'following', 'followers', update_self_count)
 
-        # remove the following
-        self.following.remove(account)
-
-        # update the count if we can
-        if update_self_count:
-            self.update_following_count(save=True)
-
-        # update the followers count for the other account
-        if update_following:
-            account.update_followers_count(save=True)
-
-        return account
-
-    def update_following_count(self, save, use_count=None):
-        """
-        Update the saved following count
-        """
-        self.following_count = use_count or self.following.count()
-        if save:
-            self.save()
-
-    def fetch_followers(self, update_related_objects=True, access_token=None):
+    def fetch_followers(self, token=None):
         """
         Fetch the accounts following this account
         """
-        if not self.get_backend().supports('user_followers'):
-            return False
+        return self.fetch_related_entries('user_followers', 'follower', 'followers', 'slug', token=token)
 
-        if not self.official_followers_count and (
-            not self.last_fetch or self.last_fetch > datetime.now()-timedelta(hours=1)):
-                return False
-
-        # get all previous followers
-        check_diff = bool(self.followers_count)
-        if check_diff:
-            old_followers = dict((a.slug, a) for a in self.followers.all())
-            new_followers = {}
-
-        # get and save new followings
-        followers_list = self.get_backend().user_followers(self, access_token=access_token)
-        count = 0
-        for gaccount in followers_list:
-            account = self.add_follower(gaccount, False, update_related_objects)
-            if account:
-                count += 1
-                if check_diff:
-                    new_followers[account.slug] = account
-
-        # remove old followers
-        if check_diff:
-            removed = set(old_followers.keys()).difference(set(new_followers.keys()))
-            for slug in removed:
-                self.remove_follower(old_followers[slug], False, update_related_objects)
-
-        self.followers_modified = datetime.now()
-        self.update_followers_count(save=True, use_count=count)
-
-        return True
-
-    def add_follower(self, account, update_self_count, update_follower=True):
+    def add_follower(self, account, update_self_count=True):
         """
         Try to add the account described by `account` as follower of
         the current account.
-        `account` can be an Account object, or a dict. In this case, it
-        must contain a `slug` field.
-        All other fields in `account` will only be used to fill
-        the new Account fields if we must create it.
         """
-        # we have a dict : get the account
-        if isinstance(account, dict):
-            if not account.get('slug', False):
-                return None
-            account = Account.objects.get_or_new(
-                self.backend, account.pop('slug'), **account)
+        return self.add_related_account_entry(account, 'followers', 'following', update_self_count)
 
-        # we have something else but an account : exit
-        elif not isinstance(account, Account):
-            return None
-
-        # save the account if it's a new one
-        is_new = account.is_new()
-        if is_new:
-            account.following_count = 1
-            account.save()
-
-        # add the follower
-        self.followers.add(account)
-
-        # update the count if we can
-        if update_self_count:
-            self.update_followers_count(save=True)
-
-        # update the following count for the other account
-        if update_follower and not is_new:
-            account.update_following_count(save=True)
-
-        return account
-
-    def remove_follower(self, account, update_self_count, update_follower=True):
+    def remove_follower(self, account, update_self_count=True):
         """
         Remove the given account from the ones following
         the current account
         """
-        # we have something else but an account : exit
-        if not isinstance(account, Account):
-            return
+        return self.remove_related_account_entry(account, 'followers', 'following', update_self_count)
 
-        # remove the follower
-        self.followers.remove(account)
-
-        # update the count if we can
-        if update_self_count:
-            self.update_followers_count(save=True)
-
-        # update the following count for the other account
-        if update_follower:
-            account.update_following_count(save=True)
-
-    def update_followers_count(self, save, use_count=None):
-        """
-        Update the saved followers count
-        """
-        self.followers_count = use_count or self.followers.count()
-        if save:
-            self.save()
-
-    def fetch_repositories(self, update_related_objects=True, access_token=None):
+    def fetch_repositories(self, token=None):
         """
         Fetch the repositories owned/watched by this account
         """
-        if not self.get_backend().supports('user_repositories'):
-            return False
+        return self.fetch_related_entries('user_repositories', 'repository', 'repositories', 'project', token=token)
 
-        # get all previous repositories
-        check_diff = bool(self.repositories_count)
-        if check_diff:
-            old_repositories = dict((r.project, r) for r in self.repositories.all())
-            new_repositories = {}
-
-        # get and save new repositories
-        repositories_list = self.get_backend().user_repositories(self, access_token=access_token)
-        count = 0
-        for grepo in repositories_list:
-            repository = self.add_repository(grepo, False, update_related_objects)
-            if repository:
-                count += 1
-                if check_diff:
-                    new_repositories[repository.project] = repository
-
-        # remove old repositories
-        if check_diff:
-            removed = set(old_repositories.keys()).difference(set(new_repositories.keys()))
-            for project in removed:
-                self.remove_repository(old_repositories[project], False, update_related_objects)
-
-        self.repositories_modified = datetime.now()
-        self.update_repositories_count(save=True, use_count=count)
-
-        return True
-
-    def add_repository(self, repository, update_self_count, update_repository=True):
+    def add_repository(self, repository, update_self_count=True):
         """
         Try to add the repository described by `repository` as one
         owner/watched by the current account.
-        `repository` can be an Repository object, or a dict. In this case, it
-        must contain enouhg identifiers (see `needed_repository_identifiers`)
-        All other fields in `repository` will only be used to fill
-        the new Repository fields if we must create it.
         """
-        # we have a dict : get the repository
-        if isinstance(repository, dict):
-            try:
-                self.get_backend().assert_valid_repository_identifiers(**repository)
-            except:
-                return None
-            else:
-                repository = Repository.objects.get_or_new(
-                    self.backend, repository.pop('project', None), **repository)
+        return self.add_related_repository_entry(repository, 'repositories', 'followers', update_self_count)
 
-        # we have something else but a repository : exit
-        elif not isinstance(repository, Repository):
-            return None
-
-        # save the repository if it's a new one
-        is_new = repository.is_new()
-        if is_new:
-            repository.followers_count = 1
-            repository.save()
-
-        # add the repository
-        self.repositories.add(repository)
-
-        # update the count if we can
-        if update_self_count:
-            self.update_repositories_count(save=True)
-
-        # update the followers count for the repository
-        if update_repository and not is_new:
-            repository.update_followers_count(save=True)
-
-        return repository
-
-    def remove_repository(self, repository, update_self_count, update_repository=True):
+    def remove_repository(self, repository, update_self_count):
         """
         Remove the given account from the ones the user own/watch
         """
-        # we have something else but a repository : exit
-        if not isinstance(repository, Repository):
-            return
-
-        # remove the repository
-        self.repositories.remove(repository)
-
-        # update the count if we can
-        if update_self_count:
-            self.update_repositories_count(save=True)
-
-        # update the followers count for the repository
-        if update_repository:
-            repository.update_followers_count(save=True)
-
-    def update_repositories_count(self, save, use_count=None):
-        """
-        Update the saved repositories count
-        """
-        self.repositories_count = use_count or self.repositories.count()
-        if save:
-            self.save()
-
-    def update_contributing_count(self, save, use_count=None):
-        """
-        Update the contributed repositories count
-        """
-        self.contributing_count = use_count or self.contributing.count()
-        if save:
-            self.save()
+        return self.remove_related_repository_entry(repository, 'repositories', 'followers', update_self_count)
 
     def _get_url(self, url_type, **kwargs):
         """
@@ -854,18 +934,21 @@ class Account(SyncableModel):
         # contents
         if self.repositories_count:
             all_repositories = self.own_repositories.all()
-            nb_own = all_repositories.count()
-            nb_forks = all_repositories.filter(is_fork=True).count()
+
+            parts['repositories_score'] = 0
+            nb_own = 0
+            nb_forks = 0
+            for repository in all_repositories:
+                nb_own += 1
+                parts['repositories_score'] += repository.compute_popularity()
+                if repository.is_fork:
+                    nb_forks += 1
+            parts['repositories_score'] = min(parts['repositories_score'] / 10.0, 100)
             nb_real_own = nb_own - nb_forks
             parts['repositories'] = (nb_real_own + nb_forks / 2.0) / 3.0
 
-            # popularity of its repositories
-            parts['repositories_score'] = 0
-            for repository in all_repositories:
-                parts['repositories_score'] += repository.compute_popularity()
-            parts['repositories_score'] = min(parts['repositories_score'] / 10.0, 100)
         if self.contributing_count:
-            parts['contributing'] = self.contributing.count / 20.0
+            parts['contributing'] = self.contributing_count / 20.0
 
         #print parts
         score += sum(parts.values())
@@ -883,17 +966,18 @@ class Account(SyncableModel):
         Update the public tags for this accounts.
         """
         tags = {}
-        rep_tagged_items = PublicTaggedRepository.objects.filter(content_object__followers=self).select_related('content_object', 'tag')
+        # we use values for a big memory optimization on accounts with a lot of repositories
+        rep_tagged_items = PublicTaggedRepository.objects.filter(content_object__followers=self).values('content_object__is_fork', 'content_object__owner__id', 'tag__slug', 'weight')
         for tagged_item in rep_tagged_items:
-            repository = tagged_item.content_object
             divider = 1.0
-            if repository.is_fork:
+            slug = tagged_item['tag__slug']
+            if tagged_item['content_object__is_fork']:
                 divider = 2
-            if repository.owner_id != self.id:
+            if tagged_item['content_object__owner__id'] != self.id:
                 divider = divider * 3
-            if tagged_item.tag.slug not in tags:
-                tags[tagged_item.tag.slug] = 0
-            tags[tagged_item.tag.slug] += (tagged_item.weight or 1) / divider
+            if slug not in tags:
+                tags[slug] = 0
+            tags[slug] += (tagged_item['weight'] or 1) / divider
 
         tags = sorted(tags.iteritems(), key=lambda t: t[1], reverse=True)
 
@@ -954,6 +1038,79 @@ class Account(SyncableModel):
 
         return links
 
+    def get_default_token(self):
+        """
+        Return the token object for this account
+        """
+        return self.get_backend().token_manager().get_for_account(self)
+
+    def fetch_full_self_message(self):
+        """
+        Return the message part to display after a fetch of the object during a fetch_full
+        """
+        return 'fwr=%s, fwg=%s' % (self.official_followers_count, self.official_following_count)
+
+    def fetch_full_related_message(self):
+        """
+        Return the message part to display after a fetch of the related during a fetch_full
+        """
+        return 'fwr=%s, fwg=%s, rep=%s' % (self.followers_count, self.following_count, self.repositories_count)
+
+    def fetch_full_specific(self, depth=0, token=None, to_ignore=None, async=False):
+        """
+        After the full fetch of the account, try to make a full fetch of all
+        related objects: repositories, followers, following
+        """
+        if depth > 0:
+            depth -= 1
+
+            if to_ignore is None:
+                to_ignore = set
+
+            # do fetch full for all repositories
+            sys.stderr.write(" - full fetch of repositories (for %s)\n" % self)
+            for repository in self.repositories.all():
+                repository_str = 'core.repository:%d' % repository.pk
+                if repository_str in to_ignore:
+                    continue
+                to_ignore.add(repository_str)
+                token, rep_fetch_error = repository.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                # access token invalidated, get a new one
+                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                    token = None
+
+            # do fetch for all followers
+            sys.stderr.write(" - full fetch of followers (for %s)\n" % self)
+            for account in self.followers.all():
+                account_str = 'core.account:%d' % account.pk
+                if account_str in to_ignore:
+                    continue
+                to_ignore.add(account_str)
+                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                # access token invalidated, get a new one
+                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                    token = None
+
+            # do fetch for all following
+            sys.stderr.write(" - full fetch of following (for %s)\n" % self)
+            for account in self.following.all():
+                account_str = 'core.account:%d' % account.pk
+                if account_str in to_ignore:
+                    continue
+                to_ignore.add(account_str)
+                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                # access token invalidated, get a new one
+                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                    token = None
+
+    def get_search_index(self):
+        """
+        Return the search index for this model
+        """
+        return site.get_index(Account)
 
 
 class Repository(SyncableModel):
@@ -1080,14 +1237,14 @@ class Repository(SyncableModel):
         """
         return self.project or self.get_backend().repository_project(self)
 
-    def fetch(self, access_token=None):
+    def fetch(self, token=None, log_stderr=False):
         """
         Fetch data from the provider
         """
-        if not super(Repository, self).fetch(access_token=access_token):
+        if not super(Repository, self).fetch(token, log_stderr):
             return False
 
-        self.get_backend().repository_fetch(self, access_token=access_token)
+        self.get_backend().repository_fetch(self, token=token)
         self.last_fetch = datetime.now()
 
         if not self.official_followers_count:
@@ -1095,7 +1252,7 @@ class Repository(SyncableModel):
             self.followers_count = 0
             if self.followers_count:
                 for follower in self.followers.all():
-                    self.remove_follower(follower, False, True)
+                    self.remove_follower(follower, False)
 
         if not self.modified:
             self.readme_modified = self.last_fetch
@@ -1130,7 +1287,7 @@ class Repository(SyncableModel):
 
         super(Repository, self).save(*args, **kwargs)
 
-    def fetch_owner(self, access_token=None):
+    def fetch_owner(self, token=None):
         """
         Create or update the repository's owner
         """
@@ -1153,17 +1310,17 @@ class Repository(SyncableModel):
             owner = self.owner
 
         if owner.fetch_needed():
-            owner.fetch(access_token=access_token)
+            owner.fetch(token=token)
             fetched = True
 
         if save_needed:
             if not self.owner_id:
                 self.owner = owner
-            self.add_follower(owner, True, True)
+            self.add_follower(owner, True)
 
         return fetched
 
-    def fetch_parent_fork(self, access_token=None):
+    def fetch_parent_fork(self, token=None):
         """
         Create of update the parent fork, only if needed and if we have the
         parent fork's name
@@ -1188,7 +1345,7 @@ class Repository(SyncableModel):
             parent_fork = self.parent_fork
 
         if parent_fork.fetch_needed():
-            parent_fork.fetch(access_token=access_token)
+            parent_fork.fetch(token=token)
             fetched = True
 
         if save_needed:
@@ -1198,211 +1355,45 @@ class Repository(SyncableModel):
 
         return fetched
 
-    def fetch_followers(self, update_related_objects=True, access_token=None):
+    def fetch_followers(self, token=None):
         """
         Fetch the accounts following this repository
         """
-        if not self.get_backend().supports('repository_followers'):
-            return False
+        return self.fetch_related_entries('repository_followers', 'follower', 'followers', 'slug', token=token)
 
-        if not self.official_followers_count and (
-            not self.last_fetch or self.last_fetch > datetime.now()-timedelta(hours=1)):
-                return False
-
-        # get all previous followers
-        check_diff = bool(self.followers_count)
-        if check_diff:
-            old_followers = dict((a.slug, a) for a in self.followers.all())
-            new_followers = {}
-
-        # get and save new followings
-        followers_list = self.get_backend().repository_followers(self, access_token=access_token)
-        count = 0
-        for gaccount in followers_list:
-            account = self.add_follower(gaccount, False, update_related_objects)
-            if account:
-                count += 1
-                if check_diff:
-                    new_followers[account.slug] = account
-
-        # remove old followers
-        if check_diff:
-            removed = set(old_followers.keys()).difference(set(new_followers.keys()))
-            for slug in removed:
-                self.remove_follower(old_followers[slug], False, update_related_objects)
-
-        self.followers_modified = datetime.now()
-        self.update_followers_count(save=True, use_count=count)
-
-        return True
-
-    def add_follower(self, account, update_self_count, update_follower=True):
+    def add_follower(self, account, update_self_count=True):
         """
         Try to add the account described by `account` as follower of
         the current repository.
-        `account` can be an Account object, or a dict. In this case, it
-        must contain a `slug` field.
-        All other fields in `account` will only be used to fill
-        the new Account fields if we must create it.
         """
-        # we have a dict : get the account
-        if isinstance(account, dict):
-            if not account.get('slug', False):
-                return None
-            account = Account.objects.get_or_new(
-                self.backend, account.pop('slug'), **account)
+        return self.add_related_account_entry(account, 'followers', 'repositories', update_self_count)
 
-        # we have something else but an account : exit
-        elif not isinstance(account, Account):
-            return None
-
-        # save the account if it's a new one
-        is_new = account.is_new()
-        if is_new:
-            account.repositories_count = 1
-            account.save()
-
-        # add the follower
-        self.followers.add(account)
-
-        # update the count if we can
-        if update_self_count:
-            self.update_followers_count(save=True)
-
-        # update the repositories count for the account
-        if update_follower and not is_new:
-            account.update_repositories_count(save=True)
-
-        return account
-
-    def remove_follower(self, account, update_self_count, update_follower=True):
+    def remove_follower(self, account, update_self_count=True):
         """
         Remove the given account from the ones following
         the Repository
         """
-        # we have something else but an account : exit
-        if not isinstance(account, Account):
-            return
+        return self.remove_related_account_entry(account, 'followers', 'repositories', update_self_count)
 
-        # remove the follower
-        self.followers.remove(account)
-
-        # update the count if we can
-        if update_self_count:
-            self.update_followers_count(save=True)
-
-        # update the followers count for the other account
-        if update_follower:
-            account.update_repositories_count(save=True)
-
-    def update_followers_count(self, save, use_count=None):
-        """
-        Update the saved followers
-        """
-        self.followers_count = use_count or self.followers.count()
-        if save:
-            self.save()
-
-    def fetch_contributors(self, update_related_objects=True, access_token=None):
+    def fetch_contributors(self, token=None):
         """
         Fetch the accounts following this repository
         """
-        if not self.get_backend().supports('repository_contributors'):
-            return False
+        return self.fetch_related_entries('repository_contributors', 'contributor', 'contributors', 'slug', token=token)
 
-        # get all previous contributors
-        check_diff = bool(self.contributors_count)
-        if check_diff:
-            old_contributors = dict((a.slug, a) for a in self.contributors.all())
-            new_contributors = {}
-
-        # get and save new followings
-        contributors_list = self.get_backend().repository_contributors(self, access_token=access_token)
-        count = 0
-        for gaccount in contributors_list:
-            account = self.add_contributor(gaccount, False, update_related_objects)
-            if account:
-                count += 1
-                if check_diff:
-                    new_contributors[account.slug] = account
-
-        # remove old contributors
-        if check_diff:
-            removed = set(old_contributors.keys()).difference(set(new_contributors.keys()))
-            for slug in removed:
-                self.remove_contributor(old_contributors[slug], False, update_related_objects)
-
-        self.contributors_modified = datetime.now()
-        self.update_contributors_count(save=True, use_count=count)
-
-        return True
-
-    def add_contributor(self, account, update_self_count, update_contributor=True):
+    def add_contributor(self, account, update_self_count=True):
         """
         Try to add the account described by `account` as contributor of
         the current repository.
-        `account` can be an Account object, or a dict. In this case, it
-        must contain a `slug` field.
-        All other fields in `account` will only be used to fill
-        the new Account fields if we must create it.
         """
-        # we have a dict : get the account
-        if isinstance(account, dict):
-            if not account.get('slug', False):
-                return None
-            account = Account.objects.get_or_new(
-                self.backend, account.pop('slug'), **account)
+        return self.add_related_account_entry(account, 'contributors', 'contributing', update_self_count)
 
-        # we have something else but an account : exit
-        elif not isinstance(account, Account):
-            return None
-
-        # save the account if it's a new one
-        is_new = account.is_new()
-        if is_new:
-            account.contributing_count = 1
-            account.save()
-
-        # add the contributor
-        self.contributors.add(account)
-
-        # update the count if we can
-        if update_self_count:
-            self.update_contributors_count(save=True)
-
-        # update the repositories count for the account
-        if update_contributor and not is_new:
-            account.update_contributing_count(save=True)
-
-        return account
-
-    def remove_contributor(self, account, update_self_count, update_contributor=True):
+    def remove_contributor(self, account, update_self_count=True):
         """
         Remove the given account from the ones contributing to
         the Repository
         """
-        # we have something else but an account : exit
-        if not isinstance(account, Account):
-            return
-
-        # remove the contributor
-        self.contributors.remove(account)
-
-        # update the count if we can
-        if update_self_count:
-            self.update_contributors_count(save=True)
-
-        # update the contributing count for the other account
-        if update_contributor:
-            account.update_contributing_count(save=True)
-
-    def update_contributors_count(self, save, use_count=None):
-        """
-        Update the saved contributors
-        """
-        self.contributors_count = use_count or self.contributors.count()
-        if save:
-            self.save()
+        return self.remove_related_account_entry(account, 'contributors', 'contributing', update_self_count)
 
     def _get_url(self, url_type, **kwargs):
         """
@@ -1454,14 +1445,14 @@ class Repository(SyncableModel):
             self._contributors_ids = self.contributors.values_list('id', flat=True)
         return self._contributors_ids
 
-    def fetch_readme(self, access_token=None):
+    def fetch_readme(self, token=None):
         """
         Try to get a readme in the repository
         """
         if not self.get_backend().supports('repository_readme'):
             return False
 
-        readme = self.get_backend().repository_readme(self, access_token=access_token)
+        readme = self.get_backend().repository_readme(self, token=token)
 
         if readme is not None:
             if isinstance(readme, (list, tuple)):
@@ -1541,7 +1532,7 @@ class Repository(SyncableModel):
         Update the public tags for this repository.
         """
         if not known_tags:
-            known_tags = set(Tag.objects.filter(official=True).values_list('slug', flat=True))
+            known_tags = all_official_tags()
         rep_tags = get_tags_for_repository(self, known_tags)
         tags = sorted(rep_tags.iteritems(), key=lambda t: t[1], reverse=True)
         self.public_tags.set(tags[:5])
@@ -1611,6 +1602,106 @@ class Repository(SyncableModel):
                 links['contributing'] = contributing
 
         return links
+
+    def fetch_full_self_message(self):
+        """
+        Return the message part to display after a fetch of the object during a fetch_full
+        """
+        return 'fwr=%s, frk=%s, is_frk=%s' % (self.official_followers_count, self.official_forks_count, self.is_fork)
+
+    def fetch_full_related_message(self):
+        """
+        Return the message part to display after a fetch of the related during a fetch_full
+        """
+        return 'fwr=%s, ctb=%s' % (self.followers_count, self.contributors_count)
+
+    def get_default_token(self):
+        """
+        Return the token object for this repository's owner
+        """
+        if self.owner_id:
+            return self.get_backend().token_manager().get_for_account(self.owner)
+        return None
+
+    def fetch_full_specific(self, depth=0, token=None, to_ignore=None, async=False):
+        """
+        After the full fetch of the repository, try to make a full fetch of all
+        related objects: owner, parent_fork, forks, contributors, followers
+        """
+        if depth > 0:
+            depth -= 1
+
+            if to_ignore is None:
+                to_ignore = set
+
+            # do fetch for all followers
+            sys.stderr.write(" - full fetch of followers (for %s)\n" % self)
+            for account in self.followers.all():
+                account_str = 'core.account:%d' % account.pk
+                if account_str in to_ignore:
+                    continue
+                to_ignore.add(account_str)
+                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                # access token invalidated, get a new one
+                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                    token = None
+
+            # do fetch for owner
+            if self.owner_id:
+                account_str = 'core.account:%d' % self.owner_id
+                if account_str not in to_ignore:
+                    to_ignore.add(account_str)
+                    sys.stderr.write(" - full fetch of owner (for %s)\n" % self)
+                    token, rep_fetch_error = self.owner.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                    # access token invalidated, get a new one
+                    if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                        token = None
+
+            # do fetch for parent fork
+            if self.is_fork and self.parent_fork_id:
+                repository_str = 'core.repository:%d' % self.parent_fork_id
+                if repository_str not in to_ignore:
+                    to_ignore.add(repository_str)
+                    sys.stderr.write(" - full fetch of parent fork (for %s)\n" % self)
+                    token, rep_fetch_error = self.parent_fork.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                    # access token invalidated, get a new one
+                    if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                        token = None
+
+            # do fetch full for all forks
+            sys.stderr.write(" - full fetch of forks (for %s)\n" % self)
+            for repository in self.forks.all():
+                repository_str = 'core.repository:%d' % repository.pk
+                if repository_str in to_ignore:
+                    continue
+                to_ignore.add(repository_str)
+                token, rep_fetch_error = repository.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                # access token invalidated, get a new one
+                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                    token = None
+
+            # do fetch for all contributors
+            sys.stderr.write(" - full fetch of contributors (for %s)\n" % self)
+            for account in self.contributors.all():
+                account_str = 'core.account:%d' % account.pk
+                if account_str in to_ignore:
+                    continue
+                to_ignore.add(account_str)
+                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+
+                # access token invalidated, get a new one
+                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                    token = None
+
+    def get_search_index(self):
+        """
+        Return the search index for this model
+        """
+        return site.get_index(Repository)
 
 
 from core.signals import *

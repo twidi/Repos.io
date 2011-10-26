@@ -39,7 +39,7 @@ class GithubBackend(BaseBackend):
         """
         return all(hasattr(settings, name) for name in ('GITHUB_APP_ID', 'GITHUB_API_SECRET'))
 
-    def _get_exception(self, exception, what, access_token=None):
+    def _get_exception(self, exception, what, token=None):
         """
         Return an internal exception (BackendError)
         """
@@ -59,23 +59,78 @@ class GithubBackend(BaseBackend):
             kwargs.setdefault('cache', settings.GITHUB_CACHE_DIR)
         return Github(*args, **kwargs)
 
-    def github(self, access_token=None):
+    def github(self, token=None):
         """
         Return (and if not exists create and cache) a Github instance
-        authenticated for the given access_token, or an anonymous one if
-        there is no access_token
+        authenticated for the given token, or an anonymous one if
+        there is no token
         """
-        access_token = access_token or None
-        if access_token not in self._github_instances:
-            self._github_instances[access_token] = self.create_github_instance(access_token=access_token)
-        return self._github_instances[access_token]
+        token = token or None
+        str_token = str(token)
+        if str_token not in self._github_instances:
+            params = {}
+            if token:
+                params['access_token'] = token.token
+            self._github_instances[str_token] = self.create_github_instance(**params)
+        return self._github_instances[str_token]
 
-    def user_fetch(self, account, access_token=None):
+    def get_result_list(self, method, arguments, error, allow_pages=False):
+        """
+        Try to retrieve all the result from the given `method` with some
+        `arguments`. If `allow_pages` if True, try to fetch all available pages.
+        """
+        # store all data from all pages
+        result = []
+        # start with page one
+        page = 1
+        # we don't know yet the max length of a page
+        max_length = 0
+        while True:
+            try:
+                # get data for the current page
+                if allow_pages:
+                    args = {'page': page }
+                else:
+                    args = {}
+                args.update(arguments)
+                page_result = method(**args)
+
+                # no result ? it's the end
+                if not page_result:
+                    break
+
+                # save the result
+                result += page_result
+
+                # stop here if we don't want to fetch more pages
+                if not allow_pages:
+                    break
+
+                # check length of result
+                l_page = len(page_result)
+                # if smaller than max, it's the last page
+                if l_page < max_length:
+                    break
+                # if bigger, it's the new max
+                if l_page > max_length:
+                    max_length = l_page
+                # go next page
+                page += 1
+
+            except Exception, e:
+                if allow_pages and page > 1 and getattr(e, 'code', None) == 404:
+                    break
+                else:
+                    raise self._get_exception(e, error)
+
+        return result
+
+    def user_fetch(self, account, token=None):
         """
         Fetch the account from the provider and update the object
         """
         # get/create the github instance
-        github = self.github(access_token)
+        github = self.github(token)
 
         # get user data fromgithub
         try:
@@ -120,18 +175,15 @@ class GithubBackend(BaseBackend):
         return result
 
 
-    def user_following(self, account, access_token=None):
+    def user_following(self, account, token=None):
         """
         Fetch the accounts followed by the given one
         """
         # get/create the github instance
-        github = self.github(access_token)
+        github = self.github(token)
 
         # get users data from github
-        try:
-            gusers = github.users.following(account.slug)
-        except Exception, e:
-            raise self._get_exception(e, '%s\'s following' % account.slug)
+        gusers = self.get_result_list(github.users.following, dict(username=account.slug), '%s\'s following' % account.slug)
 
         result = []
 
@@ -140,18 +192,15 @@ class GithubBackend(BaseBackend):
 
         return result
 
-    def user_followers(self, account, access_token=None):
+    def user_followers(self, account, token=None):
         """
         Fetch the accounts following the given one
         """
         # get/create the github instance
-        github = self.github(access_token)
+        github = self.github(token)
 
         # get users data from github
-        try:
-            gusers = github.users.followers(account.slug)
-        except Exception, e:
-            raise self._get_exception(e, '%s\'s followers' % account.slug)
+        gusers = self.get_result_list(github.users.followers, dict(username=account.slug), '%s\'s followers' % account.slug)
 
         result = []
 
@@ -161,18 +210,15 @@ class GithubBackend(BaseBackend):
 
         return result
 
-    def user_repositories(self, account, access_token=None):
+    def user_repositories(self, account, token=None):
         """
         Fetch the repositories owned/watched by the given accont
         """
         # get/create the github instance
-        github = self.github(access_token)
+        github = self.github(token)
 
         # get repositories data from github
-        try:
-            grepos = github.repos.watching(account.slug)
-        except Exception, e:
-            raise self._get_exception(e, '%s\'s repositories' % account.slug)
+        grepos = self.get_result_list(github.repos.watching, dict(for_user=account.slug), '%s\'s repositories' % account.slug, allow_pages=True)
 
         result = []
 
@@ -186,11 +232,23 @@ class GithubBackend(BaseBackend):
         """
         Return a project name the provider can use
         """
-        if repository.owner_id:
-            owner = repository.owner.slug
+        if isinstance(repository, dict):
+            if 'official_owner' in repository:
+                # a mapped dict
+                owner = repository['official_owner']
+                slug = repository['slug']
+            else:
+                # an original dict from the github api
+                owner = repository['owner']
+                slug = repository['name']
         else:
-            owner = repository.official_owner
-        return self.github().project_for_user_repo(owner, repository.slug)
+            # a Repository object (from core.models)
+            if repository.owner_id:
+                owner = repository.owner.slug
+            else:
+                owner = repository.official_owner
+            slug = repository.slug
+        return self.github().project_for_user_repo(owner, slug)
 
     def parse_project(self, project):
         """
@@ -200,12 +258,12 @@ class GithubBackend(BaseBackend):
         owner,  name = project.split('/')
         return dict(slug = name, official_owner = owner)
 
-    def repository_fetch(self, repository, access_token=None):
+    def repository_fetch(self, repository, token=None):
         """
         Fetch the repository from the provider and update the object
         """
         # get/create the github instance
-        github = self.github(access_token)
+        github = self.github(token)
 
         # get repository data fromgithub
         project = repository.get_project()
@@ -246,26 +304,24 @@ class GithubBackend(BaseBackend):
 
         result = {}
 
-
         for internal_key, backend_key in simple_mapping.items():
             value = getattr(repository, backend_key, None)
             if value is not None:
                 result[internal_key] = value
 
+        result['project'] = self.repository_project(result)
+
         return result
 
-    def repository_followers(self, repository, access_token=None):
+    def repository_followers(self, repository, token=None):
         """
         Fetch the accounts following the given repository
         """
         # get/create the github instance
-        github = self.github(access_token)
+        github = self.github(token)
 
         # get users data from github
-        try:
-            gusers = github.repos.watchers(repository.project)
-        except Exception, e:
-            raise self._get_exception(e, '%s\'s followers' % repository.project)
+        gusers = self.get_result_list(github.repos.watchers, dict(project=repository.project), '%s\'s followers' % repository.project)
 
         result = []
 
@@ -275,20 +331,17 @@ class GithubBackend(BaseBackend):
 
         return result
 
-    def repository_contributors(self, repository, access_token=None):
+    def repository_contributors(self, repository, token=None):
         """
         Fetch the accounts contributing the given repository
         For each account (dict) returned, the number of contributions is stored
         in ['__extra__']['contributions']
         """
         # get/create the github instance
-        github = self.github(access_token)
+        github = self.github(token)
 
         # get users data from github
-        try:
-            gusers = github.repos.list_contributors(repository.project)
-        except Exception, e:
-            raise self._get_exception(e, '%s\'s contributors' % repository.project)
+        gusers = self.get_result_list(github.repos.list_contributors, dict(project=repository.project), '%s\'s contributors' % repository.project)
 
         result = []
 
@@ -302,23 +355,19 @@ class GithubBackend(BaseBackend):
 
         return result
 
-    def repository_readme(self, repository, access_token=None):
+    def repository_readme(self, repository, token=None):
         """
         Try to get a readme in the repository
-        # WARNING: It seems that an access token cannot be used to get list of
-        commits or a commit's detail (raise a 401)
         """
         # get/create the github instance
-        github = github_anonymous = self.github()
-        if access_token:
-            github = self.github(access_token)
+        github = self.github(token)
 
         # try with each name
         commits = None
         for name in README_NAMES:
             # we start by getting the last commit id for a file starting with this name
             try:
-                commits = github_anonymous.commits.list(
+                commits = github.commits.list(
                     project = repository.project,
                     branch = repository.default_branch or 'master',
                     file = '%s*' % name
@@ -341,7 +390,7 @@ class GithubBackend(BaseBackend):
 
             # get more information about this commit
             try:
-                commit_infos = github_anonymous.commits.show(repository.project, commits[0].id)
+                commit_infos = github.commits.show(repository.project, commits[0].id)
             except Exception, e:
                 raise self._get_exception(e, '%s\'s commits' % repository.project)
 

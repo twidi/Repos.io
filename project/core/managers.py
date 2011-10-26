@@ -4,7 +4,8 @@ from django.db import models
 
 from core.backends import get_backend, get_backend_from_auth
 from core.exceptions import OriginalProviderLoginMissing
-from core.utils import slugify
+from core.core_utils import slugify
+from core.tokens import AccessToken
 
 class SyncableModelManager(models.Manager):
     """
@@ -35,6 +36,13 @@ class AccountManager(SyncableModelManager):
             account.fetch()
         else:
             account.save()
+
+        if access_token:
+            AccessToken.objects.create(
+                backend = account.backend,
+                login = account.slug,
+                token = access_token
+            )
 
         return account
 
