@@ -19,10 +19,11 @@ def CreateAccountOnSocialAccount(sender, user, response, details, **kwargs):
     if not getattr(user, 'social_user', False):
         return False
 
-    if not user.pk:
+    is_new = not(user.pk)
+    if is_new:
         user.save()
     try:
-        Account.objects.get_for_social_auth_user(user.social_user)
+        Account.objects.associate_to_social_auth_user(user.social_user, is_new)
     except BackendError, e:
         messages.error(globals.request, e.message)
     except Exception:

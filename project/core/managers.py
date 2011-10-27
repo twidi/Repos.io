@@ -19,7 +19,7 @@ class AccountManager(SyncableModelManager):
     Manager for the Account model
     """
 
-    def get_for_social_auth_user(self, social_auth_user):
+    def associate_to_social_auth_user(self, social_auth_user, is_new):
         auth_backend = social_auth_user.provider
         backend = get_backend_from_auth(auth_backend)
 
@@ -32,17 +32,28 @@ class AccountManager(SyncableModelManager):
         account = self.get_or_new(backend.name, original_login)
         account.access_token = access_token
         account.user = social_auth_user.user
+
         if account.fetch_needed():
             account.fetch()
         else:
             account.save()
 
+        token = None
         if access_token:
-            AccessToken.objects.create(
-                backend = account.backend,
-                login = account.slug,
-                token = access_token
-            )
+            token = account.get_default_token()
+            if not token:
+                token = AccessToken.objects.create(
+                    backend = account.backend,
+                    login = account.slug,
+                    token = access_token
+                )
+
+        account.fetch_full(
+            token = token,
+            depth = 2 if is_new else 1,
+            async = True,
+            async_priority = 3 if is_new else 2,
+        )
 
         return account
 
