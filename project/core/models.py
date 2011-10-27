@@ -13,7 +13,7 @@ from model_utils import Choices
 from model_utils.models import TimeStampedModel
 from model_utils.fields import StatusField
 from haystack import site
-from redisco.containers import List, Set
+from redisco.containers import List, Set, Hash
 
 from core.backends import BACKENDS, get_backend
 from core.managers import AccountManager, RepositoryManager, OptimForListAccountManager, OptimForListRepositoryManager
@@ -372,27 +372,45 @@ class SyncableModel(TimeStampedModel):
         """
         return '%s:%d' % ('.'.join(get_app_and_model(self)), self.pk)
 
-    def fetch_full(self, token=None, depth=0, to_ignore=None, async=False):
+    def fetch_full(self, token=None, depth=0, async=False, async_priority=None):
         """
         Make a full fetch of the current object : fetch object and related
         """
         self_str = self.simple_str()
+        redis_hash = Hash(settings.WORKER_FETCH_FULL_HASH_KEY)
 
         if async:
+            if async_priority is None:
+                async_priority = depth
+
+
+            # check if already in a better priority list
+            try:
+                existing_priority = int(redis_hash[self_str])
+            except:
+                existing_priority = None
+            if existing_priority is not None and existing_priority >= async_priority:
+                return token, None
+
             sys.stderr.write("SET ASYNC (%d) FOR FETCH FULL %s #%d (token=%s)\n" % (depth, self, self.pk, token))
+
             # async : we serialize the params and put them into redis for future use
             data = dict(
                 object = self_str,
                 token = token.uid if token else None,
                 depth = depth,
-                to_ignore = list(to_ignore or set())
             )
+
             # add the serialized data to redis
             data_s = simplejson.dumps(data)
-            List(settings.WORKER_FETCH_FULL_KEY % depth).append(data_s)
+            redis_hash[self_str] = async_priority
+            List(settings.WORKER_FETCH_FULL_KEY % async_priority).append(data_s)
 
             # return dummy data when asyc
             return token, None
+
+        else:
+            del redis_hash[self_str]
 
         dmain = datetime.now()
         fetch_error = None
@@ -443,10 +461,7 @@ class SyncableModel(TimeStampedModel):
 
             # finally, perform a fetch full of related
             if not fetch_error and depth > 0:
-                if to_ignore is None:
-                    to_ignore = set()
-                to_ignore.add(self_str)
-                self.fetch_full_specific(token=token, depth=depth, to_ignore=to_ignore, async=True)
+                self.fetch_full_specific(token=token, depth=depth, async=True)
 
         except Exception, e:
                 sys.stderr.write("      => MAIN ERROR FOR FETCH FULL OF %s: %s (see below)\n" % (self, e))
@@ -1056,7 +1071,7 @@ class Account(SyncableModel):
         """
         return 'fwr=%s, fwg=%s, rep=%s' % (self.followers_count, self.following_count, self.repositories_count)
 
-    def fetch_full_specific(self, depth=0, token=None, to_ignore=None, async=False):
+    def fetch_full_specific(self, depth=0, token=None, async=False):
         """
         After the full fetch of the account, try to make a full fetch of all
         related objects: repositories, followers, following
@@ -1064,17 +1079,10 @@ class Account(SyncableModel):
         if depth > 0:
             depth -= 1
 
-            if to_ignore is None:
-                to_ignore = set
-
             # do fetch full for all repositories
             sys.stderr.write(" - full fetch of repositories (for %s)\n" % self)
             for repository in self.repositories.all():
-                repository_str = 'core.repository:%d' % repository.pk
-                if repository_str in to_ignore:
-                    continue
-                to_ignore.add(repository_str)
-                token, rep_fetch_error = repository.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+                token, rep_fetch_error = repository.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
                 if rep_fetch_error and rep_fetch_error.code in (401, 403):
@@ -1083,11 +1091,7 @@ class Account(SyncableModel):
             # do fetch for all followers
             sys.stderr.write(" - full fetch of followers (for %s)\n" % self)
             for account in self.followers.all():
-                account_str = 'core.account:%d' % account.pk
-                if account_str in to_ignore:
-                    continue
-                to_ignore.add(account_str)
-                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
                 if rep_fetch_error and rep_fetch_error.code in (401, 403):
@@ -1096,11 +1100,7 @@ class Account(SyncableModel):
             # do fetch for all following
             sys.stderr.write(" - full fetch of following (for %s)\n" % self)
             for account in self.following.all():
-                account_str = 'core.account:%d' % account.pk
-                if account_str in to_ignore:
-                    continue
-                to_ignore.add(account_str)
-                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
                 if rep_fetch_error and rep_fetch_error.code in (401, 403):
@@ -1623,7 +1623,7 @@ class Repository(SyncableModel):
             return self.get_backend().token_manager().get_for_account(self.owner)
         return None
 
-    def fetch_full_specific(self, depth=0, token=None, to_ignore=None, async=False):
+    def fetch_full_specific(self, depth=0, token=None, async=False):
         """
         After the full fetch of the repository, try to make a full fetch of all
         related objects: owner, parent_fork, forks, contributors, followers
@@ -1631,17 +1631,10 @@ class Repository(SyncableModel):
         if depth > 0:
             depth -= 1
 
-            if to_ignore is None:
-                to_ignore = set
-
             # do fetch for all followers
             sys.stderr.write(" - full fetch of followers (for %s)\n" % self)
             for account in self.followers.all():
-                account_str = 'core.account:%d' % account.pk
-                if account_str in to_ignore:
-                    continue
-                to_ignore.add(account_str)
-                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
                 if rep_fetch_error and rep_fetch_error.code in (401, 403):
@@ -1649,36 +1642,26 @@ class Repository(SyncableModel):
 
             # do fetch for owner
             if self.owner_id:
-                account_str = 'core.account:%d' % self.owner_id
-                if account_str not in to_ignore:
-                    to_ignore.add(account_str)
-                    sys.stderr.write(" - full fetch of owner (for %s)\n" % self)
-                    token, rep_fetch_error = self.owner.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+                sys.stderr.write(" - full fetch of owner (for %s)\n" % self)
+                token, rep_fetch_error = self.owner.fetch_full(depth=depth, token=token, async=async)
 
-                    # access token invalidated, get a new one
-                    if rep_fetch_error and rep_fetch_error.code in (401, 403):
-                        token = None
+                # access token invalidated, get a new one
+                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                    token = None
 
             # do fetch for parent fork
             if self.is_fork and self.parent_fork_id:
-                repository_str = 'core.repository:%d' % self.parent_fork_id
-                if repository_str not in to_ignore:
-                    to_ignore.add(repository_str)
-                    sys.stderr.write(" - full fetch of parent fork (for %s)\n" % self)
-                    token, rep_fetch_error = self.parent_fork.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+                sys.stderr.write(" - full fetch of parent fork (for %s)\n" % self)
+                token, rep_fetch_error = self.parent_fork.fetch_full(depth=depth, token=token, async=async)
 
-                    # access token invalidated, get a new one
-                    if rep_fetch_error and rep_fetch_error.code in (401, 403):
-                        token = None
+                # access token invalidated, get a new one
+                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                    token = None
 
             # do fetch full for all forks
             sys.stderr.write(" - full fetch of forks (for %s)\n" % self)
             for repository in self.forks.all():
-                repository_str = 'core.repository:%d' % repository.pk
-                if repository_str in to_ignore:
-                    continue
-                to_ignore.add(repository_str)
-                token, rep_fetch_error = repository.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+                token, rep_fetch_error = repository.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
                 if rep_fetch_error and rep_fetch_error.code in (401, 403):
@@ -1687,11 +1670,7 @@ class Repository(SyncableModel):
             # do fetch for all contributors
             sys.stderr.write(" - full fetch of contributors (for %s)\n" % self)
             for account in self.contributors.all():
-                account_str = 'core.account:%d' % account.pk
-                if account_str in to_ignore:
-                    continue
-                to_ignore.add(account_str)
-                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, to_ignore=to_ignore, async=async)
+                token, rep_fetch_error = account.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
                 if rep_fetch_error and rep_fetch_error.code in (401, 403):

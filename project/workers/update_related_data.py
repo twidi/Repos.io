@@ -36,10 +36,7 @@ def main():
     max_nb = 2500
     while run_ok:
         list_name, obj_str = redis_instance.blpop(settings.WORKER_UPDATE_RELATED_DATA_KEY)
-        try:
-            redis_instance.srem(settings.WORKER_UPDATE_RELATED_DATA_SET_KEY, obj_str)
-        except:
-            pass
+        redis_instance.srem(settings.WORKER_UPDATE_RELATED_DATA_SET_KEY, obj_str)
 
         nb += 1
         len_to_update = redis_instance.scard(settings.WORKER_UPDATE_RELATED_DATA_SET_KEY)

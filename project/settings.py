@@ -254,7 +254,8 @@ REDIS_PARAMS = dict(
     db = 0,
 )
 WORKER_FETCH_FULL_KEY = 'fetch_full:%d'
-WORKER_FETCH_FULL_MAX_DEPTH = 10
+WORKER_FETCH_FULL_HASH_KEY = 'fetch_full_hash'
+WORKER_FETCH_FULL_MAX_PRIORITY = 5
 WORKER_FETCH_FULL_ERROR_KEY = 'fetch_full_error'
 
 WORKER_UPDATE_RELATED_DATA_KEY = 'update_related_data'

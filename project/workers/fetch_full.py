@@ -14,7 +14,7 @@ import re
 
 from haystack import site
 import redis
-from redisco.containers import List
+from redisco.containers import List, Hash
 
 from django.conf import settings
 from django.utils import simplejson
@@ -26,7 +26,7 @@ RE_IGNORE_IMPORT = re.compile(r'(?:, )?"to_ignore": \[[^\]]*\]')
 
 run_ok = True
 
-def parse_json(json):
+def parse_json(json, priority):
     """
     Parse the data got from redis lists
     """
@@ -44,6 +44,14 @@ def parse_json(json):
     else:
         raise Exception('Invalid object string')
 
+    # check if object not already done or to be done in another list
+    try:
+        wanted_priority = int(Hash(settings.WORKER_FETCH_FULL_HASH_KEY)[data['object']])
+    except:
+        wanted_priority = None
+    if wanted_priority is None or wanted_priority != priority:
+        return { 'ignore': True }
+
     # load object
     result['object'] = model.objects.get(pk=id)
 
@@ -54,9 +62,6 @@ def parse_json(json):
     # which depth...
     result['depth'] = data.get('depth', 0) or 0
 
-    # and objects to ignore...
-    result['to_ignore'] = set(data.get('to_ignore', []))
-
     return result
 
 def main():
@@ -65,7 +70,7 @@ def main():
     """
     global run_ok
 
-    lists = [settings.WORKER_FETCH_FULL_KEY % depth for depth in range(settings.WORKER_FETCH_FULL_MAX_DEPTH, -1, -1)]
+    lists = [settings.WORKER_FETCH_FULL_KEY % priority for priority in range(settings.WORKER_FETCH_FULL_MAX_PRIORITY, -1, -1)]
     redis_instance = redis.Redis(**settings.REDIS_PARAMS)
 
     nb = 0
@@ -75,6 +80,8 @@ def main():
         # wait for new data
         list_name, json = redis_instance.blpop(lists)
 
+        priority = int(list_name[-1])
+
         nb += 1
         len_list = redis_instance.llen(list_name)
 
@@ -82,7 +89,7 @@ def main():
 
         try:
             # unserialize
-            data = parse_json(json)
+            data = parse_json(json, priority)
             if not data:
                 raise Exception('Invalid data : %s' % data)
         except:
@@ -91,14 +98,16 @@ def main():
             List(settings.WORKER_FETCH_FULL_ERROR_KEY).append(json)
 
         else:
+            if data.get('ignore', False):
+                sys.stderr.write("  => ignore\n")
 
-            # we're good
-            data['object'].fetch_full(
-                token = data['token'],
-                depth = data['depth'],
-                to_ignore = data['to_ignore'],
-                async = False
-            )
+            else:
+                # we're good
+                data['object'].fetch_full(
+                    token = data['token'],
+                    depth = data['depth'],
+                    async = False
+                )
 
         if nb >= max_nb:
             run_ok = False
