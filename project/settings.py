@@ -253,6 +253,7 @@ REDIS_PARAMS = dict(
     port = 6379,
     db = 0,
 )
+WORKER_FETCH_OLDS = 'last_fetch'
 WORKER_FETCH_FULL_KEY = 'fetch_full:%d'
 WORKER_FETCH_FULL_HASH_KEY = 'fetch_full_hash'
 WORKER_FETCH_FULL_MAX_PRIORITY = 5

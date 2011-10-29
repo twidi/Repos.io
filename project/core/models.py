@@ -13,7 +13,7 @@ from model_utils import Choices
 from model_utils.models import TimeStampedModel
 from model_utils.fields import StatusField
 from haystack import site
-from redisco.containers import List, Set, Hash
+from redisco.containers import List, Set, Hash, SortedSet
 
 from core.backends import BACKENDS, get_backend
 from core.managers import AccountManager, RepositoryManager, OptimForListAccountManager, OptimForListRepositoryManager
@@ -25,6 +25,7 @@ from tagging.words import get_tags_for_repository
 from tagging.managers import TaggableManager
 
 from utils.models import get_app_and_model, update as model_update
+from utils import now_timestamp, dt2timestamp
 
 from private.views import get_user_note_for_object, get_user_tags_for_object
 
@@ -51,6 +52,8 @@ class SyncableModel(TimeStampedModel):
     # we need to fetch is the last fetch is more than
     MIN_FETCH_DELTA_NEEDED = getattr(settings, 'MIN_FETCH_DELTA_NEEDED', timedelta(hours=6))
     MIN_FETCH_RELATED_DELTA_NEEDED = getattr(settings, 'MIN_FETCH_RELATED_DELTA_NEEDED', timedelta(hours=6))
+    # limit for auto fetch full
+    MIN_FETCH_FULL_DELTA = getattr(settings, 'MIN_FETCH_FULL_DELTA', timedelta(days=2))
 
     # The backend from where this object come from
     backend = models.CharField(max_length=30, choices=BACKENDS_CHOICES, db_index=True)
@@ -378,6 +381,7 @@ class SyncableModel(TimeStampedModel):
         """
         self_str = self.simple_str()
         redis_hash = Hash(settings.WORKER_FETCH_FULL_HASH_KEY)
+        redis_zset = SortedSet(settings.WORKER_FETCH_OLDS)
 
         if async:
             if async_priority is None:
@@ -412,6 +416,12 @@ class SyncableModel(TimeStampedModel):
         else:
             del redis_hash[self_str]
 
+        # check if not done too recently
+        score = redis_zset.score(self_str)
+        if score and score > dt2timestamp(datetime.now() - self.MIN_FETCH_FULL_DELTA):
+            return token, None
+
+        # ok, GO
         dmain = datetime.now()
         fetch_error = None
         try:
@@ -462,6 +472,9 @@ class SyncableModel(TimeStampedModel):
             # finally, perform a fetch full of related
             if not fetch_error and depth > 0:
                 self.fetch_full_specific(token=token, depth=depth, async=True)
+
+            # save the date of last fetch
+            redis_zset.add(self_str, now_timestamp())
 
         except Exception, e:
                 sys.stderr.write("      => MAIN ERROR FOR FETCH FULL OF %s: %s (see below)\n" % (self, e))
@@ -706,6 +719,8 @@ class Account(SyncableModel):
     # we need to fetch is the last fetch is more than
     MIN_FETCH_DELTA_NEEDED = getattr(settings, 'ACCOUNT_MIN_FETCH_DELTA_NEEDED', SyncableModel.MIN_FETCH_DELTA_NEEDED)
     MIN_FETCH_RELATED_DELTA_NEEDED = getattr(settings, 'ACCOUNT_MIN_FETCH_RELATED_DELTA_NEEDED', SyncableModel.MIN_FETCH_RELATED_DELTA_NEEDED)
+    # limit for auto fetch full
+    MIN_FETCH_FULL_DELTA = getattr(settings, 'MIN_FETCH_FULL_DELTA', SyncableModel.MIN_FETCH_FULL_DELTA)
 
     # Basic informations
 
@@ -1126,6 +1141,8 @@ class Repository(SyncableModel):
     # we need to fetch is the last fetch is more than
     MIN_FETCH_DELTA_NEEDED = getattr(settings, 'REPOSITORY_MIN_FETCH_DELTA_NEEDED', SyncableModel.MIN_FETCH_DELTA_NEEDED)
     MIN_FETCH_RELATED_DELTA_NEEDED = getattr(settings, 'REPOSITORY_MIN_FETCH_RELATED_DELTA_NEEDED', SyncableModel.MIN_FETCH_RELATED_DELTA_NEEDED)
+    # limit for auto fetch full
+    MIN_FETCH_FULL_DELTA = getattr(settings, 'MIN_FETCH_FULL_DELTA', SyncableModel.MIN_FETCH_FULL_DELTA)
 
     # Basic informations
 
