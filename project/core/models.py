@@ -375,6 +375,13 @@ class SyncableModel(TimeStampedModel):
         """
         return '%s:%d' % ('.'.join(get_app_and_model(self)), self.pk)
 
+    def fetch_full_allowed(self):
+        """
+        Return True if a fetch_full can be done, respecting a delay
+        """
+        score = redis_zset.score(self.simple_str())
+        return score and score > dt2timestamp(datetime.now() - self.MIN_FETCH_FULL_DELTA)
+
     def fetch_full(self, token=None, depth=0, async=False, async_priority=None):
         """
         Make a full fetch of the current object : fetch object and related
@@ -417,8 +424,7 @@ class SyncableModel(TimeStampedModel):
             del redis_hash[self_str]
 
         # check if not done too recently
-        score = redis_zset.score(self_str)
-        if score and score > dt2timestamp(datetime.now() - self.MIN_FETCH_FULL_DELTA):
+        if not self.fetch_full_allowed():
             return token, None
 
         # ok, GO
