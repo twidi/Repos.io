@@ -126,6 +126,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django_globals.middleware.Global',
+    'core.middleware.FetchFullCurrentAccounts',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
