@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load cache %}
+{% load cache reposio_core %}
 {% block content %}
 
 <header class="main_header">
@@ -89,8 +89,8 @@
                 <tr>
                     <td>
                         {% include "core/repositories/logo_small.html" %}
-                        {% include "core/repositories/link_no_owner.html" %}
-                        <small>by {% include "core/accounts/link_no_backend.html" %}</small>
+                        <span title="{{ repository.description }}">{% include "core/repositories/link_no_owner.html" %}</span>
+                        {% if repository.backend|supports:'repository_owner' %}<small>by {% with account=repository.owner %}{% include "core/accounts/link_no_backend.html" %}{% endwith %}</small>{% endif %}
                     </td>
                 </tr>
                 {% endfor %}
