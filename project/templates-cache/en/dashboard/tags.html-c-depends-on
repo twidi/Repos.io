@@ -8,10 +8,8 @@ core/accounts/link.html
 dashboard/tagged_accounts.html
 core/accounts/sort_th_name.html
 core/sort_th.html
+core/th_extra.html
 core/accounts/main_account_cell.html
-core/accounts/list_extra.html
-core/list_extra.html
-dashboard/include_tags.html
 core/accounts/avatar.html
 core/accounts/link.html
 core/accounts/score.html
@@ -20,6 +18,9 @@ core/accounts/tags.html
 core/tags.html
 core/accounts/links.html
 dashboard/include_tags.html
+core/accounts/list_extra.html
+core/list_extra.html
+dashboard/include_tags.html
 dashboard/tagged_repositories.html
 core/repositories/sort_th_name.html
 core/sort_th.html
@@ -27,10 +28,8 @@ core/repositories/sort_th_owner.html
 core/sort_th.html
 core/repositories/sort_th_updated.html
 core/sort_th.html
+core/th_extra.html
 core/repositories/main_repository_cell.html
-core/repositories/list_extra.html
-core/list_extra.html
-dashboard/include_tags.html
 core/repositories/logo.html
 core/repositories/link_no_owner.html
 core/repositories/link.html
@@ -46,4 +45,7 @@ core/accounts/avatar.html
 core/accounts/link_no_backend.html
 core/accounts/link.html
 core/repositories/date_modified_cell.html
+dashboard/include_tags.html
+core/repositories/list_extra.html
+core/list_extra.html
 dashboard/include_tags.html

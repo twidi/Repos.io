@@ -1,5 +1,4 @@
 {% load cache %}
-{% include "core/repositories/list_extra.html" %}
 {% cache cache_timeout.repository_main_cell repository_main_cell_part1 repository.pk repository.modified %}
 {% include "core/repositories/logo.html" %}
 <strong>{% include "core/repositories/link_no_owner.html" %}</strong>

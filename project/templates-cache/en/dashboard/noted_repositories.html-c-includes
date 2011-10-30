@@ -2,6 +2,8 @@ core/repositories/sort_th_name.html
 core/repositories/sort_th_owner.html
 core/repositories/sort_th_updated.html
 core/sort_th.html
+core/th_extra.html
 core/repositories/main_repository_cell.html
 core/accounts/owner_cell.html
 core/repositories/date_modified_cell.html
+core/repositories/list_extra.html

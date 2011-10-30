@@ -45,6 +45,7 @@
                         {% if user_accounts_by_id|length > 1 %}
                             <th>Your account(s)</th>
                         {% endif %}
+                        {% include "core/th_extra.html" %}
                     </tr>
                 </thead>
                 <tbody>
@@ -60,7 +61,7 @@
                             {% include "core/repositories/date_modified_cell.html" %}
                         </td>
                         {% if user_accounts_by_id|length > 1 %}
-                            <td>
+                            <td class="accounts">
                                 {% if repository.current_user_account_id_list %}
                                     {% for user_account_id in repository.current_user_account_id_list %}
                                         {% with account=user_accounts_by_id|dict_get:user_account_id %}
@@ -73,6 +74,7 @@
                                 {% endif %}
                             </td>
                         {% endif %}
+                        {% include "core/repositories/list_extra.html" %}
                     </tr>
                     {% endfor %}
                 </tbody>

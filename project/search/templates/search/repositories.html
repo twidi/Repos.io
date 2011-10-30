@@ -36,13 +36,13 @@
                             {% include "core/repositories/sort_th_owner.html" %}
                             {% include "core/repositories/sort_th_updated.html" %}
                         {% endwith %}
+                        {% include "core/th_extra.html" %}
                     </tr>
                 </thead>
                 <tbody>
                     {% for repository in page.object_list %}
                         <tr>
                             <td>
-                                {% include "core/repositories/list_extra.html" %}
                                 {{ repository.renderer_main|safe }}
                                 {% with score=repository.internal_score max_score=200 ratio=2 %}{% include "core/repositories/score.html" %}{% endwith %}
                                 {{ repository.renderer_description|safe }}
@@ -53,6 +53,7 @@
                             <td>
                                 {{ repository.renderer_updated|safe }}
                             </td>
+                            {% include "core/repositories/list_extra.html" %}
                         </tr>
                     {% endfor %}
                 </tbody>

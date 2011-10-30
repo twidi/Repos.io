@@ -12,10 +12,8 @@ core/repositories/sort_th_owner.html
 core/sort_th.html
 core/repositories/sort_th_updated.html
 core/sort_th.html
+core/th_extra.html
 core/repositories/main_repository_cell.html
-core/repositories/list_extra.html
-core/list_extra.html
-dashboard/include_tags.html
 core/repositories/logo.html
 core/repositories/link_no_owner.html
 core/repositories/link.html
@@ -35,3 +33,6 @@ core/accounts/avatar_small.html
 core/accounts/avatar.html
 core/accounts/link_no_backend.html
 core/accounts/link.html
+core/repositories/list_extra.html
+core/list_extra.html
+dashboard/include_tags.html

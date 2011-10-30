@@ -92,7 +92,11 @@
                             <td>
                                 <div class="rel_popover" data-popover-title="Your private note">
                                     <img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" />
-                                    <div>{{ obj.current_user_rendered_note|safe }}</div>
+                                    <div><div class="note_container">
+                                        <blockquote>{{ account.current_user_rendered_note|safe }}</blockquote>
+                                        <hr />
+                                        <em>Last updated: {{ account.current_user_note_modified }}</em>
+                                    </div></div>
                                 </div>
                             </td>
                         </tr>

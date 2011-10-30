@@ -11,13 +11,14 @@
 
             <p>{{ repository.slug }} (by {{ repository.owner.slug }}) has {{ repository.contributors_count }} contributors : <small>(last fetch on {{ repository.contributors_modified }})</small></p>
 
-            <table class='zebra-striped accounts with_owner with_extras'>
+            <table class='zebra-striped accounts{% if user.id %} with_extras{% endif %}'>
                 <thead>
                     <tr>
                         {% include "core/accounts/sort_th_name.html"%}
                         <th class="blue">Owner</th>
                         <th class="purple">Follower</th>
                         <th class="green">Links</th>
+                        {% include "core/th_extra.html" %}
                     </tr>
                 </thead>
                 <tbody>
@@ -31,6 +32,7 @@
                         <td>
                             {% include "core/accounts/links.html" %}
                         </td>
+                        {% include "core/accounts/list_extra.html" %}
                     </tr>
                     {% endfor %}
                 </tbody>

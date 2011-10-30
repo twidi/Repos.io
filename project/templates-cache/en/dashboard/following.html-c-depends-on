@@ -7,10 +7,8 @@ core/accounts/avatar.html
 core/accounts/link.html
 core/accounts/sort_th_name.html
 core/sort_th.html
+core/th_extra.html
 core/accounts/main_account_cell.html
-core/accounts/list_extra.html
-core/list_extra.html
-dashboard/include_tags.html
 core/accounts/avatar.html
 core/accounts/link.html
 core/accounts/score.html
@@ -22,3 +20,6 @@ core/accounts/avatar_small.html
 core/accounts/avatar.html
 core/accounts/link_no_backend.html
 core/accounts/link.html
+core/accounts/list_extra.html
+core/list_extra.html
+dashboard/include_tags.html

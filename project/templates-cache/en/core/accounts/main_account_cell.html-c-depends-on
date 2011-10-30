@@ -1,6 +1,3 @@
-core/accounts/list_extra.html
-core/list_extra.html
-dashboard/include_tags.html
 core/accounts/avatar.html
 core/accounts/link.html
 core/accounts/score.html

@@ -7,6 +7,7 @@
                 {% include "core/repositories/sort_th_updated.html" %}
             {% endwith %}
             <th>Your tags</th>
+            {% include "core/th_extra.html" %}
         </tr>
     </thead>
     <tbody>
@@ -24,6 +25,7 @@
             <td>
                 {% with obj_type="repositories" tags=repository.current_user_tags %}{% include "dashboard/include_tags.html" %}{% endwith %}
             </td>
+            {% include "core/repositories/list_extra.html" %}
         </tr>
         {% endfor %}
     </tbody>

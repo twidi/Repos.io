@@ -1,6 +1,6 @@
 core/accounts/followers.html
 core/accounts/following.html
-core/accounts/main_account_cell.html
+search/accounts.html
 core/repositories/contributors.html
 core/repositories/followers.html
 dashboard/followers.html
@@ -9,4 +9,3 @@ dashboard/noted_accounts.html
 dashboard/notes.html
 dashboard/tagged_accounts.html
 dashboard/tags.html
-search/accounts.html
