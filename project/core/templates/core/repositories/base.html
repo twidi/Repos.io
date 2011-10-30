@@ -56,7 +56,7 @@
             {% if repository.backend|supports:'repository_followers' %}
                 {% if repository.followers_modified or subsection == 'followers' %}
                     <li{% if subsection == 'followers' %} class="active"{% endif %}>
-                        <a href="{{ repository.get_followers_url }}">{{ repository.followers_count }}{% if not repository.followers_modified %}?{% endif %} followers</a>
+                        <a href="{{ repository.get_followers_url }}">{{ repository.followers_count|default:0 }}{% if not repository.followers_modified %}?{% endif %} followers</a>
                     </li>
                 {% endif %}
             {% endif %}
@@ -64,7 +64,7 @@
             {% if repository.backend|supports:'repository_contributors' %}
                 {% if repository.contributors_modified or subsection == 'contributors' %}
                     <li{% if subsection == 'contributors' %} class="active"{% endif %}>
-                        <a href="{{ repository.get_contributors_url }}">{% if repository.contributors_modified %}{{ repository.contributors_count }}{% else %}??{% endif %} contributors</a>
+                        <a href="{{ repository.get_contributors_url }}">{% if repository.contributors_modified %}{{ repository.contributors_count|default:0 }}{% else %}??{% endif %} contributors</a>
                     </li>
                 {% endif %}
             {% endif %}
