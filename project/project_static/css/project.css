@@ -1,10 +1,7 @@
 /* Topbar's height and a little more */
-html, body {
-    background: #eee;
-}
-
 body {
     padding-top: 40px;
+    background: #111 url(../img/background.jpg) center 40px repeat-y;
 }
 
 #content {
