@@ -5,6 +5,7 @@
             {% include "core/repositories/sort_th_owner.html" %}
             {% include "core/repositories/sort_th_updated.html" %}
             {% with key="note" name="Note date" default_reverse=1 %}{% include "core/sort_th.html" %}{% endwith %}
+            {% include "core/th_extra.html" %}
         </tr>
     </thead>
     <tbody>
@@ -19,7 +20,8 @@
             <td>
                 {% include "core/repositories/date_modified_cell.html" %}
             </td>
-            <td>{{ repository.current_user_note_modified }}</td>
+            <td>{{ repository.current_user_note_modified|date }}</td>
+            {% include "core/repositories/list_extra.html" %}
         </tr>
         {% endfor %}
     </tbody>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load cache %}
+{% load cache reposio_core %}
 {% block content %}
 
 <header class="main_header">
@@ -48,9 +48,9 @@
         <p><strong>Repos.io</strong> is here to help you organize repositories you own or follow on many sites (we call them providers), like Github, Bitbucket, Google Code...<em>*</em></p>
         <p>Just start by authenticate with a provider (you'll then be able to associate other accounts), and enjoy !</p>
         <p>You can see your accounts, your followers and following, your own repositories and the ones you follow on each providers, you can note them, star them, add private notes...</p>
-        <p>Actually we only do read-only task on authorized providers, but later you'll be able to manage all your repositories here.</p>
         <p class='with-btn'><a class="btn primary large" href="{% url accounts_login %}">Authenticate with a provider</a></p>
         <p><em>* we only support Github right now, others will come later</em></p>
+        {% include "accounts/include_about.html" %}
 
     {% endif %}
 
@@ -89,8 +89,8 @@
                 <tr>
                     <td>
                         {% include "core/repositories/logo_small.html" %}
-                        {% include "core/repositories/link_no_owner.html" %}
-                        <small>by {% include "core/accounts/link_no_backend.html" %}</small>
+                        <span title="{{ repository.description }}">{% include "core/repositories/link_no_owner.html" %}</span>
+                        {% if repository.backend|supports:'repository_owner' %}<small>by {% with account=repository.owner %}{% include "core/accounts/link_no_backend.html" %}{% endwith %}</small>{% endif %}
                     </td>
                 </tr>
                 {% endfor %}

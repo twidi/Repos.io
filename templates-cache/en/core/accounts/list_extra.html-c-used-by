@@ -1,0 +1,11 @@
+core/accounts/followers.html
+core/accounts/following.html
+search/accounts.html
+core/repositories/contributors.html
+core/repositories/followers.html
+dashboard/followers.html
+dashboard/following.html
+dashboard/noted_accounts.html
+dashboard/notes.html
+dashboard/tagged_accounts.html
+dashboard/tags.html

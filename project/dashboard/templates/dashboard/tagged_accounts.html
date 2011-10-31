@@ -8,6 +8,7 @@
             {% endwith %}
             <th class="green">Links</th>
             <th>Your tags</th>
+            {% include "core/th_extra.html" %}
         </tr>
     </thead>
     <tbody>
@@ -22,6 +23,7 @@
             <td>
                 {% with obj_type="accounts" tags=account.current_user_tags %}{% include "dashboard/include_tags.html" %}{% endwith %}
             </td>
+            {% include "core/accounts/list_extra.html" %}
         </tr>
         {% endfor %}
     </tbody>

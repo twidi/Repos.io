@@ -4,9 +4,11 @@ $(document).ready(function() {
         title: 'data-popover-title',
         content: function() {
             return $(this).children('div').html();
-        }
-    });
-    $('.rel_popover').popover({
+        },
         offset: 10
+    });
+    $('.rel_popover').popover();
+    $('.rel_popover_left').popover({
+        placement: 'left'
     });
 });

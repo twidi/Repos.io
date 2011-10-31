@@ -6,6 +6,7 @@
             {% include "core/accounts/sort_th_name.html" %}
             <th class="green">Links</th>
             {% with key="note" name="Note date" default_reverse=1 %}{% include "core/sort_th.html" %}{% endwith %}
+            {% include "core/th_extra.html" %}
         </tr>
     </thead>
     <tbody>
@@ -17,7 +18,8 @@
             <td>
                 {% include "core/accounts/links.html" %}
             </td>
-            <td>{{ account.current_user_note_modified }}</td>
+            <td>{{ account.current_user_note_modified|date }}</td>
+            {% include "core/accounts/list_extra.html" %}
         </tr>
         {% endfor %}
     </tbody>

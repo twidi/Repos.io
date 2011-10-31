@@ -1,10 +1,10 @@
 /* Topbar's height and a little more */
-html, body {
-    background: #eee;
+html {
+    background: #111 url(../img/background.jpg) center 40px repeat-y;
 }
-
 body {
     padding-top: 40px;
+    background: transparent;
 }
 
 #content {
@@ -51,7 +51,7 @@ ul.tags li {
     margin-left: -5px;
 }
 
-.rel_popover div {
+.rel_popover div, .rel_popover_left div {
     display: none;
 }
 
@@ -274,15 +274,16 @@ body#search-accounts table.accounts {
 }
 
 /* Tables with an extra div info in the last column */
-table.with_extras td:first-child {
-    padding-right: 110px !important;
+table.with_extras th:last-child {
+    text-align: right;
+}
+table.with_extras td:last-child {
+    border-left: #ddd dashed 1px;
 }
 table.with_extras div.extra {
     margin-top: 0;
-    float: right;
-    margin-right: -105px;
 }
-table.with_extras div.extra .rel_popover {
+table.with_extras div.extra .rel_popover_left {
     float: right;
     margin-left: 5px;
 }
@@ -292,14 +293,10 @@ table.with_extras div.extra img {
 table.with_extras div.extra .special-tags {
     margin: 0;
     max-width: 70px;
-    margin-left: 10px;
-    float: right;
-    text-align: right;
-    margin-right: 21px;
 }
 table.with_extras div.extra.with_note .special-tags,
 table.with_extras div.extra.with_tags .special-tags {
-    margin-right: 0;
+    margin-right: 21px;
 }
 table.with_extras div.extra .special-tags .label {
     font-size: 8px;
@@ -741,22 +738,28 @@ body#dashboard-notes table.repositories td:nth-child(4) {
     white-space: nowrap;
 }
 /* Dashboard followers and following */
-body#dashboard-following table.accounts td:last-child > div,
-body#dashboard-followers table.accounts td:last-child > div {
+body#dashboard-following table.accounts td.accounts {
+    border-left: #ddd dashed 1px;
+}
+body#dashboard-following table.accounts td.accounts > div,
+body#dashboard-followers table.accounts td.accounts > div {
     white-space: nowrap;
 }
-body#dashboard-following table.accounts td:last-child > div img,
-body#dashboard-followers table.accounts td:last-child > div img {
+body#dashboard-following table.accounts td.accounts > div img,
+body#dashboard-followers table.accounts td.accounts > div img {
     vertical-align: middle;
     -webkit-border-radius: 2px;
     -moz-border-radius: 2px;
     border-radius: 2px;
 }
 /* Dashboard repositories */
-body#dashboard-repositories table.repositories td:last-child > div {
+body#dashboard-repositories table.repositories td.accounts {
+    border-left: #ddd dashed 1px;
+}
+body#dashboard-repositories table.repositories td.accounts > div {
     white-space: nowrap;
 }
-body#dashboard-repositories table.repositories td:last-child > div img {
+body#dashboard-repositories table.repositories td.accounts > div img {
     vertical-align: middle;
     -webkit-border-radius: 2px;
     -moz-border-radius: 2px;
