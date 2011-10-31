@@ -51,7 +51,7 @@ ul.tags li {
     margin-left: -5px;
 }
 
-.rel_popover div {
+.rel_popover div, .rel_popover_left div {
     display: none;
 }
 
@@ -283,7 +283,7 @@ table.with_extras td:last-child {
 table.with_extras div.extra {
     margin-top: 0;
 }
-table.with_extras div.extra .rel_popover {
+table.with_extras div.extra .rel_popover_left {
     float: right;
     margin-left: 5px;
 }

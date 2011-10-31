@@ -1,5 +1,5 @@
 {% if obj.current_user_has_note or obj.current_user_has_tags %}
-    <div class="rel_popover" data-popover-title="Your private informations" title="You have private informations !">
+    <div class="rel_popover_left" data-popover-title="Your private informations" title="You have private informations !">
         <a href="{{ obj.get_absolute_url }}"><img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" /></a>
         <div><div class="extra_container{% if obj.current_user_has_note %} with_note {% endif %}{% if obj.current_user_has_tags %} with_tags{% endif %}">
             {% if obj.current_user_has_tags %}
