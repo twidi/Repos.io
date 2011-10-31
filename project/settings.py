@@ -206,7 +206,9 @@ LOGGING = {
     }
 }
 
-# social_autho
+DATE_FORMAT = "Y-m-d H:i"
+
+# social_auth
 AUTHENTICATION_BACKENDS = (
     'social_auth.backends.contrib.github.GithubBackend',
     'django.contrib.auth.backends.ModelBackend',

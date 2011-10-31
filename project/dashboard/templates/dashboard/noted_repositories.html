@@ -20,7 +20,7 @@
             <td>
                 {% include "core/repositories/date_modified_cell.html" %}
             </td>
-            <td>{{ repository.current_user_note_modified }}</td>
+            <td>{{ repository.current_user_note_modified|date }}</td>
             {% include "core/repositories/list_extra.html" %}
         </tr>
         {% endfor %}
