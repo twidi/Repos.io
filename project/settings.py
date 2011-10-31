@@ -105,7 +105,7 @@ TEMPLATE_LOADERS = (
 )
 MEDIA_CACHE_DIR = os.path.normpath(os.path.join(MEDIA_ROOT, 'cache/'))
 MEDIA_CACHE_URL = os.path.normpath(os.path.join(MEDIA_URL, 'cache/'))
-TEMPLATE_CACHE_DIR = os.path.normpath(os.path.join(PROJECT_PATH, 'templates-cache/'))
+TEMPLATE_CACHE_DIR = os.path.normpath(os.path.join(PROJECT_PATH, '..', 'templates-cache/'))
 # Enabled modules of the template preprocessor
 TEMPLATE_PREPROCESSOR_OPTIONS = {
         # Default settings
