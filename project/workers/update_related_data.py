@@ -11,7 +11,7 @@ import traceback
 from datetime import datetime
 
 from django.conf import settings
-from django.db import transaction, IntegrityError
+from django.db import transaction, IntegrityError, DatabaseError
 
 from haystack import site
 import redis
@@ -27,7 +27,7 @@ def run_one(obj):
     """
     try:
         obj.update_related_data(async=False)
-    except IntegrityError, e:
+    except (IntegrityError, DatabaseError), e:
         transaction.rollback()
         raise e
     else:
@@ -89,7 +89,6 @@ def main():
 def signal_handler(signum, frame):
     global run_ok
     run_ok = False
-    sys.exit(0)
 
 if __name__ == "__main__":
     stop_signal(signal_handler)

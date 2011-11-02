@@ -10,7 +10,7 @@ import sys
 
 from django.conf import settings
 from django.utils import simplejson
-from django.db import transaction, IntegrityError
+from django.db import transaction, IntegrityError, DatabaseError
 
 import traceback
 from datetime import datetime
@@ -56,7 +56,7 @@ def run_one(obj, count_type, use_count):
             use_count = use_count,
             async = False
         )
-    except IntegrityError, e:
+    except (IntegrityError, DatabaseError), e:
         transaction.rollback()
         raise e
     else:
@@ -105,7 +105,6 @@ def main():
 def signal_handler(signum, frame):
     global run_ok
     run_ok = False
-    sys.exit(0)
 
 if __name__ == "__main__":
     stop_signal(signal_handler)

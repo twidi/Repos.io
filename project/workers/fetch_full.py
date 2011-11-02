@@ -18,7 +18,7 @@ from redisco.containers import List, Hash
 
 from django.conf import settings
 from django.utils import simplejson
-from django.db import IntegrityError
+from django.db import IntegrityError, DatabaseError
 
 from core.models import Account, Repository
 from core.tokens import AccessTokenManager
@@ -109,7 +109,7 @@ def main():
                     depth = data['depth'],
                     async = False
                 )
-                if error and isinstance(error, IntegrityError):
+                if error and isinstance(error, (DatabaseError, IntegrityError)):
                     # stop the process if integrityerror to start a new transaction
                     run_ok = False
 
@@ -120,7 +120,6 @@ def main():
 def signal_handler(signum, frame):
     global run_ok
     run_ok = False
-    sys.exit(0)
 
 
 if __name__ == "__main__":
