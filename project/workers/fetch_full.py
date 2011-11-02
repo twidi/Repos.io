@@ -18,6 +18,7 @@ from redisco.containers import List, Hash
 
 from django.conf import settings
 from django.utils import simplejson
+from django.db import IntegrityError
 
 from core.models import Account, Repository
 from core.tokens import AccessTokenManager
@@ -103,11 +104,14 @@ def main():
 
             else:
                 # we're good
-                data['object'].fetch_full(
+                _, error = data['object'].fetch_full(
                     token = data['token'],
                     depth = data['depth'],
                     async = False
                 )
+                if error and isinstance(error, IntegrityError):
+                    # stop the process if integrityerror to start a new transaction
+                    run_ok = False
 
         if nb >= max_nb:
             run_ok = False

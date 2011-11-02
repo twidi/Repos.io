@@ -11,6 +11,7 @@ import traceback
 from datetime import datetime
 
 from django.conf import settings
+from django.db import transaction, IntegrityError
 
 from haystack import site
 import redis
@@ -18,6 +19,19 @@ import redis
 from core.models import Account, Repository
 
 run_ok = True
+
+@transaction.commit_manually
+def run_one(obj):
+    """
+    Update related for `obj`, in its own transaction
+    """
+    try:
+        obj.update_related_data(async=False)
+    except IntegrityError, e:
+        transaction.rollback()
+        raise e
+    else:
+        transaction.commit()
 
 def main():
     """
@@ -58,7 +72,7 @@ def main():
             sys.stderr.write(' (%s)' % obj)
 
             # if still here, update the object
-            obj.update_related_data(async=False)
+            run_one(obj)
 
         except Exception, e:
             sys.stderr.write(" => ERROR : %s (see below)\n" % e)

@@ -485,6 +485,7 @@ class SyncableModel(TimeStampedModel):
             SortedSet(settings.WORKER_FETCH_OLDS).add(self_str, now_timestamp())
 
         except Exception, e:
+                fetch_error = e
                 sys.stderr.write("      => MAIN ERROR FOR FETCH FULL OF %s: %s (see below)\n" % (self, e))
                 sys.stderr.write("====================================================================\n")
                 sys.stderr.write('\n'.join(traceback.format_exception(*sys.exc_info())))

@@ -10,6 +10,7 @@ import sys
 
 from django.conf import settings
 from django.utils import simplejson
+from django.db import transaction, IntegrityError
 
 import traceback
 from datetime import datetime
@@ -43,6 +44,24 @@ def parse_json(json):
 
     return data
 
+@transaction.commit_manually
+def run_one(obj, count_type, use_count):
+    """
+    Update counts for `obj`, in its own transaction
+    """
+    try:
+        obj.update_count(
+            name = count_type,
+            save = True,
+            use_count = use_count,
+            async = False
+        )
+    except IntegrityError, e:
+        transaction.rollback()
+        raise e
+    else:
+        transaction.commit()
+
 def main():
     """
     Main function to run forever...
@@ -65,12 +84,7 @@ def main():
             data = parse_json(json)
             sys.stderr.write("[%s  #%d | left : %d] %s.%s (%s)" % (d, nb, len_to_update, data['object_str'], data['count_type'], data['object']))
 
-            data['object'].update_count(
-                name = data['count_type'],
-                save = True,
-                use_count = data['use_count'],
-                async = False
-            )
+            run_one(data['object'], data['count_type'], data['use_count'])
 
         except Exception, e:
             sys.stderr.write(" => ERROR : %s (see below)\n" % e)
