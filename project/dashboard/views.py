@@ -29,6 +29,7 @@ def _get_sorted_user_tags(user, only=None):
 
         tags = {}
         if not tagged_items:
+            result[obj_type] = []
             continue
 
         for tag_slug, tag_name, obj in tagged_items:
@@ -54,6 +55,8 @@ def _get_last_user_notes(user, limit=None, only=None, sort_by='-modified'):
         if only and obj_type != only:
             continue
 
+        result[obj_type] = []
+
         notes = Note.objects.filter(author=user, content_type__app_label='core', content_type__model=obj_type).values_list('object_id', 'rendered_content', 'modified')
 
         sort_objs = True
@@ -76,7 +79,6 @@ def _get_last_user_notes(user, limit=None, only=None, sort_by='-modified'):
             objs = types[obj_type].for_list.in_bulk(notes_by_obj_id.keys())
             ordered = [objs[note[0]] for note in notes if note[0] in objs]
 
-        result[obj_type] = []
         for obj in ordered:
             obj.current_user_rendered_note, obj.current_user_note_modified = notes_by_obj_id[obj.id]
             obj.current_user_has_extra = obj.current_user_has_note = True
