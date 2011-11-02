@@ -350,7 +350,7 @@ class SyncableModel(TimeStampedModel):
             parts['last_fetch'] = 5
 
         #print parts
-        return int(sum(parts.values()))
+        return max(0, int(sum(parts.values())))
 
     def update_score(self, save=True):
         """
@@ -990,7 +990,7 @@ class Account(SyncableModel):
 
         #print parts
         score += sum(parts.values())
-        return int(round(score))
+        return max(0, int(round(score)))
 
     def score_to_boost(self, force_compute=False):
         """
@@ -1543,7 +1543,7 @@ class Repository(SyncableModel):
 
         #print parts
         score += sum(parts.values())
-        return int(round(score))
+        return max(0, int(round(score)))
 
     def score_to_boost(self, force_compute=False):
         """
