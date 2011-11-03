@@ -244,19 +244,24 @@ NOTES_ALLOWED_MODELS = ('core.account', 'core.repository',)
 # johnny-cache
 CACHES = {
     'default' : dict(
-        BACKEND = 'johnny.backends.memcached.PyLibMCCache',
-        LOCATION = ['127.0.0.1:11211'],
+        BACKEND = 'redis_cache.RedisCache',
+        LOCATION = 'localhost:6379',
+        OPTIONS = dict(
+            DB = 1,
+        ),
         JOHNNY_CACHE = True,
     )
 }
+JOHNNY_MIDDLEWARE_SECONDS = 3600 * 24 * 30
 JOHNNY_MIDDLEWARE_KEY_PREFIX='jc_reposio'
 
-# asynchronous
+# redis
 REDIS_PARAMS = dict(
     host = 'localhost',
     port = 6379,
     db = 0,
 )
+# asynchronous
 WORKER_FETCH_OLDS = 'last_fetch'
 WORKER_FETCH_FULL_KEY = 'fetch_full:%d'
 WORKER_FETCH_FULL_HASH_KEY = 'fetch_full_hash'
@@ -287,3 +292,6 @@ except Exception, e:
     except ImportError, e:
         sys.stderr.write("Error: You should define your own settings, see settings_rules.py.sample (or just add a local_settings.py)\nError was : %s\n" % e)
         sys.exit(1)
+
+import redisco
+redisco.connection_setup(**REDIS_PARAMS)
