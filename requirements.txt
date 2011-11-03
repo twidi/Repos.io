@@ -51,13 +51,11 @@ termcolor
 django-social-auth
 django-markup-mixin
 django-notes
-taggit
-haystack
+django-taggit
+django-haystack
 
 #saved_searches (we need more recent version than the one on pypi)
 -e git+git://github.com/twidi/saved_searches.git#egg=saved_searches
-
-#-e git+git://github.com/twidi/django-favorites.git#egg=django-favorites
 
 ############################
 ### background and redis ###
