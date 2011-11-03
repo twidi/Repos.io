@@ -1,5 +1,6 @@
 import os.path, sys
 PROJECT_PATH = os.path.dirname(__file__)
+sys.path[0:0] = [PROJECT_PATH,]
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -126,7 +127,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django_globals.middleware.Global',
-    'core.middleware.FetchFullCurrentAccounts',
+    'project.core.middleware.FetchFullCurrentAccounts',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
