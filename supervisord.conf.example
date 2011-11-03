@@ -1,6 +1,6 @@
 [program:fetch_full]
 command = /path/to/repos.io/workers/fetch_full.py
-numprocs=1
+numprocs=4
 process_name = "%(program_name)s-%(process_num)s"
 stderr_logfile = /var/log/supervisor/%(program_name)s_error-%(process_num)s.log
 stdout_logfile = /var/log/supervisor/%(program_name)s-%(process_num)s.log
@@ -8,7 +8,7 @@ autorestart=true
 
 [program:update_related_data]
 command = /path/to/repos.io/workers/update_related_data.py
-numprocs=1
+numprocs=2
 process_name = "%(program_name)s-%(process_num)s"
 stderr_logfile = /var/log/supervisor/%(program_name)s_error-%(process_num)s.log
 stdout_logfile = /var/log/supervisor/%(program_name)s-%(process_num)s.log
@@ -16,7 +16,7 @@ autorestart=true
 
 [program:update_count]
 command = /path/to/repos.io/workers/update_count.py
-numprocs=1
+numprocs=2
 process_name = "%(program_name)s-%(process_num)s"
 stderr_logfile = /var/log/supervisor/%(program_name)s_error-%(process_num)s.log
 stdout_logfile = /var/log/supervisor/%(program_name)s-%(process_num)s.log
