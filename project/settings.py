@@ -173,6 +173,7 @@ INSTALLED_APPS = (
     'notes',
     'taggit',
     'template_preprocessor',
+    'redisession',
 
     # ours
     'utils',
@@ -261,6 +262,20 @@ REDIS_PARAMS = dict(
     port = 6379,
     db = 0,
 )
+
+# sessions
+SESSION_ENGINE='redisession.backend'
+# update the redisession default params
+REDIS_SESSION_CONFIG = {
+    'SERVER': dict(
+        host = 'localhost',
+        port = 6379,
+        db = 2,
+    ),
+    'COMPRESS_LIB': None,
+}
+
+
 # asynchronous
 WORKER_FETCH_OLDS = 'last_fetch'
 WORKER_FETCH_FULL_KEY = 'fetch_full:%d'
