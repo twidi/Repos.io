@@ -4,9 +4,6 @@ core/accounts/link.html
 core/accounts/sort_th_name.html
 core/sort_th.html
 core/th_extra.html
-core/accounts/list_extra.html
-core/list_extra.html
-dashboard/include_tags.html
 core/accounts/score.html
 core/score.html
 core/accounts/tags.html

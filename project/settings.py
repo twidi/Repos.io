@@ -1,5 +1,6 @@
 import os.path, sys
 PROJECT_PATH = os.path.dirname(__file__)
+sys.path[0:0] = [PROJECT_PATH,]
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -126,7 +127,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django_globals.middleware.Global',
-    'core.middleware.FetchFullCurrentAccounts',
+    'project.core.middleware.FetchFullCurrentAccounts',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -172,6 +173,7 @@ INSTALLED_APPS = (
     'notes',
     'taggit',
     'template_preprocessor',
+    'redisession',
 
     # ours
     'utils',
@@ -243,19 +245,38 @@ NOTES_ALLOWED_MODELS = ('core.account', 'core.repository',)
 # johnny-cache
 CACHES = {
     'default' : dict(
-        BACKEND = 'johnny.backends.memcached.PyLibMCCache',
-        LOCATION = ['127.0.0.1:11211'],
+        BACKEND = 'redis_cache.RedisCache',
+        LOCATION = 'localhost:6379',
+        OPTIONS = dict(
+            DB = 1,
+        ),
         JOHNNY_CACHE = True,
     )
 }
+JOHNNY_MIDDLEWARE_SECONDS = 3600 * 24 * 30
 JOHNNY_MIDDLEWARE_KEY_PREFIX='jc_reposio'
 
-# asynchronous
+# redis
 REDIS_PARAMS = dict(
     host = 'localhost',
     port = 6379,
     db = 0,
 )
+
+# sessions
+SESSION_ENGINE='redisession.backend'
+# update the redisession default params
+REDIS_SESSION_CONFIG = {
+    'SERVER': dict(
+        host = 'localhost',
+        port = 6379,
+        db = 2,
+    ),
+    'COMPRESS_LIB': None,
+}
+
+
+# asynchronous
 WORKER_FETCH_OLDS = 'last_fetch'
 WORKER_FETCH_FULL_KEY = 'fetch_full:%d'
 WORKER_FETCH_FULL_HASH_KEY = 'fetch_full_hash'
@@ -286,3 +307,6 @@ except Exception, e:
     except ImportError, e:
         sys.stderr.write("Error: You should define your own settings, see settings_rules.py.sample (or just add a local_settings.py)\nError was : %s\n" % e)
         sys.exit(1)
+
+import redisco
+redisco.connection_setup(**REDIS_PARAMS)

@@ -21,7 +21,6 @@
                     {% for account in page.object_list %}
                         <tr>
                             <td>
-                                {% include "core/accounts/list_extra.html" %}
                                 {{ account.renderer_main|safe }}
                                 {% with score=account.internal_score %}{% include "core/accounts/score.html" %}{% endwith %}
                                 {% include "core/accounts/tags.html" %}
