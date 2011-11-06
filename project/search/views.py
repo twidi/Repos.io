@@ -205,6 +205,17 @@ class RepositorySearchView(CoreSearchView):
 
         return result
 
+    def save_search(self, page):
+        """
+        Do not save if the sort order is not the default one or if a filter is applied
+        """
+        if self.request.GET.get('show-forks', False) == 'y':
+            return
+        sort = self.get_sort()
+        if sort and sort['db_sort']:
+            return
+        return super(RepositorySearchView, self).save_search(page)
+
 
 class AccountSearchView(CoreSearchView):
     """
