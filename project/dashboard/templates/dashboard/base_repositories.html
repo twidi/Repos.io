@@ -14,17 +14,17 @@
                 {% if distinct %}<input type="hidden" name="distinct" value="y" />{% endif %}
             </form>
             {% if owner_only %}
-                <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if hide_forks %}&amp;hide-forks=y{% endif %}{% if distinct %}&amp;distinct=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn error">Show ones from all owners</a>
+                <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if hide_forks %}&amp;hide-forks=y{% endif %}{% if distinct %}&amp;distinct=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn error active">Show ones from all owners</a>
             {% else %}
                 <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}&amp;owner-only=y{% if hide_forks %}&amp;hide-forks=y{% endif %}{% if distinct %}&amp;distinct=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn success">See only yours</a>
             {% endif %}
             {% if hide_forks %}
-                <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}{% if distinct %}&amp;distinct=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn error">Show forks</a>
+                <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}{% if distinct %}&amp;distinct=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn error active">Show forks</a>
             {% else %}
                 <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}&amp;hide-forks=y{% if distinct %}&amp;distinct=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn success">Hide forks</a>
             {% endif %}
         {% if distinct %}
-            <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}{% if hide_forks %}&amp;hide-forks=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn error">Show duplicates</a>
+            <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}{% if hide_forks %}&amp;hide-forks=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn error active">Show duplicates</a>
         {% else %}
             <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}{% if hide_forks %}&amp;hide-forks=y{% endif %}&amp;distinct=y{% if query %}&amp;q={{ query }}{% endif %}" class="btn success">Hide duplicates</a>
         {% endif %}
@@ -34,7 +34,7 @@
         {% with user_accounts_by_id=accounts user_repositories=all_repositories|distinctify:"current_user_account_id" %}
             {% prepare_private user_repositories %}
 
-            <table class='zebra-striped repositories with_extras'>
+            <table class='zebra-striped condensed-table repositories with_extras'>
                 <thead>
                     <tr>
                         {% with param1_key="owner-only" param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key="distinct" param3_value=distinct param4_key="q" param4_value=query %}
