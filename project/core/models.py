@@ -24,7 +24,7 @@ from tagging.models import PublicTaggedAccount, PublicTaggedRepository, PrivateT
 from tagging.words import get_tags_for_repository
 from tagging.managers import TaggableManager
 
-from utils.models import get_app_and_model, update as model_update
+from utils.model_utils import get_app_and_model, update as model_update
 from utils import now_timestamp, dt2timestamp
 
 from private.views import get_user_note_for_object, get_user_tags_for_object

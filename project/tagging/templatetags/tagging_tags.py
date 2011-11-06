@@ -1,6 +1,6 @@
 from django import template
 
-from utils.models import get_app_and_model
+from utils.model_utils import get_app_and_model
 from tagging.models import PublicTaggedAccount, PublicTaggedRepository
 
 register = template.Library()

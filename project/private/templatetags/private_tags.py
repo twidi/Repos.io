@@ -5,7 +5,7 @@ from notes.models import Note
 
 from private.models import ALLOWED_MODELS
 from core.models import Account, Repository
-from utils.models import get_app_and_model
+from utils.model_utils import get_app_and_model
 
 register = template.Library()
 

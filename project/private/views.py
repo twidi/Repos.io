@@ -1,5 +1,4 @@
 from django_globals import globals
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib import messages
@@ -9,7 +8,7 @@ from django.http import HttpResponseNotAllowed
 from notes.models import Note
 
 from private.forms import NoteForm, NoteDeleteForm, TagsForm, TagsDeleteForm
-from utils.models import get_app_and_model
+from utils.model_utils import get_app_and_model
 
 def get_user_note_for_object(obj):
     """
