@@ -11,9 +11,9 @@
 
             <h3>For repositories</h3>
 
+            {% url dashboard_tags obj_type="repositories" as repositories_tags_url %}
             {% if all_tags.repository %}
                 <ul class="tags unstyled">
-                    {% url dashboard_tags obj_type="repositories" as repositories_tags_url %}
                     {% for tag in all_tags.repository %}
                         <li><a href="{{ repositories_tags_url }}?tag={{ tag.0 }}" class="label success" title="{% for obj in tag.2 %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.1 }}{% if tag.2|length > 1 %}<small> ({{ tag.2|length }})</small>{% endif %}</a></li>
                     {% endfor %}
@@ -26,9 +26,9 @@
 
             <h3>For people</h3>
 
+            {% url dashboard_tags obj_type="accounts" as accounts_tags_url %}
             {% if all_tags.account %}
                 <ul class="tags unstyled">
-                    {% url dashboard_tags obj_type="accounts" as accounts_tags_url %}
                     {% for tag in all_tags.account %}
                         <li><a href="{{ accounts_tags_url }}?tag={{ tag.0 }}" class="label success" title="{% for obj in tag.2 %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.1 }}{% if tag.2|length > 1 %}<small> ({{ tag.2|length }})</small>{% endif %}</a></li>
                     {% endfor %}
