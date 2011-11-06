@@ -23,7 +23,7 @@
             <h2>{{ page.paginator.count }} results for <em>{{ query }}</em></h2>
             <div id="search-options">
                 {% if show_forks %}
-                    <a href=".?q={{query}}{% if sort.key %}&amp;sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% endif %}" class="btn error">Hide forks</a>
+                    <a href=".?q={{query}}{% if sort.key %}&amp;sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% endif %}" class="btn error active">Hide forks</a>
                 {% else %}
                     <a href=".?q={{query}}{% if sort.key %}&amp;sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% endif %}&amp;show-forks=y" class="btn success">Show forks</a>
                 {% endif %}
