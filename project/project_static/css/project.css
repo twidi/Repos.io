@@ -127,6 +127,9 @@ table tbody tr:last-child td {
     margin-left: -175px;
     float: none;
 }
+.topbar li a strong {
+    display: inline;
+}
 
 .main_header {
     background: #f5f5f5;

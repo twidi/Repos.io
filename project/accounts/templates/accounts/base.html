@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
     <header class="main_header">
-        <h1>Accounts management</h1>
+        <h1>
+            Accounts management
+            {% if user.is_authenticated %}
+                <small>
+                    or go to <a href="{% url dashboard_home %}" class="btn primary">your dashboard</a>
+                </small>
+            {% endif %}
+        </h1>
     </header>
     {% block accounts_content %}{% endblock %}
 {% endblock %}

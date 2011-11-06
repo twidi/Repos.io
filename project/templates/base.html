@@ -42,7 +42,7 @@
             <ul class="nav secondary-nav">
 
                 {% if user.is_authenticated %}
-                    <li><a href="{% url dashboard_home %}">{{ user.username }} : <strong>your dashboard</strong></a></li>
+                    <li><a href="{% url dashboard_home %}">{{ user.username }} : <strong class="btn primary">your dashboard</strong></a></li>
                     {% with accounts=user_accounts %}
                         {% if accounts %}
                             <li class='dropdown{% if section == 'accounts' %} active{% endif %}' data-dropdown="dropdown">
