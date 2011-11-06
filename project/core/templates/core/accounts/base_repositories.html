@@ -37,7 +37,7 @@
     </div>
     <p>{% block repositories_intro %}{% endblock %}</p>
 
-    <table class='zebra-striped repositories{% if user.id %} with_extras{% endif %}'>
+    <table class='zebra-striped condensed-table repositories{% if user.id %} with_extras{% endif %}'>
         <thead>
             <tr>
                 {% with param1_key="owner-only" param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key="distinct" param3_value=distinct param4_key="q" param4_value=query %}

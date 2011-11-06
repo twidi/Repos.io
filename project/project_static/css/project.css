@@ -360,7 +360,6 @@ table.accounts.with_owner td:nth-child(3) {
     font-size: 24px;
 }
 table.accounts td:first-child {
-    padding: 5px;
     height: 30px;
 }
 table.accounts td:first-child img {
@@ -405,9 +404,6 @@ body#home .row section:first-child p.with-btn {
     text-align: center;
     margin-top: 20px;
     margin-bottom: 20px;
-}
-body#home table td {
-    padding: 5px;
 }
 body#home table tr:first-child td {
     border-top: 1px solid #DDDDDD;
@@ -678,9 +674,6 @@ body#dashboard-home #content > div > section > a:hover {
     text-align: left !important;
     margin-top: -10px !important;
 }
-#d-notes table td {
-    padding: 5px;
-}
 #d-notes table tr:first-child td {
     border-top: 1px solid #DDDDDD;
 }
@@ -698,10 +691,6 @@ body#dashboard-home .note_container hr {
 }
 body#dashboard-home .note_container hr+em {
     font-size: smaller;
-}
-#d-people table td,
-#d-repositories table td {
-    padding: 5px;
 }
 #d-people table tr:first-child td,
 #d-repositories table tr:first-child td {

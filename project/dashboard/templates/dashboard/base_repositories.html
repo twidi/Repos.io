@@ -34,7 +34,7 @@
         {% with user_accounts_by_id=accounts user_repositories=all_repositories|distinctify:"current_user_account_id" %}
             {% prepare_private user_repositories %}
 
-            <table class='zebra-striped repositories with_extras'>
+            <table class='zebra-striped condensed-table repositories with_extras'>
                 <thead>
                     <tr>
                         {% with param1_key="owner-only" param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key="distinct" param3_value=distinct param4_key="q" param4_value=query %}

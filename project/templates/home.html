@@ -61,7 +61,7 @@
 
     {% if last_accounts %}
         <h2>Last 20 users</h2>
-        <table>
+        <table class="condensed-table">
             <tbody>
                 {% for account in last_accounts %}
                 <tr>
@@ -83,7 +83,7 @@
 
     {% if last_repositories %}
         <h2>Last 20 repositories</h2>
-        <table>
+        <table class="condensed-table">
             <tbody>
                 {% for repository in last_repositories %}
                 <tr>

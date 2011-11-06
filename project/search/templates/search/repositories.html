@@ -28,7 +28,7 @@
                     <a href=".?q={{query}}{% if sort.key %}&amp;sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% endif %}&amp;show-forks=y" class="btn success">Show forks</a>
                 {% endif %}
             </div>
-            <table class='zebra-striped repositories with_extras'>
+            <table class='zebra-striped condensed-table repositories with_extras'>
                 <thead>
                     <tr>
                         {%  with param1_key="q" param1_value=query param2_key="show-forks" param2_value=show_forks %}

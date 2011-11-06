@@ -9,7 +9,7 @@
             {% prepare_private page.object_list %}
             {% prepare_public_tags page.object_list %}
             <h2>{{ page.paginator.count }} results for <em>{{ query }}</em></h2>
-            <table class='zebra-striped accounts{% if user.id %} with_extras{% endif %}'>
+            <table class='zebra-striped condensed-table accounts{% if user.id %} with_extras{% endif %}'>
                 <thead>
                     <tr>
                         {% with param1_key="q" param1_value=query %}{% include "core/accounts/sort_th_name.html" %}{% endwith %}
