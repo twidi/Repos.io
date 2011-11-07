@@ -234,8 +234,10 @@ def following(request):
     def get_accounts_dict():
         return accounts_dict(request)
 
+    page = paginate(request, all_following, settings.ACCOUNTS_PER_PAGE)
+
     context = dict(
-        all_following = all_following,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
@@ -264,8 +266,10 @@ def followers(request):
     def get_accounts_dict():
         return accounts_dict(request)
 
+    page = paginate(request, all_followers, settings.ACCOUNTS_PER_PAGE)
+
     context = dict(
-        all_followers = all_followers,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],

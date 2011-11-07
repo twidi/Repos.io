@@ -4,12 +4,12 @@
 
 {% block dashboard_content %}
 
-    {% if all_following %}
-        {% with user_accounts_by_id=accounts user_following=all_following|distinctify:"current_user_account_id" %}
+    {% if page.paginator.count %}
+        {% with user_accounts_by_id=accounts user_following=page.object_list|distinctify:"current_user_account_id" %}
             {% prepare_private user_following %}
             {% prepare_public_tags user_following %}
 
-            <p>You follow {{ user_following|length }} people :</p>
+            <p>You follow {{ page.paginator.count }} people :</p>
 
             <table class='zebra-striped condensed-table accounts with_extras'>
                 <thead>
@@ -52,6 +52,10 @@
                     {% endfor %}
                 </tbody>
             </table>
+
+            {% if page.has_previous or page.has_next %}
+                <div>{{ page.render }}</div>
+            {% endif %}
 
         {% endwith %}
 
