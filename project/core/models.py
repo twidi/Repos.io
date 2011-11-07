@@ -379,7 +379,7 @@ class SyncableModel(TimeStampedModel):
         """
         Return True if a fetch_full can be done, respecting a delay
         """
-        score = SortedSet(settings.WORKER_FETCH_OLDS).score(self.simple_str())
+        score = SortedSet(self.WORKER_FETCH_OLDS).score(self.id)
         return not score or score < dt2timestamp(datetime.now() - self.MIN_FETCH_FULL_DELTA)
 
     def fetch_full(self, token=None, depth=0, async=False, async_priority=None):
@@ -482,7 +482,7 @@ class SyncableModel(TimeStampedModel):
                 self.fetch_full_specific(token=token, depth=depth, async=True)
 
             # save the date of last fetch
-            SortedSet(settings.WORKER_FETCH_OLDS).add(self_str, now_timestamp())
+            SortedSet(self.WORKER_FETCH_OLDS).add(self.id, now_timestamp())
 
         except Exception, e:
                 fetch_error = e
@@ -730,6 +730,8 @@ class Account(SyncableModel):
     MIN_FETCH_RELATED_DELTA_NEEDED = getattr(settings, 'ACCOUNT_MIN_FETCH_RELATED_DELTA_NEEDED', SyncableModel.MIN_FETCH_RELATED_DELTA_NEEDED)
     # limit for auto fetch full
     MIN_FETCH_FULL_DELTA = getattr(settings, 'MIN_FETCH_FULL_DELTA', SyncableModel.MIN_FETCH_FULL_DELTA)
+    # redis sorted set
+    WORKER_FETCH_OLDS = settings.WORKER_FETCH_OLDS % 'accounts'
 
     # Basic informations
 
@@ -1152,6 +1154,8 @@ class Repository(SyncableModel):
     MIN_FETCH_RELATED_DELTA_NEEDED = getattr(settings, 'REPOSITORY_MIN_FETCH_RELATED_DELTA_NEEDED', SyncableModel.MIN_FETCH_RELATED_DELTA_NEEDED)
     # limit for auto fetch full
     MIN_FETCH_FULL_DELTA = getattr(settings, 'MIN_FETCH_FULL_DELTA', SyncableModel.MIN_FETCH_FULL_DELTA)
+    # redis sorted set
+    WORKER_FETCH_OLDS = settings.WORKER_FETCH_OLDS % 'repositories'
 
     # Basic informations
 
