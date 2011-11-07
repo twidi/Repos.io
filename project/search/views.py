@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.http import Http404
 
 from haystack.forms import SearchForm
@@ -5,6 +7,7 @@ from haystack.query import SQ, SearchQuerySet, EmptySearchQuerySet
 from pure_pagination import Paginator, InvalidPage
 from saved_searches.views import SavedSearchView as BaseSearchView
 from saved_searches.models import SavedSearch
+from browsecap.browser import is_crawler
 
 from core.models import Account, Repository
 from utils.sort import prepare_sort
@@ -204,6 +207,40 @@ class RepositorySearchView(CoreSearchView):
                 result = result.exclude(is_fork=True)
 
         return result
+
+    def save_search(self, page):
+        """
+        Do not save if the user made this search recently, if the sort order
+        is not the default one, if a filter is applied, or if it's a crawler
+        """
+
+        # do not save if a filter is applied
+        if self.request.GET.get('show-forks', False) == 'y':
+            return
+
+        # do not save if the sort order is not the default one
+        sort = self.get_sort()
+        if sort and sort['db_sort']:
+            return
+
+        # do not save if the request is from a user agent
+        if is_crawler(self.request.META.get('HTTP_USER_AGENT', '')):
+            return
+
+        # check if this user did this search recently
+        count_recent = SavedSearch.objects.most_recent(
+                user = self.request.user,
+                search_key = self.search_key,
+                collapsed = False,
+            ).filter(
+                    user_query = self.query,
+                    created__gt = datetime.now()-timedelta(minutes=15)
+                ).count()
+        if count_recent:
+            return
+
+        # nothing blocking, save the search
+        return super(RepositorySearchView, self).save_search(page)
 
 
 class AccountSearchView(CoreSearchView):
