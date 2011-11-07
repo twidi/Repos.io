@@ -59,9 +59,11 @@ def followers(request, backend, slug, account=None):
     if sort['key']:
         sorted_followers = sorted_followers.order_by(sort['db_sort'])
 
+    page = paginate(request, sorted_followers, settings.ACCOUNTS_PER_PAGE)
+
     return render(request, 'core/accounts/followers.html', dict(
         account = account,
-        sorted_followers = sorted_followers,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
@@ -81,9 +83,11 @@ def following(request, backend, slug, account=None):
     if sort['key']:
         sorted_following = sorted_following.order_by(sort['db_sort'])
 
+    page = paginate(request, sorted_following, settings.ACCOUNTS_PER_PAGE)
+
     return render(request, 'core/accounts/following.html', dict(
         account = account,
-        sorted_following = sorted_following,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
