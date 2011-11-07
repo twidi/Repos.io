@@ -23,11 +23,18 @@
     {% endif %}
 {% endwith %}
 
-{% prepare_private objects %}
-{% if obj_type == "accounts" %}
-    {% include "dashboard/tagged_accounts.html" %}
+{% if page.paginator.count %}
+    {% prepare_private page.object_list %}
+    {% if obj_type == "accounts" %}
+        {% include "dashboard/tagged_accounts.html" %}
+    {% else %}
+        {% include "dashboard/tagged_repositories.html" %}
+    {% endif %}
+    {% if page.has_previous or page.has_next %}
+        <div>{{ page.render }}</div>
+    {% endif %}
 {% else %}
-    {% include "dashboard/tagged_repositories.html" %}
+    <p><em>You haven't set any tags !</em></p>
 {% endif %}
 
 {% endblock %}

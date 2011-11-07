@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
+from django.conf import settings
 
 from notes.models import Note
 
@@ -8,6 +9,7 @@ from core.models import Account, Repository
 from core.views.sort import get_repository_sort,get_account_sort
 from core.core_utils import get_user_accounts
 from utils.sort import prepare_sort
+from utils.views import paginate
 from search.views import parse_keywords, make_query, RepositorySearchView
 
 def _get_sorted_user_tags(user, only=None):
@@ -156,17 +158,21 @@ def tags(request, obj_type=None):
     if model == 'account':
         objects = Account.objects.filter(**params)
         sort = get_account_sort(sort_key)
+        per_page = settings.ACCOUNTS_PER_PAGE
     else:
         objects = Repository.objects.filter(**params).select_related('owner')
         sort = get_repository_sort(sort_key)
+        per_page = settings.REPOSITORIES_PER_PAGE
 
     objects = objects.order_by(sort['db_sort'])
+
+    page = paginate(request, objects, per_page)
 
     context = dict(
         tags = get_tags,
         obj_type = obj_type,
         tag_filter = tag_slug,
-        objects = objects,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
@@ -188,16 +194,19 @@ def notes(request, obj_type=None):
     sort_key = request.GET.get('sort_by', '-note')
     if model == 'account':
         sort = get_account_sort(sort_key, default=None)
+        per_page = settings.ACCOUNTS_PER_PAGE
     else:
         sort = get_repository_sort(sort_key, default=None)
+        per_page = settings.REPOSITORIES_PER_PAGE
     if not sort.get('db_sort'):
         sort = prepare_sort(sort_key, dict(note='modified'), default='note', default_reverse=True)
 
-    def get_notes():
-        return _get_last_user_notes(request.user, only=model, sort_by=sort['db_sort'])[model]
+    all_notes = _get_last_user_notes(request.user, only=model, sort_by=sort['db_sort'])[model]
+
+    page = paginate(request, all_notes, per_page)
 
     context = dict(
-        noted_objects = get_notes,
+        page = page,
         obj_type = obj_type,
         sort = dict(
             key = sort['key'],
@@ -232,8 +241,10 @@ def following(request):
     def get_accounts_dict():
         return accounts_dict(request)
 
+    page = paginate(request, all_following, settings.ACCOUNTS_PER_PAGE)
+
     context = dict(
-        all_following = all_following,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
@@ -262,8 +273,10 @@ def followers(request):
     def get_accounts_dict():
         return accounts_dict(request)
 
+    page = paginate(request, all_followers, settings.ACCOUNTS_PER_PAGE)
+
     context = dict(
-        all_followers = all_followers,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
@@ -365,8 +378,11 @@ def _filter_repositories(request, param, extra):
 
             all_repositories.append(good_repository)
 
+    page = paginate(request, all_repositories, settings.REPOSITORIES_PER_PAGE)
+
     context = dict(
         all_repositories = all_repositories,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],

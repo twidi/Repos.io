@@ -9,17 +9,18 @@
     <li{% if obj_type == 'accounts' %} class="active"{% endif %}><a href="{% url dashboard_notes obj_type="accounts" %}">Notes for people</a></li>
 </ul>
 
-{% with noted_objects as objects %}
-    {% if objects %}
-        {% prepare_private objects "-notes" %}
-        {% if obj_type == "accounts" %}
-            {% include "dashboard/noted_accounts.html" %}
-        {% else %}
-            {% include "dashboard/noted_repositories.html" %}
-        {% endif %}
+{% if page.paginator.count %}
+    {% prepare_private page.object_list "-notes" %}
+    {% if obj_type == "accounts" %}
+        {% include "dashboard/noted_accounts.html" %}
     {% else %}
-        <p><em>You haven't set any notes !</em></p>
+        {% include "dashboard/noted_repositories.html" %}
     {% endif %}
-{% endwith %}
+    {% if page.has_previous or page.has_next %}
+        <div>{{ page.render }}</div>
+    {% endif %}
+{% else %}
+    <p><em>You haven't set any notes !</em></p>
+{% endif %}
 
 {% endblock %}

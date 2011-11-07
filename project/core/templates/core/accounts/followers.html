@@ -5,9 +5,9 @@
 
     {% if account.followers_modified %}
 
-        {% if sorted_followers %}
-            {% prepare_private sorted_followers %}
-            {% prepare_public_tags sorted_followers %}
+        {% if page.paginator.count %}
+            {% prepare_private page.object_list %}
+            {% prepare_public_tags page.object_list %}
 
             <p>{{ account.slug }} is followed by {{ account.followers_count }} people : <small>(last fetch on {{ account.followers_modified }})</small></p>
 
@@ -22,7 +22,7 @@
                 </thead>
                 <tbody>
                     {% with viewed_account=account %}
-                    {% for account in sorted_followers %}
+                    {% for account in page.object_list %}
                     <tr>
                         <td>
                             {% include "core/accounts/main_account_cell.html" %}
@@ -37,6 +37,10 @@
                     {% endwith %}
                 </tbody>
             </table>
+
+            {% if page.has_previous or page.has_next %}
+                <div>{{ page.render }}</div>
+            {% endif %}
 
         {% else %}
             <p>{{ account.slug }} doesn't have any follower</p>

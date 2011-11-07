@@ -55,7 +55,7 @@
                     <tbody>
                         {% for repository in last_notes.repository %}
                         <tr>
-                            <td>
+                            <td title="{{ repository.description }}">
                                 {% include "core/repositories/logo_small.html" %}
                                 {% include "core/repositories/link.html" %}
                             </td>
@@ -117,7 +117,7 @@
 
         <h2>People</h2>
 
-        <h3>Your best followers</h3>
+        <h3>Most popular followers</h3>
         {% if best.accounts.followers %}
             <table class="condensed-table">
                 <tbody>
@@ -136,7 +136,7 @@
 
         <a href="{% url dashboard_followers %}">More followers...</a>
 
-        <h3>Your best following</h3>
+        <h3>Most popular following</h3>
         {% if best.accounts.following %}
             <table class="condensed-table">
                 <tbody>
@@ -161,13 +161,13 @@
 
         <h2>Repositories</h2>
 
-        <h3>Your best owned repositories</h3>
+        <h3>Most popular owned repositories</h3>
         {% if best.repositories.owned %}
             <table class="condensed-table">
                 <tbody>
                     {% for repository in best.repositories.owned %}
                         <tr>
-                            <td>
+                            <td title="{{ repository.description }}">
                                 {% include "core/repositories/logo_small.html" %}
                                 {% include "core/repositories/link.html" %}
                             </td>
@@ -181,13 +181,13 @@
 
         <a href="{% url dashboard_repositories %}">More repositories...</a>
 
-        <h3>Your best followed repositories</h3>
+        <h3>Most popular followed repositories</h3>
         {% if best.repositories.followed %}
             <table class="condensed-table">
                 <tbody>
                     {% for repository in best.repositories.followed %}
                         <tr>
-                            <td>
+                            <td title="{{ repository.description }}">
                                 {% include "core/repositories/logo_small.html" %}
                                 {% include "core/repositories/link.html" %}
                             </td>

@@ -3,8 +3,8 @@
 {% load reposio_core %}
 {% block account_content %}
 
-    {% if  sorted_repositories %}
-    {% prepare_private sorted_repositories %}
+    {% if  page.paginator.count %}
+    {% prepare_private page.object_list %}
 
     <div>
         <form id="list-filter" method="get" action=".">
@@ -51,7 +51,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for repository in sorted_repositories %}
+            {% for repository in page.object_list %}
             <tr>
                 <td>
                     {% include "core/repositories/main_repository_cell.html" %}
@@ -69,6 +69,10 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {% if page.has_previous or page.has_next %}
+        <div>{{ page.render }}</div>
+    {% endif %}
 
     {% else %}
         <p>{% block no_repositories %}{% endblock %}</p>

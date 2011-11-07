@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
+from django.conf import settings
 
+from utils.views import paginate
 from core.models import Account
 from core.views.decorators import check_repository, check_support
 from core.views.sort import get_account_sort
@@ -54,9 +56,11 @@ def followers(request, backend, project, repository=None):
     if sort['key']:
         sorted_followers = sorted_followers.order_by(sort['db_sort'])
 
+    page = paginate(request, sorted_followers, settings.ACCOUNTS_PER_PAGE)
+
     return render(request, 'core/repositories/followers.html', dict(
         repository = repository,
-        sorted_followers = sorted_followers,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
@@ -76,9 +80,11 @@ def contributors(request, backend, project, repository=None):
     if sort['key']:
         sorted_contributors = sorted_contributors.order_by(sort['db_sort'])
 
+    page = paginate(request, sorted_contributors, settings.ACCOUNTS_PER_PAGE)
+
     return render(request, 'core/repositories/contributors.html', dict(
         repository = repository,
-        sorted_contributors = sorted_contributors,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],

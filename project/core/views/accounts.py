@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
+from django.conf import settings
 
+from utils.views import paginate
 from core.models import Account, Repository
 from core.views.decorators import check_account, check_support
 from core.views.sort import get_repository_sort, get_account_sort
@@ -57,9 +59,11 @@ def followers(request, backend, slug, account=None):
     if sort['key']:
         sorted_followers = sorted_followers.order_by(sort['db_sort'])
 
+    page = paginate(request, sorted_followers, settings.ACCOUNTS_PER_PAGE)
+
     return render(request, 'core/accounts/followers.html', dict(
         account = account,
-        sorted_followers = sorted_followers,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
@@ -79,9 +83,11 @@ def following(request, backend, slug, account=None):
     if sort['key']:
         sorted_following = sorted_following.order_by(sort['db_sort'])
 
+    page = paginate(request, sorted_following, settings.ACCOUNTS_PER_PAGE)
+
     return render(request, 'core/accounts/following.html', dict(
         account = account,
-        sorted_following = sorted_following,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
@@ -174,9 +180,11 @@ def _filter_repositories(request, account, queryset):
 
             sorted_repositories.append(good_repository)
 
+    page = paginate(request, sorted_repositories, settings.REPOSITORIES_PER_PAGE)
+
     return dict(
         account = account,
-        sorted_repositories = sorted_repositories,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],

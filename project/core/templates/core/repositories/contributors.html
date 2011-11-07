@@ -5,9 +5,9 @@
 
     {% if repository.contributors_modified %}
 
-        {% if sorted_contributors %}
-            {% prepare_private sorted_contributors %}
-            {% prepare_public_tags sorted_contributors %}
+        {% if page.paginator.count %}
+            {% prepare_private page.object_list %}
+            {% prepare_public_tags page.object_list %}
 
             <p>{{ repository.slug }} (by {{ repository.owner.slug }}) has {{ repository.contributors_count }} contributors : <small>(last fetch on {{ repository.contributors_modified }})</small></p>
 
@@ -22,7 +22,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for account in sorted_contributors %}
+                    {% for account in page.object_list %}
                     <tr>
                         <td>
                             {% include "core/accounts/main_account_cell.html" %}
@@ -37,6 +37,10 @@
                     {% endfor %}
                 </tbody>
             </table>
+
+            {% if page.has_previous or page.has_next %}
+                <div>{{ page.render }}</div>
+            {% endif %}
 
         {% else %}
             <p>{{ repository.slug }} doesn't have any contributor, which is weird !</p>
