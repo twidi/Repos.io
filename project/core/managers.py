@@ -1,6 +1,9 @@
 from copy import copy
 
 from django.db import models
+from django.conf import settings
+
+from redisco import connection
 
 from core.backends import get_backend, get_backend_from_auth
 from core.exceptions import OriginalProviderLoginMissing
@@ -11,13 +14,20 @@ class SyncableModelManager(models.Manager):
     """
     Base manager for all syncable models
     """
-    pass
+    def get_last_fetched(self, size=20):
+        """
+        Return the last `size` fetched objects
+        """
+        ids = map(int, connection.zrevrange(self.WORKER_FETCH_OLDS, 0, size-1))
+        objects = self.in_bulk(ids)
+        return [objects[id] for id in ids if id in objects]
 
 
 class AccountManager(SyncableModelManager):
     """
     Manager for the Account model
     """
+    WORKER_FETCH_OLDS = settings.WORKER_FETCH_OLDS % 'accounts'
 
     def associate_to_social_auth_user(self, social_auth_user, is_new):
         auth_backend = social_auth_user.provider
@@ -104,6 +114,7 @@ class RepositoryManager(SyncableModelManager):
     """
     Manager for the Repository model
     """
+    WORKER_FETCH_OLDS = settings.WORKER_FETCH_OLDS % 'repositories'
 
     def get_or_new(self, backend, project=None, **defaults):
         """
