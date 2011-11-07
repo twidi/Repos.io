@@ -158,17 +158,21 @@ def tags(request, obj_type=None):
     if model == 'account':
         objects = Account.objects.filter(**params)
         sort = get_account_sort(sort_key)
+        per_page = settings.ACCOUNTS_PER_PAGE
     else:
         objects = Repository.objects.filter(**params).select_related('owner')
         sort = get_repository_sort(sort_key)
+        per_page = settings.REPOSITORIES_PER_PAGE
 
     objects = objects.order_by(sort['db_sort'])
+
+    page = paginate(request, objects, per_page)
 
     context = dict(
         tags = get_tags,
         obj_type = obj_type,
         tag_filter = tag_slug,
-        objects = objects,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
