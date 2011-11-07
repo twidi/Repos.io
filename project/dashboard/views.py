@@ -190,16 +190,19 @@ def notes(request, obj_type=None):
     sort_key = request.GET.get('sort_by', '-note')
     if model == 'account':
         sort = get_account_sort(sort_key, default=None)
+        per_page = settings.ACCOUNTS_PER_PAGE
     else:
         sort = get_repository_sort(sort_key, default=None)
+        per_page = settings.REPOSITORIES_PER_PAGE
     if not sort.get('db_sort'):
         sort = prepare_sort(sort_key, dict(note='modified'), default='note', default_reverse=True)
 
-    def get_notes():
-        return _get_last_user_notes(request.user, only=model, sort_by=sort['db_sort'])[model]
+    all_notes = _get_last_user_notes(request.user, only=model, sort_by=sort['db_sort'])[model]
+
+    page = paginate(request, all_notes, per_page)
 
     context = dict(
-        noted_objects = get_notes,
+        page = page,
         obj_type = obj_type,
         sort = dict(
             key = sort['key'],
