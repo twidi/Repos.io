@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
+from django.conf import settings
 
 from notes.models import Note
 
@@ -8,6 +9,7 @@ from core.models import Account, Repository
 from core.views.sort import get_repository_sort,get_account_sort
 from core.core_utils import get_user_accounts
 from utils.sort import prepare_sort
+from utils.views import paginate
 from search.views import parse_keywords, make_query, RepositorySearchView
 
 def _get_sorted_user_tags(user, only=None):
@@ -365,8 +367,11 @@ def _filter_repositories(request, param, extra):
 
             all_repositories.append(good_repository)
 
+    page = paginate(request, all_repositories, settings.REPOSITORIES_PER_PAGE)
+
     context = dict(
         all_repositories = all_repositories,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
