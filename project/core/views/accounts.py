@@ -1,6 +1,10 @@
 from django.shortcuts import render
 from django.contrib import messages
 from django.shortcuts import redirect
+from django.http import Http404
+from django.conf import settings
+
+from pure_pagination import Paginator, InvalidPage
 
 from core.models import Account, Repository
 from core.views.decorators import check_account, check_support
@@ -174,9 +178,15 @@ def _filter_repositories(request, account, queryset):
 
             sorted_repositories.append(good_repository)
 
+    paginator = Paginator(sorted_repositories, settings.REPOSITORIES_PER_PAGE, request=request)
+    try:
+        page = paginator.page(request.GET.get('page', 1))
+    except InvalidPage:
+        raise Http404
+
     return dict(
         account = account,
-        sorted_repositories = sorted_repositories,
+        page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
