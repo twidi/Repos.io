@@ -1,0 +1,32 @@
+{% if edit_object %}
+<section id="extra_editor" class="modal">
+    <header class="modal-header">
+        <a class="close" href=".">&times;</a>
+        <h3>Your privates notes about {{ edit_object.project|default:edit_object.slug }}</h3>
+    </header>
+
+    <section class="modal-body">
+
+        {# part of the window to edit private note #}
+        <div id="note-form">
+            <header>
+                <h3>Note:</h3>
+                {# form to clear the note #}
+                {% if note_delete_form %}
+                    <form action="{% url note_delete %}" method="POST" id="note-delete-form">{% csrf_token %}
+                        {{ note_delete_form.as_p }}
+                        <input class="btn error" type="submit" name="submit" value="clear" />
+                    </form>
+                {% endif %}
+            </header>
+            {# form to edit the note #}
+            <form action="{% url note_save %}" method="POST" id="note-save-form" class="form-stacked">{% csrf_token %}
+                {{ note_save_form.as_p }}
+                <input class="btn primary" type="submit" name="submit" value="Save" />
+                <input class="btn" type="submit" name="submit-close" value="Save and close" />
+            </form>
+        </div>{# /note-form #}
+
+    </section>{# /modal-body #}
+</section>
+{% endif %}

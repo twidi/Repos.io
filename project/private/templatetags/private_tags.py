@@ -4,13 +4,14 @@ from django_globals import globals
 from notes.models import Note
 
 from private.models import ALLOWED_MODELS
+from private.forms import NoteForm, NoteDeleteForm
 from core.models import Account, Repository
 from utils.model_utils import get_app_and_model
 
 register = template.Library()
 
-@register.simple_tag
-def prepare_private(objects, ignore=None):
+@register.inclusion_tag('private/edit_private.html', takes_context=True)
+def prepare_private(context, objects, ignore=None):
     """
     Update each object included in the `objects` with private informations (note and tags)
     All objects must be from the same content_type
@@ -35,6 +36,17 @@ def prepare_private(objects, ignore=None):
         ids = sorted(dict_objects.keys())
         if not ids:
             return ''
+
+
+        # check if we have an object to edit
+        edit_object = None
+        try:
+            edit_object_id =  int(globals.request.GET.get('edit_extra', 0))
+        except:
+            pass
+        else:
+            if edit_object_id and edit_object_id in ids:
+                edit_object = dict_objects[edit_object_id]
 
         # read and save notes
         if not (ignore and '-notes' in ignore):
@@ -105,7 +117,16 @@ def prepare_private(objects, ignore=None):
                     dict_objects[obj_id].current_user_has_extra = True
                     dict_objects[obj_id].current_user_has_fork = True
 
-        return ''
+        if edit_object:
+            note = edit_object.get_user_note()
+
+            return dict(
+                edit_object = edit_object,
+                note_save_form = NoteForm(instance=note) if note else NoteForm(noted_object=edit_object),
+                note_delete_form = NoteDeleteForm(instance=note) if note else None,
+            )
+        else:
+            return {}
     except:
-        return ''
+        return {}
 
