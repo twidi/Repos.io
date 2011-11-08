@@ -22,19 +22,25 @@ class SyncableModelManager(models.Manager):
         """
         return REDIS_KEYS[key][self.model_name]
 
+    def get_best_in_zset(self, key, size):
+        """
+        Return the `size` items with the best score in the given zset
+        """
+        ids = map(int, connection.zrevrange(self.get_redis_key(key), 0, size-1))
+        objects = self.in_bulk(ids)
+        return [objects[id] for id in ids if id in objects]
+
     def get_last_fetched(self, size=20):
         """
         Return the last `size` fetched objects
         """
-        ids = map(int, connection.zrevrange(self.get_redis_key('last_fetched'), 0, size-1))
-        objects = self.in_bulk(ids)
-        return [objects[id] for id in ids if id in objects]
+        return self.get_best_in_zset('last_fetched', size)
 
     def get_best(self, size=20):
         """
         Return the `size` objects with the better score
         """
-        return self.order_by('-score')[:size]
+        return self.get_best_in_zset('best_scored', size)
 
 
 class AccountManager(SyncableModelManager):

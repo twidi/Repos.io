@@ -1,5 +1,6 @@
 REDIS_KEYS = dict(
     last_fetched = 'last_fetched_%s',
+    best_scored  = 'best_scored_%s',
 )
 
 for key in REDIS_KEYS.keys():

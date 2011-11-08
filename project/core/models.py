@@ -360,6 +360,8 @@ class SyncableModel(TimeStampedModel):
         self.score = self.compute_score()
         if save:
             self.update(score=self.score)
+        if score > 100:
+            SortedSet(self.get_redis_key('best_scored')).add(self.id, self.score)
 
     def score_to_boost(self, force_compute=False):
         """
