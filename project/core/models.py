@@ -15,6 +15,7 @@ from model_utils.fields import StatusField
 from haystack import site
 from redisco.containers import List, Set, Hash, SortedSet
 
+from core import REDIS_KEYS
 from core.backends import BACKENDS, get_backend
 from core.managers import AccountManager, RepositoryManager, OptimForListAccountManager, OptimForListRepositoryManager
 from core.core_utils import slugify
@@ -379,7 +380,7 @@ class SyncableModel(TimeStampedModel):
         """
         Return True if a fetch_full can be done, respecting a delay
         """
-        score = SortedSet(self.WORKER_FETCH_OLDS).score(self.id)
+        score = SortedSet(self.get_redis_key('last_fetched')).score(self.id)
         return not score or score < dt2timestamp(datetime.now() - self.MIN_FETCH_FULL_DELTA)
 
     def fetch_full(self, token=None, depth=0, async=False, async_priority=None):
@@ -482,7 +483,7 @@ class SyncableModel(TimeStampedModel):
                 self.fetch_full_specific(token=token, depth=depth, async=True)
 
             # save the date of last fetch
-            SortedSet(self.WORKER_FETCH_OLDS).add(self.id, now_timestamp())
+            SortedSet(self.get_redis_key('last_fetched')).add(self.id, now_timestamp())
 
         except Exception, e:
                 fetch_error = e
@@ -721,6 +722,7 @@ class Account(SyncableModel):
     How load an account, the good way :
         Account.objects.get_or_new(backend, slug)
     """
+    model_name = 'account'
 
     # it's forbidden to fetch if the last fetch is less than...
     MIN_FETCH_DELTA = getattr(settings, 'ACCOUNT_MIN_FETCH_DELTA', SyncableModel.MIN_FETCH_DELTA)
@@ -730,8 +732,6 @@ class Account(SyncableModel):
     MIN_FETCH_RELATED_DELTA_NEEDED = getattr(settings, 'ACCOUNT_MIN_FETCH_RELATED_DELTA_NEEDED', SyncableModel.MIN_FETCH_RELATED_DELTA_NEEDED)
     # limit for auto fetch full
     MIN_FETCH_FULL_DELTA = getattr(settings, 'MIN_FETCH_FULL_DELTA', SyncableModel.MIN_FETCH_FULL_DELTA)
-    # redis sorted set
-    WORKER_FETCH_OLDS = settings.WORKER_FETCH_OLDS % 'accounts'
 
     # Basic informations
 
@@ -1138,6 +1138,12 @@ class Account(SyncableModel):
         """
         return site.get_index(Account)
 
+    def get_redis_key(self, key):
+        """
+        Return the specific redis key for the current model
+        """
+        return REDIS_KEYS[key][self.model_name]
+
 
 class Repository(SyncableModel):
     """
@@ -1145,6 +1151,7 @@ class Repository(SyncableModel):
     How load a repository, the good way :
         Repository.objects.get_or_new(backend, project_name)
     """
+    model_name = 'repository'
 
     # it's forbidden to fetch if the last fetch is less than...
     MIN_FETCH_DELTA = getattr(settings, 'REPOSITORY_MIN_FETCH_DELTA', SyncableModel.MIN_FETCH_DELTA)
@@ -1154,8 +1161,6 @@ class Repository(SyncableModel):
     MIN_FETCH_RELATED_DELTA_NEEDED = getattr(settings, 'REPOSITORY_MIN_FETCH_RELATED_DELTA_NEEDED', SyncableModel.MIN_FETCH_RELATED_DELTA_NEEDED)
     # limit for auto fetch full
     MIN_FETCH_FULL_DELTA = getattr(settings, 'MIN_FETCH_FULL_DELTA', SyncableModel.MIN_FETCH_FULL_DELTA)
-    # redis sorted set
-    WORKER_FETCH_OLDS = settings.WORKER_FETCH_OLDS % 'repositories'
 
     # Basic informations
 

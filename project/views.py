@@ -15,7 +15,7 @@ def home(request):
         context['accounts'] = Account.for_list.get_last_fetched()
         context['repositories'] = Repository.for_list.get_last_fetched()
     else:
-        context['accounts'] = Account.for_list.order_by('-score')[:20]
-        context['repositories'] = Repository.for_list.order_by('-score')[:20]
+        context['accounts'] = Account.for_list.get_best(20)
+        context['repositories'] = Repository.for_list.get_best(20)
 
     return render(request, 'home.html', context)

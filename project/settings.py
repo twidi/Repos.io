@@ -282,7 +282,6 @@ REDIS_SESSION_CONFIG = {
 
 
 # asynchronous
-WORKER_FETCH_OLDS = 'last_fetched_%s'
 WORKER_FETCH_FULL_KEY = 'fetch_full:%d'
 WORKER_FETCH_FULL_HASH_KEY = 'fetch_full_hash'
 WORKER_FETCH_FULL_MAX_PRIORITY = 5

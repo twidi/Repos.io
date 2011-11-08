@@ -5,6 +5,7 @@ from django.conf import settings
 
 from redisco import connection
 
+from core import REDIS_KEYS
 from core.backends import get_backend, get_backend_from_auth
 from core.exceptions import OriginalProviderLoginMissing
 from core.core_utils import slugify
@@ -14,20 +15,33 @@ class SyncableModelManager(models.Manager):
     """
     Base manager for all syncable models
     """
+
+    def get_redis_key(self, key):
+        """
+        Return the specific redis key for the current model
+        """
+        return REDIS_KEYS[key][self.model_name]
+
     def get_last_fetched(self, size=20):
         """
         Return the last `size` fetched objects
         """
-        ids = map(int, connection.zrevrange(self.WORKER_FETCH_OLDS, 0, size-1))
+        ids = map(int, connection.zrevrange(self.get_redis_key('last_fetched'), 0, size-1))
         objects = self.in_bulk(ids)
         return [objects[id] for id in ids if id in objects]
+
+    def get_best(self, size=20):
+        """
+        Return the `size` objects with the better score
+        """
+        return self.order_by('-score')[:size]
 
 
 class AccountManager(SyncableModelManager):
     """
     Manager for the Account model
     """
-    WORKER_FETCH_OLDS = settings.WORKER_FETCH_OLDS % 'accounts'
+    model_name = 'account'
 
     def associate_to_social_auth_user(self, social_auth_user, is_new):
         auth_backend = social_auth_user.provider
@@ -114,7 +128,7 @@ class RepositoryManager(SyncableModelManager):
     """
     Manager for the Repository model
     """
-    WORKER_FETCH_OLDS = settings.WORKER_FETCH_OLDS % 'repositories'
+    model_name = 'repository'
 
     def get_or_new(self, backend, project=None, **defaults):
         """
