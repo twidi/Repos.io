@@ -417,6 +417,18 @@ body#home table td:first-child img {
     -moz-border-radius: 2px;
     border-radius: 2px;
 }
+body#home h2 {
+    position: relative;
+}
+body#home h2 a {
+    position: absolute;
+    bottom: 7px;
+    right: 2px;
+    font-style: italic;
+    font-size: 12px;
+    line-height: 12px;
+    font-weight: normal;
+}
 
 /* Login page */
 body#accounts-login section {

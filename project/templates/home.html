@@ -56,47 +56,46 @@
 
 </section>
 
-{% cache cache_timeout.home_last_accounts home_last_accounts %}
+{% cache cache_timeout.home_accounts home_accounts mode %}
 <section class="span4">
 
-    {% if last_accounts %}
-        <h2>Last 20 users</h2>
-        <table class="condensed-table">
-            <tbody>
-                {% for account in last_accounts %}
-                <tr>
-                    <td>
-                        {% include "core/accounts/avatar_small.html" %}
-                        {% include "core/accounts/link.html" %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+    <h2>{% if mode == 'last' %}Last{% else %}Popular{% endif %} users</h2>
+    <table class="condensed-table">
+        <tbody>
+            {% for account in accounts %}
+            <tr>
+                <td>
+                    {% include "core/accounts/avatar_small.html" %}
+                    {% include "core/accounts/link.html" %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
 </section>
 {% endcache %}
 
-{% cache cache_timeout.home_last_repositories home_last_repositories %}
+{% cache cache_timeout.home_repositories home_repositories mode %}
 <section class="span7">
 
-    {% if last_repositories %}
-        <h2>Last 20 repositories</h2>
-        <table class="condensed-table">
-            <tbody>
-                {% for repository in last_repositories %}
-                <tr>
-                    <td>
-                        {% include "core/repositories/logo_small.html" %}
-                        <span title="{{ repository.description }}">{% include "core/repositories/link_no_owner.html" %}</span>
-                        {% if repository.backend|supports:'repository_owner' %}<small>by {% with account=repository.owner %}{% include "core/accounts/link_no_backend.html" %}{% endwith %}</small>{% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+    <h2>
+        {% if mode == 'last' %}Last{% else %}Popular{% endif %} repositories
+        <a href="/{% if mode == 'last' %}?show=popular{% endif %}">Show {% if mode == 'last' %}popular{% else %}last{% endif %}</a>
+    </h2>
+    <table class="condensed-table">
+        <tbody>
+            {% for repository in repositories %}
+            <tr>
+                <td>
+                    {% include "core/repositories/logo_small.html" %}
+                    <span title="{{ repository.description }}">{% include "core/repositories/link_no_owner.html" %}</span>
+                    {% if repository.backend|supports:'repository_owner' %}<small>by {% with account=repository.owner %}{% include "core/accounts/link_no_backend.html" %}{% endwith %}</small>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
 </section>
 {% endcache %}
