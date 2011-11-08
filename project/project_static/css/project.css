@@ -268,6 +268,23 @@ table.with_extras th:last-child {
 table.with_extras td:last-child {
     border-left: #ddd dashed 1px;
 }
+table.with_extras td.full:last-child > div {
+    position: relative;
+}
+table.with_extras td.full:last-child a.btn {
+    font-size: 11px;
+    padding: 2px 6px;
+    display: none;
+    position: absolute;
+    right: -30px;
+}
+table.with_extras td.full:last-child:hover a.btn {
+    display: inline-block;
+}
+table.with_extras td.empty:last-child {
+    vertical-align: middle;
+    text-align: center;
+}
 table.with_extras div.extra {
     margin-top: 0;
 }
