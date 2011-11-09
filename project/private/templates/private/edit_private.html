@@ -29,6 +29,54 @@
             </form>
         </div>{# /note-form #}
 
+        {# part of the window to edit private tags #}
+        <div id="tags-form">
+            {% url tags_save as tags_edit_url %}
+            {% with tags_form=tags_delete_form %}
+                <header>
+                    <h3>Tags:</h3>
+                    {# form to clear all tags #}
+                    {% if tags_delete_form %}
+                        <form action="{% url tags_delete %}" method="POST" id="tags-delete-form">{% csrf_token %}
+                            {{ tags_delete_form.as_p }}
+                            <input type="hidden" name="next" value="{{ next }}" />
+                            <input class="btn error" type="submit" name="submit" value="clear" />
+                        </form>
+                    {% endif %}
+                </header>
+
+                {# existing tags that can be removed #}
+                {% if private_tags %}
+                    <label>Current: </label>
+                    <ul id="tags-deletable" class="tags unstyled">
+                        {% for tag in private_tags %}
+                            <li class="label success">
+                                <a href="{{ url_tags }}?tag={{ tag.slug}}">{{ tag.name }}</a>
+                                {% include "private/tag_remove.html" %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {# tags that can be added #}
+                <label>Add: </label>
+                <ul id="tags-addable" class="tags unstyled">
+                    {# user's tags #}
+                    {% for tag in other_tags %}
+                        <li class="label success">
+                            <a href="{{ url_tags }}?tag={{ tag.slug}}">{{ tag.name }}</a>
+                            {% include "private/tag_add.html" %}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                {# form to create a tag and add it #}
+                <label>New: </label>
+                {% include "private/tag_create.html" %}
+
+            {% endwith %}
+        </div>{# /tags-form #}
+
     </section>{# /modal-body #}
 </section>
 {% endif %}
