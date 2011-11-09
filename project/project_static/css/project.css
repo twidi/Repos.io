@@ -14,9 +14,6 @@ body {
     -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
     -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-    -webkit-border-radius: 0 0 6px 6px;
-    -moz-border-radius: 0 0 6px 6px;
-    border-radius: 0 0 6px 6px;
     -webkit-border-radius: 6px;
     -moz-border-radius: 6px;
     border-radius: 6px;
@@ -31,6 +28,25 @@ small {
     font-size: smaller;
 }
 
+.reset-button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  color: black;
+  font-size: 12px;
+  line-height: 12px;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}
+
+
 .label {
     padding-bottom: 1px;
 }
@@ -40,6 +56,29 @@ a.label:hover {
 ul.tags li {
     display: inline-block;
 }
+ul.tags li a {
+    color: white;
+}
+ul.tags li form {
+    display: inline-block;
+}
+ul.tags li form input[type=submit] {
+    width: 13px;
+    height: 14px;
+    overflow: hidden;
+    background: white;
+    color: black;
+    display: inline-block;
+    font-size: 10px;
+    padding-left: 2px;
+    -webkit-border-radius: 7px;
+    -moz-border-radius: 7px;
+    border-radius: 7px;
+}
+ul#tags-deletable.tags li form input[type=submit] {
+    padding-left: 0;
+}
+
 .helptext {
   font-size: 11px;
   line-height: 18px;
