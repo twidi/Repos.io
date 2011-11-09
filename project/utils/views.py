@@ -13,3 +13,13 @@ def paginate(request, objects, per_page):
         raise Http404
     else:
         return page
+
+def get_next(request):
+    """
+    Try to retrieve and return the "next" parameter. If not found, try with the
+    referer and then the current path
+    """
+    return request.GET.get('next',
+            request.META.get('HTTP_REFERER',
+                None)
+        ) or request.path

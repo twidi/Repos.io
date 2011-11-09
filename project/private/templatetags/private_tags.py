@@ -7,6 +7,7 @@ from private.models import ALLOWED_MODELS
 from private.forms import NoteForm, NoteDeleteForm
 from core.models import Account, Repository
 from utils.model_utils import get_app_and_model
+from utils.views import get_next
 
 register = template.Library()
 
@@ -124,6 +125,7 @@ def prepare_private(context, objects, ignore=None):
                 edit_object = edit_object,
                 note_save_form = NoteForm(instance=note) if note else NoteForm(noted_object=edit_object),
                 note_delete_form = NoteDeleteForm(instance=note) if note else None,
+                next = get_next(globals.request),
             )
         else:
             return {}

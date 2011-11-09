@@ -15,6 +15,7 @@
                 {% if note_delete_form %}
                     <form action="{% url note_delete %}" method="POST" id="note-delete-form">{% csrf_token %}
                         {{ note_delete_form.as_p }}
+                        <input type="hidden" name="next" value="{{ next }}" />
                         <input class="btn error" type="submit" name="submit" value="clear" />
                     </form>
                 {% endif %}
@@ -22,6 +23,7 @@
             {# form to edit the note #}
             <form action="{% url note_save %}" method="POST" id="note-save-form" class="form-stacked">{% csrf_token %}
                 {{ note_save_form.as_p }}
+                <input type="hidden" name="next" value="{{ next }}" />
                 <input class="btn primary" type="submit" name="submit" value="Save" />
                 <input class="btn" type="submit" name="submit-close" value="Save and close" />
             </form>
