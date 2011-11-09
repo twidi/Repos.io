@@ -1,9 +1,9 @@
 {% if edit_object %}
 <div id="extra-editor" class="modal">
     <header class="modal-header">
-        <a class="close" href=".">&times;</a>
+        <a class="close" href="{{ next }}">&times;</a>
         <h3>
-            Your privates notes about <em>{{ edit_object.project|default:edit_object.slug }}</em>
+            Your privates notes about <em title="{{ edit_object.description|default:edit_object.name }}">{{ edit_object.project|default:edit_object.slug }}</em>
             <small> - All on this window is private to you !</small>
         </h3>
     </header>
