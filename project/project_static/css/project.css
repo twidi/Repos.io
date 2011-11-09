@@ -686,6 +686,9 @@ body#user-repositories p.row span:last-child {
     width: 830px;
     margin-left: -410px;
 }
+#extra-editor .modal-header h3 a {
+    font-style: italic;
+}
 #extra-editor .modal-body {
     padding-bottom: 0;
     margin-bottom: 0;
