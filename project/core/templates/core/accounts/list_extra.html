@@ -2,7 +2,7 @@
 {% cache cache_timeout.account_extra account_extra account.pk user.id %}
 {% if user.id %}
     <td class="{% if account.current_user_has_extra %}full{% else %}empty{% endif %}">
-        <div><a href="?{% if request.META.QUERY_STRING %}{{ request.META.QUERY_STRING }}&amp;{% endif %}edit_extra={{ account.id }}&amp;next={{ current_request|urlencode }}#extra_editor" title="{% if account.current_user_has_extra %}Edit your private tags and private note{% else %}Add some private tags or a private note{% endif %}" class="btn">{% if account.current_user_has_extra %}edit{% else %}+{% endif %}</a></div>
+        <div><a href="?{% if request.META.QUERY_STRING %}{{ request.META.QUERY_STRING }}&amp;{% endif %}edit_extra={{ account.id }}&amp;next={{ current_request|urlencode }}#extra-editor" title="{% if account.current_user_has_extra %}Edit your private tags and private note{% else %}Add some private tags or a private note{% endif %}" class="btn">{% if account.current_user_has_extra %}edit{% else %}+{% endif %}</a></div>
      {% if account.current_user_has_extra %}
             <div class="extra{% if account.current_user_has_note %} with_note {% endif %}{% if account.current_user_has_tags %} with_tags{% endif %}{% if account.current_user_follows or account.current_user_followed or account.current_user_is_self %} with_special_tags{% endif %}">
                 {% with obj=account %}{% include "core/list_extra.html" %}{% endwith %}

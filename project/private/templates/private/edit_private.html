@@ -1,8 +1,11 @@
 {% if edit_object %}
-<section id="extra_editor" class="modal">
+<div id="extra-editor" class="modal">
     <header class="modal-header">
         <a class="close" href=".">&times;</a>
-        <h3>Your privates notes about {{ edit_object.project|default:edit_object.slug }}</h3>
+        <h3>
+            Your privates notes about <em>{{ edit_object.project|default:edit_object.slug }}</em>
+            <small> - All on this window is private to you !</small>
+        </h3>
     </header>
 
     <section class="modal-body">
@@ -16,7 +19,7 @@
                     <form action="{% url note_delete %}" method="POST" id="note-delete-form">{% csrf_token %}
                         {{ note_delete_form.as_p }}
                         <input type="hidden" name="next" value="{{ next }}" />
-                        <input class="btn error" type="submit" name="submit" value="clear" />
+                        (<input class="reset-button" type="submit" name="submit" value="clear" />)
                     </form>
                 {% endif %}
             </header>
@@ -27,10 +30,10 @@
                 <input class="btn primary" type="submit" name="submit" value="Save" />
                 <input class="btn" type="submit" name="submit-close" value="Save and close" />
             </form>
-        </div>{# /note-form #}
+        </div>{# /note-form #}<!--
 
         {# part of the window to edit private tags #}
-        <div id="tags-form">
+        --><div id="tags-form">
             {% url tags_save as tags_edit_url %}
             {% with tags_form=tags_delete_form %}
                 <header>
@@ -40,35 +43,43 @@
                         <form action="{% url tags_delete %}" method="POST" id="tags-delete-form">{% csrf_token %}
                             {{ tags_delete_form.as_p }}
                             <input type="hidden" name="next" value="{{ next }}" />
-                            <input class="btn error" type="submit" name="submit" value="clear" />
+                            (<input class="reset-button" type="submit" name="submit" value="clear" />)
                         </form>
                     {% endif %}
                 </header>
 
-                {# existing tags that can be removed #}
-                {% if private_tags %}
-                    <label>Current: </label>
-                    <ul id="tags-deletable" class="tags unstyled">
-                        {% for tag in private_tags %}
-                            <li class="label success">
-                                <a href="{{ url_tags }}?tag={{ tag.slug}}">{{ tag.name }}</a>
-                                {% include "private/tag_remove.html" %}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
+                {% if private_tags or other_tags %}
+                <div>
+                    {# existing tags that can be removed #}
+                    {% if private_tags %}
+                        <label>Current: </label>
+                        <ul id="tags-deletable" class="tags unstyled">
+                            {% for tag in private_tags %}
+                                <li class="label success">
+                                    <a href="{{ url_tags }}?tag={{ tag.slug}}">{{ tag.name }}</a>
+                                    {% include "private/tag_remove.html" %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
 
-                {# tags that can be added #}
-                <label>Add: </label>
-                <ul id="tags-addable" class="tags unstyled">
-                    {# user's tags #}
-                    {% for tag in other_tags %}
-                        <li class="label success">
-                            <a href="{{ url_tags }}?tag={{ tag.slug}}">{{ tag.name }}</a>
-                            {% include "private/tag_add.html" %}
-                        </li>
-                    {% endfor %}
-                </ul>
+                    {% if private_tags and other_tags %}<hr />{% endif %}
+
+                    {# tags that can be added #}
+                    {% if other_tags %}
+                        <label>Add: </label>
+                        <ul id="tags-addable" class="tags unstyled">
+                            {# user's tags #}
+                            {% for tag in other_tags %}
+                                <li class="label success">
+                                    <a href="{{ url_tags }}?tag={{ tag.slug}}">{{ tag.name }}</a>
+                                    {% include "private/tag_add.html" %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                {% endif %}
 
                 {# form to create a tag and add it #}
                 <label>New: </label>
@@ -78,5 +89,10 @@
         </div>{# /tags-form #}
 
     </section>{# /modal-body #}
-</section>
+
+    <footer class="modal-footer">
+    <a href="{{ next }}" class="btn primary">Close this window <small>(don't forget to save your note if needed !)</small></a>
+    </footer>
+
+</div>
 {% endif %}

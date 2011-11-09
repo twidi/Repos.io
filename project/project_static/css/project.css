@@ -681,6 +681,88 @@ body#user-repositories p.row span:last-child {
 #tags-edit #id_tags {
     width: 520px;
 }
+/* Extra editor */
+#extra-editor {
+    width: 830px;
+    margin-left: -410px;
+}
+#extra-editor .modal-body {
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+#extra-editor #note-form {
+    margin-left: 10px;
+    display: inline-block;
+    width: 440px;
+    vertical-align: top;
+    padding-right: 20px;
+    border-right: solid #eee 1px;
+    margin-bottom: -6px;
+    padding-bottom: 10px;
+}
+#extra-editor #tags-form {
+    padding-left: 20px;
+    border-left: solid #eee 1px;
+    display: inline-block;
+    width: 300px;
+    vertical-align: top;
+    margin-left: -1px;
+}
+#extra-editor .modal-body > div > header h3 {
+    display: inline-block;
+    vertical-align: middle;
+}
+#extra-editor .modal-body > div > header form {
+    display: inline-block;
+    margin-left: 10px;
+    font-size: 12px;
+    color: #bfbfbf;
+    vertical-align: middle;
+}
+#extra-editor .modal-body > div > header input[type=submit] {
+    color: #bfbfbf;
+    font-size: 12px;
+    text-decoration: underline;
+    padding: 0 2px;
+}
+#extra-editor #note-form form.form-stacked {
+    padding-left: 0;
+}
+#extra-editor #note-form form.form-stacked label[for=id_content] {
+    display: none;
+}
+#extra-editor #note-form form.form-stacked textarea {
+    width: 100%;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+#extra-editor #note-form form.form-stacked input[type=submit] {
+    float: right;
+    margin-left: 10px;
+    margin-top: -25px;
+}
+#extra-editor #tags-form label {
+    width: 50px;
+    padding-right: 5px;
+}
+#extra-editor #tags-form > div  {
+    max-height: 305px;
+    overflow: auto;
+    margin-bottom: 18px;
+}
+#extra-editor #tags-form > div label {
+    padding-top: 3px;
+}
+#extra-editor #tags-form > div ul:last-child {
+    margin-bottom: 0;
+}
+#extra-editor #tags-form ul {
+    margin-left: 55px;
+}
+#extra-editor #tags-form ul li.label {
+    margin: 2px 0;
+}
 
 /* List filter */
 form#list-filter {
