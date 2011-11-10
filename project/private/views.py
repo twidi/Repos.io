@@ -107,7 +107,7 @@ def tags_save(request):
             error = 'We were unable to remove your tag !',
         ),
         create = dict(
-            form = TagsAddOneForm,
+            form = TagsCreateOneForm,
             success = 'Your private tags was added',
             error = 'We were unable to add your tag !',
         ),
