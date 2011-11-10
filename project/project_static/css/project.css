@@ -815,6 +815,15 @@ body#user-repositories p.row span:last-child {
 #extra-editor #tags-form ul li.label {
     margin: 2px 0;
 }
+#extra-editor #tags-form ul {
+    margin-bottom: 0;
+}
+#extra-editor #tags-form ul#tags-special li.label, #extra-editor #tags-form ul#tags-addable li.label{
+    opacity: 0.5;
+}
+#extra-editor #tags-form ul li.label:hover {
+    opacity: 1 !important;
+}
 
 /* List filter */
 form#list-filter {
