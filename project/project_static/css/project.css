@@ -707,25 +707,7 @@ body#user-repositories p.row span:last-child {
 #private.sticky.taped.for-repository:after {
     content: "About you and this project";
 }
-#note-edit form, #tags-edit form {
-    padding: 0;
-    margin: 0;
-}
-#note-edit form .modal-body, #tags-edit form .modal-body {
-    padding-bottom: 0;
-}
-#note-edit form textarea, #tags-edit form textarea {
-    width: 510px;
-}
-#note-edit form#note-delete-form, #tags-edit form#tags-delete-form {
-    position: absolute;
-    display: inline-block;
-    bottom: 15px;
-    left: 20px;
-}
-#tags-edit #id_tags {
-    width: 520px;
-}
+
 /* Extra editor */
 #extra-editor {
     width: 830px;
