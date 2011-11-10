@@ -77,4 +77,5 @@ def design(request):
     return dict(
         section  = section,
         subsection = subsection,
+        current_request = request.get_full_path(),
     )

@@ -114,11 +114,12 @@ class _TaggableManager(_BaseTaggableManager):
             if isinstance(tag, (tuple, list)):
                 tag = tag[0]
             if isinstance(tag, self.through.tag_model()):
-                tag = tag.slug
+                tag = tag.name
             str_tags.add(tag)
 
+        print str_tags
         self.through.objects.filter(**self._lookup_kwargs(**filters)).filter(
-            tag__slug__in=str_tags).delete()
+            tag__name__in=str_tags).delete()
 
     @require_instance_manager
     def clear(self, **filters):

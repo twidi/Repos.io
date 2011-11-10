@@ -20,7 +20,7 @@
             </div>
         </header>
 
-        {% if subsection == 'home' %}{% include "private/account.html" %}{% endif %}
+        {% if subsection == 'home' %}{% include "private/account.html" with object=account %}{% endif %}
 
         {% if account.last_fetch %}
             <ul class="tabs">

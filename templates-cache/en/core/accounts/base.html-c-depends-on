@@ -15,8 +15,12 @@ core/accounts/fetch_form.html
 core/fetch_form.html
 private/account.html
 private/private.html
+private/editor_link.html
+private/editor_link.html
+private/editor_link.html
 dashboard/include_tags.html
 dashboard/include_tags.html
+private/editor_link.html
 core/accounts/link_no_backend.html
 core/accounts/link.html
 core/accounts/link_no_backend.html

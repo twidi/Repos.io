@@ -57,8 +57,6 @@ def _get_last_user_notes(user, limit=None, only=None, sort_by='-modified'):
         if only and obj_type != only:
             continue
 
-        result[obj_type] = []
-
         notes = Note.objects.filter(author=user, content_type__app_label='core', content_type__model=obj_type).values_list('object_id', 'rendered_content', 'modified')
 
         sort_objs = True
@@ -70,21 +68,17 @@ def _get_last_user_notes(user, limit=None, only=None, sort_by='-modified'):
             notes = notes[:limit]
 
         if not notes:
+            result[obj_type] = []
             continue
 
         notes_by_obj_id = dict((note[0], note[1:]) for note in notes)
 
         if sort_objs:
             objs = types[obj_type].for_list.filter(id__in=notes_by_obj_id.keys()).order_by(sort_by)
-            ordered = [obj for obj in objs if obj.id in notes_by_obj_id]
+            result[obj_type] = [obj for obj in objs if obj.id in notes_by_obj_id]
         else:
             objs = types[obj_type].for_list.in_bulk(notes_by_obj_id.keys())
-            ordered = [objs[note[0]] for note in notes if note[0] in objs]
-
-        for obj in ordered:
-            obj.current_user_rendered_note, obj.current_user_note_modified = notes_by_obj_id[obj.id]
-            obj.current_user_has_extra = obj.current_user_has_note = True
-            result[obj_type].append(obj)
+            result[obj_type] = [objs[note[0]] for note in notes if note[0] in objs]
 
     return result
 
@@ -164,7 +158,7 @@ def tags(request, obj_type=None):
         sort = get_repository_sort(sort_key)
         per_page = settings.REPOSITORIES_PER_PAGE
 
-    objects = objects.order_by(sort['db_sort'])
+    objects = objects.order_by(sort['db_sort']).distinct()
 
     page = paginate(request, objects, per_page)
 

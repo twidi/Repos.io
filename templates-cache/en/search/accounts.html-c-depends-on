@@ -9,5 +9,6 @@ core/score.html
 core/accounts/tags.html
 core/tags.html
 core/accounts/list_extra.html
+private/editor_link.html
 core/list_extra.html
 dashboard/include_tags.html

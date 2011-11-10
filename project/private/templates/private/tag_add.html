@@ -1,0 +1,8 @@
+<form action="{% if tags_save_url %}{{ tags_save_url }}{% else %}{% url tags_save %}{% endif %}" method="POST">{% csrf_token %}
+    {{ tag_save_form.as_p }}
+    <input type="hidden" name="act" value="add" />
+    <input type="hidden" name="tag" value="{{ tag.name }}" />
+    <input type="hidden" name="edit_url" value="{{ edit_url }}" />
+    <input type="hidden" name="when_finished" value="{{ when_finished }}" />
+    <input title="Add" type="submit" name="submit" class="reset-button" value="+" />
+</form>

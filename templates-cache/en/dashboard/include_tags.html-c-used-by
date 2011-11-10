@@ -12,9 +12,11 @@ core/repositories/contributors.html
 core/repositories/followers.html
 core/repositories/home.html
 core/repositories/list_extra.html
-core/repositories/main_repository_cell.html
 dashboard/base_repositories.html
 dashboard/contributing.html
+dashboard/followers.html
+dashboard/following.html
+dashboard/noted_accounts.html
 dashboard/noted_repositories.html
 dashboard/notes.html
 dashboard/repositories.html
@@ -26,6 +28,4 @@ private/private.html
 private/repository.html
 search/accounts.html
 search/repositories.html
-dashboard/followers.html
-dashboard/following.html
-dashboard/noted_accounts.html
+dashboard/home.html

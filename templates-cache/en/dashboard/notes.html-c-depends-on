@@ -19,6 +19,7 @@ core/accounts/tags.html
 core/tags.html
 core/accounts/links.html
 core/accounts/list_extra.html
+private/editor_link.html
 core/list_extra.html
 dashboard/include_tags.html
 dashboard/noted_repositories.html
@@ -47,5 +48,6 @@ core/accounts/link_no_backend.html
 core/accounts/link.html
 core/repositories/date_modified_cell.html
 core/repositories/list_extra.html
+private/editor_link.html
 core/list_extra.html
 dashboard/include_tags.html
