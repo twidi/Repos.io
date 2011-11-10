@@ -230,6 +230,40 @@ class TagsForm(TagsBaseForm):
         tagged_object = self.get_related_object()
         tagged_object.private_tags.set(dict_tags, owner=owner)
 
+class TagsAddOneForm(TagsBaseForm):
+    """
+    For adding an existing tag
+    """
+    tag = TagField()
+
+    def save(self):
+        owner = globals.user
+        tagged_object = self.get_related_object()
+        tagged_object.private_tags.add(self.cleaned_data['tag'], owner=owner)
+
+class TagsRemoveOneForm(TagsBaseForm):
+    """
+    For removing an existing tag
+    """
+    tag = TagField()
+
+    def save(self):
+        owner = globals.user
+        tagged_object = self.get_related_object()
+        tagged_object.private_tags.remove(self.cleaned_data['tag'], owner=owner)
+
+class TagsCreateOneForm(TagsBaseForm):
+    """
+    For adding a non existing tag
+    """
+    tag = TagField()
+
+    def save(self):
+        owner = globals.user
+        tagged_object = self.get_related_object()
+        tagged_object.private_tags.add(self.cleaned_data['tag'], owner=owner)
+
+
 class AccountTagsForm(TagsForm):
 
     def get_available_tags(self):

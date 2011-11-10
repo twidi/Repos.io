@@ -7,7 +7,8 @@ from django.http import HttpResponseNotAllowed
 
 from notes.models import Note
 
-from private.forms import NoteForm, NoteDeleteForm, TagsForm, TagsDeleteForm
+from private.forms import (NoteForm, NoteDeleteForm,
+        TagsForm, TagsDeleteForm, TagsAddOneForm, TagsRemoveOneForm, TagsCreateOneForm)
 from utils.model_utils import get_app_and_model
 
 def get_user_note_for_object(obj):
@@ -49,7 +50,7 @@ def note_save(request):
             return HttpResponseNotAllowed('Vilain :)')
         messages.error(request, 'We were unable to save your note !')
 
-    return redirect(noted_object)
+    return redirect(request.POST.get('edit_url') or noted_object)
 
 
 @require_POST
@@ -69,7 +70,7 @@ def note_delete(request):
             return HttpResponseNotAllowed('Vilain :)')
         messages.error(request, 'We were unable to delete your note !')
 
-    return redirect(noted_object)
+    return redirect(request.POST.get('edit_url') or noted_object)
 
 
 def get_user_tags_for_object(obj):
@@ -89,18 +90,43 @@ def tags_save(request):
     """
     Save some tags for the current user
     """
-    form = TagsForm(request.POST)
+    view_data = dict(
+        save = dict(
+            form = TagsForm,
+            success = 'Your private tags were saved',
+            error = 'We were unable to save your tags !',
+        ),
+        add = dict(
+            form = TagsAddOneForm,
+            success = 'Your private tags was added',
+            error = 'We were unable to add your tag !',
+        ),
+        remove = dict(
+            form = TagsRemoveOneForm,
+            success = 'Your private tags was removed',
+            error = 'We were unable to remove your tag !',
+        ),
+        create = dict(
+            form = TagsAddOneForm,
+            success = 'Your private tags was added',
+            error = 'We were unable to add your tag !',
+        ),
+    )
+
+    action = request.POST.get('act', 'save')
+
+    form = view_data[action]['form'](request.POST)
     if form.is_valid():
         tagged_object = form.get_related_object()
         form.save()
-        messages.success(request, 'Your private tags were saved')
+        messages.success(request, view_data[action]['success'])
     else:
         tagged_object = form.get_related_object()
         if not tagged_object:
             return HttpResponseNotAllowed('Vilain :)')
-        messages.error(request, 'We were unable to save your tags !')
+        messages.error(request, view_data[action]['error'])
 
-    return redirect(tagged_object)
+    return redirect(request.POST.get('edit_url') or tagged_object)
 
 @require_POST
 @login_required
@@ -119,4 +145,4 @@ def tags_delete(request):
             return HttpResponseNotAllowed('Vilain :)')
         messages.error(request, 'We were unable to delete your tags !')
 
-    return redirect(tagged_object)
+    return redirect(request.POST.get('edit_url') or tagged_object)

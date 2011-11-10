@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% load private_tags %}<!DOCTYPE html>
     <html lang="en">
 
 <head>
@@ -82,6 +82,11 @@
     {% endif %}
 
     <div id="content"{% if messages %} class="with_messages"{% endif %}>
+
+        {% if request.GET.edit_extra %}
+            {% edit_private request.GET.edit_extra %}
+        {% endif %}
+
         {% block content %}{% endblock %}
     </div>
 </div></body></html>

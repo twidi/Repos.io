@@ -14,12 +14,9 @@ def paginate(request, objects, per_page):
     else:
         return page
 
-def get_next(request):
+def get_request_param(request, key='next', default=None):
     """
-    Try to retrieve and return the "next" parameter. If not found, try with the
+    Try to retrieve and return the `key` parameter. If not found, try with the
     referer and then the current path
     """
-    return request.GET.get('next',
-            request.META.get('HTTP_REFERER',
-                None)
-        ) or request.path
+    return request.POST.get(key, request.GET.get(key, None)) or default

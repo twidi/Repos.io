@@ -1,7 +1,7 @@
 {% if edit_object %}
 <div id="extra-editor" class="modal">
     <header class="modal-header">
-        <a class="close" href="{{ next }}">&times;</a>
+        <a class="close" href="{{ when_finished }}">&times;</a>
         <h3>
             Your privates notes about <a href="{{ edit_object.get_absolute_url }}" title="{{ edit_object.description|default:edit_object.name }}">{{ edit_object.project|default:edit_object.slug }}</a>
             <small> - All on this window is private to you !</small>
@@ -18,7 +18,8 @@
                 {% if note_delete_form %}
                     <form action="{% url note_delete %}" method="POST" id="note-delete-form">{% csrf_token %}
                         {{ note_delete_form.as_p }}
-                        <input type="hidden" name="next" value="{{ next }}" />
+                        <input type="hidden" name="edit_url" value="{{ edit_url }}" />
+                        <input type="hidden" name="when_finished" value="{{ when_finished }}" />
                         (<input class="reset-button" type="submit" name="submit" value="clear" />)
                     </form>
                 {% endif %}
@@ -26,7 +27,8 @@
             {# form to edit the note #}
             <form action="{% url note_save %}" method="POST" id="note-save-form" class="form-stacked">{% csrf_token %}
                 {{ note_save_form.as_p }}
-                <input type="hidden" name="next" value="{{ next }}" />
+                <input type="hidden" name="edit_url" value="{{ edit_url }}" />
+                <input type="hidden" name="when_finished" value="{{ when_finished }}" />
                 <input class="btn primary" type="submit" name="submit" value="Save" />
                 <input class="btn" type="submit" name="submit-close" value="Save and close" />
             </form>
@@ -34,21 +36,20 @@
 
         {# part of the window to edit private tags #}
         --><div id="tags-form">
-            {% url tags_save as tags_edit_url %}
-            {% with tags_form=tags_delete_form %}
+            {% url tags_save as tags_save_url %}
                 <header>
                     <h3>Tags:</h3>
                     {# form to clear all tags #}
                     {% if tags_delete_form %}
                         <form action="{% url tags_delete %}" method="POST" id="tags-delete-form">{% csrf_token %}
                             {{ tags_delete_form.as_p }}
-                            <input type="hidden" name="next" value="{{ next }}" />
+                            <input type="hidden" name="edit_url" value="{{ edit_url }}" />
+                            <input type="hidden" name="when_finished" value="{{ when_finished }}" />
                             (<input class="reset-button" type="submit" name="submit" value="clear" />)
                         </form>
                     {% endif %}
                 </header>
 
-                {% if private_tags or other_tags %}
                 <div>
                     {# existing tags that can be removed #}
                     {% if private_tags %}
@@ -61,6 +62,8 @@
                                 </li>
                             {% endfor %}
                         </ul>
+                    {% else %}
+                        <p>No tags yet</p>
                     {% endif %}
 
                     {% if private_tags and other_tags %}<hr />{% endif %}
@@ -68,7 +71,7 @@
                     {# tags that can be added #}
                     {% if other_tags %}
                         <label>Add: </label>
-                        <ul id="tags-addable" class="tags unstyled">
+                        <ul id="tags-addable" class="tags unstyled{% if other_tags|length > 20 %} small{% endif %}">
                             {# user's tags #}
                             {% for tag in other_tags %}
                                 <li class="label success">
@@ -79,19 +82,17 @@
                         </ul>
                     {% endif %}
                 </div>
-                {% endif %}
 
                 {# form to create a tag and add it #}
                 <label>New: </label>
                 {% include "private/tag_create.html" %}
 
-            {% endwith %}
         </div>{# /tags-form #}
 
     </section>{# /modal-body #}
 
     <footer class="modal-footer">
-    <a href="{{ next }}" class="btn primary">Close this window <small>(don't forget to save your note if needed !)</small></a>
+    <a href="{{ when_finished }}" class="btn primary">Close this window <small>(don't forget to save your note if needed !)</small></a>
     </footer>
 
 </div>

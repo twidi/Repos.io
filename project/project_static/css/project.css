@@ -78,6 +78,21 @@ ul.tags li form input[type=submit] {
 ul#tags-deletable.tags li form input[type=submit] {
     padding-left: 0;
 }
+ul.tags.small .label {
+    font-size: 8px;
+    line-height: 13px;
+}
+ul.tags.small li form input[type=submit] {
+    height: 11px;
+    width: 11px;
+    font-size: 8px;
+    margin-left: 1px;
+    margin-right: -1px;
+    padding-left: 1px;
+}
+ul#tags-deletable.tags.small li form input[type=submit] {
+    padding-left: 1px;
+}
 
 .helptext {
   font-size: 11px;
@@ -753,6 +768,10 @@ body#user-repositories p.row span:last-child {
     max-height: 305px;
     overflow: auto;
     margin-bottom: 18px;
+}
+#extra-editor #tags-form > div > p {
+    margin-left: 55px;
+    font-style: italic;
 }
 #extra-editor #tags-form > div label {
     padding-top: 3px;

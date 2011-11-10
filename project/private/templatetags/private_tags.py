@@ -5,16 +5,16 @@ from django_globals import globals
 from notes.models import Note
 
 from private.models import ALLOWED_MODELS
-from private.forms import NoteForm, NoteDeleteForm, TagsDeleteForm
+from private.forms import NoteForm, NoteDeleteForm, TagsDeleteForm, TagsBaseForm
 from core.models import Account, Repository
 from utils.model_utils import get_app_and_model
-from utils.views import get_next
+from utils.views import get_request_param
 from tagging.models import Tag
 
 register = template.Library()
 
-@register.inclusion_tag('private/edit_private.html', takes_context=True)
-def prepare_private(context, objects, ignore=None):
+@register.simple_tag
+def prepare_private(objects, ignore=None):
     """
     Update each object included in the `objects` with private informations (note and tags)
     All objects must be from the same content_type
@@ -39,17 +39,6 @@ def prepare_private(context, objects, ignore=None):
         ids = sorted(dict_objects.keys())
         if not ids:
             return ''
-
-
-        # check if we have an object to edit
-        edit_object = None
-        try:
-            edit_object_id =  int(globals.request.GET.get('edit_extra', 0))
-        except:
-            pass
-        else:
-            if edit_object_id and edit_object_id in ids:
-                edit_object = dict_objects[edit_object_id]
 
         # read and save notes
         if not (ignore and '-notes' in ignore):
@@ -120,38 +109,63 @@ def prepare_private(context, objects, ignore=None):
                     dict_objects[obj_id].current_user_has_extra = True
                     dict_objects[obj_id].current_user_has_fork = True
 
-        if edit_object:
-            # get private data
-            note = edit_object.get_user_note()
-            private_tags = edit_object.get_user_tags()
-
-            # get other private tags
-            other_tags = Tag.objects.filter(
-                    **{'private_%s_tags__owner' % model_name:globals.user})
-            if private_tags:
-                other_tags = other_tags.exclude(
-                        id__in=[t.id for t in private_tags])
-            other_tags = other_tags.distinct()
-
-            # for tags url
-            if model_name == 'account':
-                model_name_plural = 'accounts'
-            else:
-                model_name_plural = 'repositories'
-
-
-            return dict(
-                edit_object = edit_object,
-                note_save_form = NoteForm(instance=note) if note else NoteForm(noted_object=edit_object),
-                note_delete_form = NoteDeleteForm(instance=note) if note else None,
-                tags_delete_form = TagsDeleteForm(tagged_object=edit_object) if private_tags else None,
-                private_tags = private_tags,
-                other_tags = other_tags,
-                url_tags = reverse('dashboard_tags', kwargs=dict(obj_type=model_name_plural)),
-                next = get_next(globals.request),
-            )
-        else:
-            return {}
+        return ''
     except:
+        return ''
+
+
+@register.inclusion_tag('private/edit_private.html')
+def edit_private(object_str):
+    """
+    Display the the private editor for the given object. `object_str` is the object
+    representaiton as defined by the `simple_str` method in the core module.
+    """
+    if not (object_str and globals.user and globals.user.is_authenticated()):
         return {}
 
+    model_name, id = object_str.split(':')
+
+    if model_name == 'account':
+        model = Account
+        model_name_plural = 'accounts'
+    else:
+        model = Repository
+        model_name_plural = 'repositories'
+
+    try:
+        edit_object = model.objects.get(id=id)
+
+        # get private data
+        note = edit_object.get_user_note()
+        private_tags = edit_object.get_user_tags()
+
+        # get other private tags
+        other_tags = Tag.objects.filter(
+                **{'private_%s_tags__owner' % model_name:globals.user})
+        if private_tags:
+            other_tags = other_tags.exclude(
+                    id__in=[t.id for t in private_tags])
+        other_tags = other_tags.distinct()
+
+        # for tags url
+        if model_name == 'account':
+            model_name_plural = 'accounts'
+        else:
+            model_name_plural = 'repositories'
+
+
+        return dict(
+            edit_object = edit_object,
+            note_save_form = NoteForm(instance=note) if note else NoteForm(noted_object=edit_object),
+            note_delete_form = NoteDeleteForm(instance=note) if note else None,
+            tag_save_form = TagsBaseForm(tagged_object=edit_object),
+            tags_delete_form = TagsDeleteForm(tagged_object=edit_object) if private_tags else None,
+            private_tags = private_tags,
+            other_tags = other_tags,
+            url_tags = reverse('dashboard_tags', kwargs=dict(obj_type=model_name_plural)),
+            edit_url = get_request_param(globals.request, 'edit_url', globals.request.get_full_path()),
+            when_finished = get_request_param(globals.request, 'when_finished'),
+        )
+
+    except:
+        return {}
