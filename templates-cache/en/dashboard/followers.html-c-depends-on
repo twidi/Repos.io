@@ -21,5 +21,6 @@ core/accounts/avatar.html
 core/accounts/link_no_backend.html
 core/accounts/link.html
 core/accounts/list_extra.html
+private/editor_link.html
 core/list_extra.html
 dashboard/include_tags.html

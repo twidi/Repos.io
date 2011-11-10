@@ -6,7 +6,6 @@ core/accounts/following.html
 core/accounts/home.html
 core/accounts/list_extra.html
 core/accounts/repositories.html
-core/list_extra.html
 core/repositories/base.html
 core/repositories/contributors.html
 core/repositories/followers.html

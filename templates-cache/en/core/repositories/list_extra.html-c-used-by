@@ -1,7 +1,6 @@
 core/accounts/base_repositories.html
 core/accounts/contributing.html
 core/accounts/repositories.html
-core/repositories/main_repository_cell.html
 dashboard/base_repositories.html
 dashboard/contributing.html
 dashboard/noted_repositories.html

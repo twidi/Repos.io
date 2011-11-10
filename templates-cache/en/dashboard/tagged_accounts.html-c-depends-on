@@ -11,5 +11,6 @@ core/tags.html
 core/accounts/links.html
 dashboard/include_tags.html
 core/accounts/list_extra.html
+private/editor_link.html
 core/list_extra.html
 dashboard/include_tags.html

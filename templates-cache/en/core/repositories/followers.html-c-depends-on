@@ -25,8 +25,12 @@ core/repositories/fetch_form.html
 core/fetch_form.html
 private/repository.html
 private/private.html
+private/editor_link.html
+private/editor_link.html
+private/editor_link.html
 dashboard/include_tags.html
 dashboard/include_tags.html
+private/editor_link.html
 core/accounts/link_no_backend.html
 core/accounts/link.html
 core/accounts/link_no_backend.html
@@ -49,5 +53,6 @@ core/accounts/tags.html
 core/tags.html
 core/accounts/links.html
 core/accounts/list_extra.html
+private/editor_link.html
 core/list_extra.html
 dashboard/include_tags.html

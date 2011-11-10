@@ -339,6 +339,12 @@ table.with_extras td.empty:last-child {
     vertical-align: middle;
     text-align: center;
 }
+table.with_extras td.empty:last-child a {
+    opacity: 0.3;
+}
+table.with_extras td.empty:last-child:hover a {
+    opacity: 1;
+}
 table.with_extras div.extra {
     margin-top: 0;
 }
