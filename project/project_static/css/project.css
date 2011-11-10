@@ -318,9 +318,16 @@ body#search-accounts table.accounts {
 /* Tables with an extra div info in the last column */
 table.with_extras th:last-child {
     text-align: right;
+    min-width: 55px;
 }
 table.with_extras td:last-child {
     border-left: #ddd dashed 1px;
+}
+table.with_extras td:last-child {
+    opacity: 0.5;
+}
+table.with_extras tr:hover td:last-child {
+    opacity: 1;
 }
 table.with_extras td.full:last-child > div {
     position: relative;
@@ -330,7 +337,8 @@ table.with_extras td.full:last-child a.btn {
     padding: 2px 6px;
     display: none;
     position: absolute;
-    right: -30px;
+    right: -32px;
+    top: -3px;
 }
 table.with_extras td.full:last-child:hover a.btn {
     display: inline-block;
@@ -339,11 +347,20 @@ table.with_extras td.empty:last-child {
     vertical-align: middle;
     text-align: center;
 }
+body#dashboard-home table.with_extras td.empty:last-child {
+    width: 19px;
+}
 table.with_extras td.empty:last-child a {
-    opacity: 0.3;
+    opacity: 0.5;
 }
 table.with_extras td.empty:last-child:hover a {
     opacity: 1;
+}
+body#dashboard-home table.with_extras td.empty:last-child a {
+    padding: 0 5px 1px 6px;
+    font-size: 10px;
+    line-height: 15px;
+    vertical-align: middle;
 }
 table.with_extras div.extra {
     margin-top: 0;
@@ -351,6 +368,13 @@ table.with_extras div.extra {
 table.with_extras div.extra .rel_popover_left {
     float: right;
     margin-left: 5px;
+}
+body#dashboard-home table.with_extras div.extra .rel_popover_left {
+    float: none;
+    margin-left: 2px;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 13px;
 }
 table.with_extras div.extra img {
     margin: 0 !important;

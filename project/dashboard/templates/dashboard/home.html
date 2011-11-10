@@ -1,4 +1,5 @@
 {% extends 'dashboard/base.html' %}
+{% load private_tags %}
 
 {% block dashboard_content %}
 <div class="row">
@@ -51,7 +52,8 @@
             <h3>For repositories</h3>
 
             {% if last_notes.repository %}
-                <table class="condensed-table">
+                {% prepare_private last_notes.repository "-related" %}
+                <table class="condensed-table with_extras">
                     <tbody>
                         {% for repository in last_notes.repository %}
                         <tr>
@@ -59,16 +61,7 @@
                                 {% include "core/repositories/logo_small.html" %}
                                 {% include "core/repositories/link.html" %}
                             </td>
-                            <td>
-                                <div class="rel_popover" data-popover-title="Your private note">
-                                    <img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" />
-                                    <div><div class="note_container">
-                                        <blockquote>{{ repository.current_user_rendered_note|safe }}</blockquote>
-                                        <hr />
-                                        <em>Last updated: {{ repository.current_user_note_modified }}</em>
-                                    </div></div>
-                                </div>
-                            </td>
+                            {% include "core/repositories/list_extra.html" %}
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -82,23 +75,15 @@
             <h3>For people</h3>
 
             {% if last_notes.account %}
-                <table class="condensed-table">
+                {% prepare_private last_notes.account "-related" %}
+                <table class="condensed-table with_extras">
                     <tbody>
                         {% for account in last_notes.account %}
                         <tr>
                             <td>
                                 {% include "core/accounts/minimal_cell_small.html" %}
                             </td>
-                            <td>
-                                <div class="rel_popover" data-popover-title="Your private note">
-                                    <img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" />
-                                    <div><div class="note_container">
-                                        <blockquote>{{ account.current_user_rendered_note|safe }}</blockquote>
-                                        <hr />
-                                        <em>Last updated: {{ account.current_user_note_modified }}</em>
-                                    </div></div>
-                                </div>
-                            </td>
+                            {% include "core/accounts/list_extra.html" %}
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -119,17 +104,21 @@
 
         <h3>Most popular followers</h3>
         {% if best.accounts.followers %}
-            <table class="condensed-table">
+            {% prepare_private best.accounts.followers "-related" %}
+            {% with minimal=1 %}
+            <table class="condensed-table with_extras">
                 <tbody>
                     {% for account in best.accounts.followers %}
                         <tr>
                             <td>
                                 {% include "core/accounts/minimal_cell_small.html" %}
                             </td>
+                            {% include "core/accounts/list_extra.html" %}
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            {% endwith %}
         {% else %}
             <p><em>No followers !</em></p>
         {% endif %}
@@ -138,13 +127,15 @@
 
         <h3>Most popular following</h3>
         {% if best.accounts.following %}
-            <table class="condensed-table">
+            {% prepare_private best.accounts.following "-related" %}
+            <table class="condensed-table with_extras">
                 <tbody>
                     {% for account in best.accounts.following %}
                         <tr>
                             <td>
                                 {% include "core/accounts/minimal_cell_small.html" %}
                             </td>
+                            {% include "core/accounts/list_extra.html" %}
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -163,7 +154,8 @@
 
         <h3>Most popular owned repositories</h3>
         {% if best.repositories.owned %}
-            <table class="condensed-table">
+            {% prepare_private best.repositories.owned "-related" %}
+            <table class="condensed-table with_extras">
                 <tbody>
                     {% for repository in best.repositories.owned %}
                         <tr>
@@ -171,6 +163,7 @@
                                 {% include "core/repositories/logo_small.html" %}
                                 {% include "core/repositories/link.html" %}
                             </td>
+                            {% include "core/repositories/list_extra.html" %}
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -183,7 +176,8 @@
 
         <h3>Most popular followed repositories</h3>
         {% if best.repositories.followed %}
-            <table class="condensed-table">
+            {% prepare_private best.repositories.followed "-related" %}
+            <table class="condensed-table with_extras">
                 <tbody>
                     {% for repository in best.repositories.followed %}
                         <tr>
@@ -191,6 +185,7 @@
                                 {% include "core/repositories/logo_small.html" %}
                                 {% include "core/repositories/link.html" %}
                             </td>
+                            {% include "core/repositories/list_extra.html" %}
                         </tr>
                     {% endfor %}
                 </tbody>

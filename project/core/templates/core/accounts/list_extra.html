@@ -4,12 +4,14 @@
      {% if account.current_user_has_extra %}
             <div class="extra{% if account.current_user_has_note %} with_note {% endif %}{% if account.current_user_has_tags %} with_tags{% endif %}{% if account.current_user_follows or account.current_user_followed or account.current_user_is_self %} with_special_tags{% endif %}">
                 {% with obj=account %}{% include "core/list_extra.html" %}{% endwith %}
-                {% if account.current_user_follows or account.current_user_followed or account.current_user_is_self %}
-                    <ul class="special-tags unstyled">
-                        {% if account.current_user_follows %}<li class="label notice" title="You follow {{ account.slug }}">following</li>{% endif %}
-                        {% if account.current_user_followed %}<li class="label notice" title="{{ account.slug }} follows you">followed by</li>{% endif %}
-                        {% if account.current_user_is_self %}<li class="label success" title="{{ account.slug }} is one of your accounts">you</li>{% endif %}
-                    </ul>
+                {% if not minimal %}
+                    {% if account.current_user_follows or account.current_user_followed or account.current_user_is_self %}
+                        <ul class="special-tags unstyled">
+                            {% if account.current_user_follows %}<li class="label notice" title="You follow {{ account.slug }}">following</li>{% endif %}
+                            {% if account.current_user_followed %}<li class="label notice" title="{{ account.slug }} follows you">followed by</li>{% endif %}
+                            {% if account.current_user_is_self %}<li class="label success" title="{{ account.slug }} is one of your accounts">you</li>{% endif %}
+                        </ul>
+                    {% endif %}
                 {% endif %}
             </div>
         {% endif %}
