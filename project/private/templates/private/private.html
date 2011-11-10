@@ -3,9 +3,9 @@
     <div id="note-part"{% if note %} class="with-note"{% endif %}>
         {% if note %}
             <div>{{ note.rendered_content|safe }}</div>
-            <a href="./?edit_note" title="Edit your private note (you'll be able to delete it too)"><small>edit your note (last update : {{ note.modified }})</small></a>
+            <a href="{% include "private/editor_link.html" %}"><small>edit your note (last update : {{ note.modified }})</small></a>
         {% else %}
-            <a href="./?edit_note"><small>Add a <strong>private</strong> note</small></a>
+            <a href="{% include "private/editor_link.html" %}"><small>Add a <strong>private</strong> note</small></a>
         {% endif %}
         {% if note_form %}
             <section id="note-edit" class="modal">
@@ -31,14 +31,14 @@
     </div>
     <div id="tags-part"{% if private_tags %} class="with-tags"{% endif %}>
         {% if private_tags %}
-            <a href="./?edit_tags" title="Edit your private tags"><small>edit your tags</small></a>
+            <a href="{% include "private/editor_link.html" %}" title="Edit your private tags"><small>edit your tags</small></a>
             {% if section == "user" %}
                 {% with obj_type="accounts" tags=private_tags %}{% include "dashboard/include_tags.html" %}{% endwith %}
             {% else %}
                 {% with obj_type="repositories" tags=private_tags %}{% include "dashboard/include_tags.html" %}{% endwith %}
             {% endif %}
         {% else %}
-            <a href="./?edit_tags"><small>Add <strong>private</strong> tags</small></a>
+            <a href="{% include "private/editor_link.html" %}"><small>Add <strong>private</strong> tags</small></a>
         {% endif %}
         {% if tags_form %}
             {{ tags_form.media }}

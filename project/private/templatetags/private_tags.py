@@ -124,6 +124,8 @@ def edit_private(object_str):
         return {}
 
     model_name, id = object_str.split(':')
+    if '.' in model_name:
+        model_name = model_name.split('.')[-1]
 
     if model_name == 'account':
         model = Account
