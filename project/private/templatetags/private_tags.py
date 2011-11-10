@@ -7,10 +7,10 @@ from notes.models import Note
 from private.models import ALLOWED_MODELS
 from private.forms import NoteForm, NoteDeleteForm, TagsDeleteForm, TagsBaseForm
 from core.models import Account, Repository
-from core.core_utils import slugify
 from utils.model_utils import get_app_and_model
 from utils.views import get_request_param
-from tagging.models import Tag, FLAGS
+from tagging.models import Tag
+from tagging.flags import split_tags_and_flags
 
 register = template.Library()
 
@@ -140,14 +140,14 @@ def edit_private(object_str):
 
         # get private data
         note = edit_object.get_user_note()
-        real_private_tags = edit_object.get_user_tags()
+        private_tags = edit_object.get_user_tags()
 
         # get other private tags
         other_tags = Tag.objects.filter(
                 **{'private_%s_tags__owner' % model_name:globals.user})
-        if real_private_tags:
+        if private_tags:
             other_tags = other_tags.exclude(
-                    id__in=[t.id for t in real_private_tags])
+                    id__in=[t.id for t in private_tags])
         other_tags = other_tags.distinct()
 
         # for tags url
@@ -157,18 +157,7 @@ def edit_private(object_str):
             model_name_plural = 'repositories'
 
         # special tags
-        private_tags = []
-        special_tags = list(FLAGS)
-        used_special_tags = []
-        for tag in real_private_tags:
-            lower_tag = tag.name.lower()
-            if lower_tag in FLAGS:
-                used_special_tags.append(tag)
-                special_tags.remove(lower_tag)
-            else:
-                private_tags.append(tag)
-
-        special_tags = [dict(slug=slugify(tag), name=tag) for tag in special_tags]
+        flags_and_tags = split_tags_and_flags(private_tags)
 
         return dict(
             edit_object = edit_object,
@@ -176,10 +165,10 @@ def edit_private(object_str):
             note_delete_form = NoteDeleteForm(instance=note) if note else None,
             tag_save_form = TagsBaseForm(tagged_object=edit_object),
             tags_delete_form = TagsDeleteForm(tagged_object=edit_object) if private_tags else None,
-            private_tags = private_tags,
+            private_tags = flags_and_tags['normal'],
             other_tags = other_tags,
-            special_tags = special_tags,
-            used_special_tags = used_special_tags,
+            special_tags = flags_and_tags['special'],
+            used_special_tags = flags_and_tags['special_used'],
             url_tags = reverse('dashboard_tags', kwargs=dict(obj_type=model_name_plural)),
             edit_url = get_request_param(globals.request, 'edit_url', globals.request.get_full_path()),
             when_finished = get_request_param(globals.request, 'when_finished'),

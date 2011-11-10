@@ -6,8 +6,6 @@ from taggit.models import ItemBase, TagBase
 from core.core_utils import slugify as core_slugify
 from tagging.managers import prepare_tag
 
-FLAGS = ('starred', 'used', 'check later')
-
 class Tag(TagBase):
 
     official = models.BooleanField(default=False)
