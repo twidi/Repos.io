@@ -33,6 +33,18 @@ def get_user_note_for_object(obj):
 
     return None
 
+def redirect_from_editor(request, default):
+    """
+    Manage redirect when we came from the editor.
+    If the used clicked a button named "submit-close", he wants to
+    quit the editor after action done, so redirect to the `when_finished`
+    url, else use the `edit_url`.
+    If not from the editor, redirect to the object default page.
+    """
+    param_name = 'edit_url'
+    if request.POST.get('submit-close'):
+        param_name = 'when_finished'
+    return redirect(request.POST.get(param_name) or default)
 
 @require_POST
 @login_required
@@ -50,7 +62,7 @@ def note_save(request):
             return HttpResponseNotAllowed('Vilain :)')
         messages.error(request, 'We were unable to save your note !')
 
-    return redirect(request.POST.get('edit_url') or noted_object)
+    return redirect_from_editor(request, noted_object)
 
 
 @require_POST
@@ -70,7 +82,7 @@ def note_delete(request):
             return HttpResponseNotAllowed('Vilain :)')
         messages.error(request, 'We were unable to delete your note !')
 
-    return redirect(request.POST.get('edit_url') or noted_object)
+    return redirect_from_editor(request, noted_object)
 
 
 def get_user_tags_for_object(obj):
@@ -126,7 +138,7 @@ def tags_save(request):
             return HttpResponseNotAllowed('Vilain :)')
         messages.error(request, view_data[action]['error'])
 
-    return redirect(request.POST.get('edit_url') or tagged_object)
+    return redirect_from_editor(request, tagged_object)
 
 @require_POST
 @login_required
@@ -145,4 +157,4 @@ def tags_delete(request):
             return HttpResponseNotAllowed('Vilain :)')
         messages.error(request, 'We were unable to delete your tags !')
 
-    return redirect(request.POST.get('edit_url') or tagged_object)
+    return redirect_from_editor(request, tagged_object)
