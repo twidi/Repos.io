@@ -164,7 +164,7 @@ def tags(request, obj_type=None):
         sort = get_repository_sort(sort_key)
         per_page = settings.REPOSITORIES_PER_PAGE
 
-    objects = objects.order_by(sort['db_sort'])
+    objects = objects.order_by(sort['db_sort']).distinct()
 
     page = paginate(request, objects, per_page)
 
