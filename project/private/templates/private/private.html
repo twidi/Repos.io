@@ -1,5 +1,5 @@
 {% if request.user and request.user.is_authenticated %}
-<section class="sticky taped for-{{ section }}" id="private">
+<section class="sticky taped for-{{ section }}{% if subsection == "home" %} open{% endif %}" id="private">
     <div id="note-part"{% if note %} class="with-note"{% endif %}>
         {% if note %}
             <div>{{ note.rendered_content|safe }}</div>

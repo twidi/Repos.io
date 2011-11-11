@@ -636,7 +636,26 @@ body#user-repositories p.row span:last-child {
 /* Private part */
 #private {
     margin-top: -14px;
+    margin-bottom: 20px;
     text-align: left;
+    padding-bottom: 0;
+}
+#private:hover, #private.open {
+    padding-bottom: 15px;
+}
+#private > #note-part, #private > #tags-part, #private > #specific-part {
+    display: none;
+}
+#private:hover > #note-part, #private:hover > #tags-part, #private:hover > #specific-part,
+#private.open > #note-part, #private.open > #tags-part, #private.open > #specific-part {
+    display: block;
+}
+#private.open > #note-part > div{
+    max-height: 200px;
+    overflow: auto;
+}
+#private.open:hover > #note-part > div {
+    max-height: none;
 }
 #private > div {
     float: left;
@@ -649,6 +668,10 @@ body#user-repositories p.row span:last-child {
     margin-left: 0;
     width: 610px;
     padding-bottom: 10px;
+    border-right: dashed 1px #bfbfbf;
+}
+#private > #note-part > div {
+    margin-right: 15px;
 }
 #private > #note-part.with-note > a {
     position: absolute;
@@ -669,6 +692,7 @@ body#user-repositories p.row span:last-child {
     padding-left: 15px;
     border-left: dashed 1px #bfbfbf;
     padding-bottom: 10px;
+    margin-left: -1px;
 }
 #private > #tags-part ul {
     margin-bottom: 0;

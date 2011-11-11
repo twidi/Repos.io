@@ -3,30 +3,22 @@ from django.conf import settings
 
 from utils.views import paginate
 from core.models import Account, Repository
+from core.views import context_private_part
 from core.views.decorators import check_account, check_support
 from core.views.sort import get_repository_sort, get_account_sort
 from search.views import parse_keywords, make_query, RepositorySearchView
-from tagging.flags import split_tags_and_flags
+
+def _render_with_private(request, template, context):
+    context.update(context_private_part(context['account']))
+    return render(request, template, context)
 
 @check_account
 def home(request, backend, slug, account=None):
     """
     Home page of an account
     """
-    note = account.get_user_note()
-    private_tags = account.get_user_tags()
-    if private_tags:
-        flags_and_tags = split_tags_and_flags(private_tags)
-    else:
-        flags_and_tags = None
-
-    context = dict(
-        note = note,
-        account = account,
-        flags_and_tags = flags_and_tags,
-    )
-
-    return render(request, 'core/accounts/home.html', context)
+    context = dict(account = account)
+    return _render_with_private(request, 'core/accounts/home.html', context)
 
 
 @check_support('user_followers')
@@ -44,14 +36,16 @@ def followers(request, backend, slug, account=None):
 
     page = paginate(request, sorted_followers, settings.ACCOUNTS_PER_PAGE)
 
-    return render(request, 'core/accounts/followers.html', dict(
+    context = dict(
         account = account,
         page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
         ),
-    ))
+    )
+
+    return _render_with_private(request, 'core/accounts/followers.html', context)
 
 @check_support('user_following')
 @check_account
@@ -68,14 +62,16 @@ def following(request, backend, slug, account=None):
 
     page = paginate(request, sorted_following, settings.ACCOUNTS_PER_PAGE)
 
-    return render(request, 'core/accounts/following.html', dict(
+    context = dict(
         account = account,
         page = page,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],
         ),
-    ))
+    )
+
+    return _render_with_private(request, 'core/accounts/following.html', context)
 
 def _filter_repositories(request, account, queryset):
     """
@@ -186,7 +182,7 @@ def repositories(request, backend, slug, account=None):
     """
     queryset = Repository.for_list.filter(followers=account)
     context = _filter_repositories(request, account, queryset)
-    return render(request, 'core/accounts/repositories.html', context)
+    return _render_with_private(request, 'core/accounts/repositories.html', context)
 
 
 @check_support('repository_contributors')
@@ -197,5 +193,5 @@ def contributing(request, backend, slug, account=None):
     """
     queryset = Repository.for_list.filter(contributors=account)
     context = _filter_repositories(request, account, queryset)
-    return render(request, 'core/accounts/contributing.html', context)
+    return _render_with_private(request, 'core/accounts/contributing.html', context)
 
