@@ -13,9 +13,12 @@
     {% if all_tags %}
         Filter with :
         <ul class="tags unstyled">
-            <li><a href="." class="label {% if not tag_filter %}important{% else %}success{% endif %}">All tags</a></li>
-            {% for tag in all_tags %}
-                <li><a href=".?tag={{ tag.0 }}" class="label {% if tag_filter == tag.0 %}important{% else %}success{% endif %}" title="{% for obj in tag.2 %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.1 }}{% if tag.2|length > 1 %}<small> ({{ tag.2|length }})</small>{% endif %}</a></li>
+            <li><a href="." class="label {% if not tag_filter %}important{% else %}success{% endif %}">All tags<small> ({{ all_tags.special_used|add:all_tags.normal|length }})</small></a></li>
+            {% for tag in all_tags.special_used %}
+                <li><a href=".?tag={{ tag.slug }}" class="label {% if tag_filter == tag.slug %}important{% else %}warning{% endif %}" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
+            {% endfor %}
+            {% for tag in all_tags.normal %}
+                <li><a href=".?tag={{ tag.slug }}" class="label {% if tag_filter == tag.slug %}important{% else %}success{% endif %}" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
             {% endfor %}
         </ul>
     {% else %}

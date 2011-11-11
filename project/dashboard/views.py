@@ -40,7 +40,8 @@ def _get_sorted_user_tags(user, only=None):
                 tags[tag_slug] = dict(slug=tag_slug, name=tag_name, objects=[])
             tags[tag_slug]['objects'].append(obj)
 
-        result[obj_type] = sorted(tags.values(), key=lambda tag: (-len(tag['objects']), tag['slug']), reverse=False)
+        tags = sorted(tags.values(), key=lambda tag: (-len(tag['objects']), tag['slug']), reverse=False)
+        result[obj_type] = split_tags_and_flags(tags, True) if tags else []
 
     return result
 
@@ -94,8 +95,7 @@ def home(request):
     """
 
     def get_tags():
-        tags_dict = _get_sorted_user_tags(request.user)
-        return dict((obj_type, split_tags_and_flags(tags, True)) for obj_type, tags in tags_dict.items() if tags)
+        return _get_sorted_user_tags(request.user)
     def get_notes():
         return _get_last_user_notes(request.user, 5)
 
