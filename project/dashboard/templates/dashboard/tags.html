@@ -21,8 +21,6 @@
                 <li><a href=".?tag={{ tag.slug }}" class="label {% if tag_filter == tag.slug %}important{% else %}success{% endif %}" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
             {% endfor %}
         </ul>
-    {% else %}
-        <p><em>You haven't set any tags !</em></p>
     {% endif %}
 {% endwith %}
 
