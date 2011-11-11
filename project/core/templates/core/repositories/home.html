@@ -35,6 +35,17 @@
                 <dd>Contributors are all people who, sometimes, even just one time, worked on {{ repository.slug }} on {{ repository.backend }}</dd>
             {% endif %}
 
+            {% if repository.backend|supports:'repository_parent_fork' %}
+                <dt>
+                    {% if repository.forks_count or repository.forks_count == 0 %}
+                        <a href="{{ repository.get_forks_url }}">{{ repository.forks_count|default:0 }} (or more) direct forks</a>
+                    {% else %}
+                        unknown number of forks
+                    {% endif %}
+                </dt>
+                <dd>Fork are all repositories directly based on {{ repository.slug }} on {{ repository.backend }}</dd>
+            {% endif %}
+
         </dl>
 
     </section>

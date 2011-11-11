@@ -1469,9 +1469,16 @@ class Repository(SyncableModel):
     @models.permalink
     def get_contributors_url(self):
         """
-        contributors page url for this Repository
+        Contributors page url for this Repository
         """
         return self._get_url('contributors')
+
+    @models.permalink
+    def get_forks_url(self):
+        """
+        Forks page url for this Repository
+        """
+        return self._get_url('forks')
 
     def followers_ids(self):
         """

@@ -1,0 +1,51 @@
+{% extends "core/repositories/base.html" %}
+{% load private_tags %}
+{% load reposio_core %}
+{% block repository_content %}
+
+    {% if page.paginator.count %}
+        {% prepare_private page.object_list %}
+
+        <p>Here are {{ page.paginator.count }} forks of {{ repository.slug }} by {{ repository.owner.slug }}</p>
+
+        <table class='zebra-striped condensed-table repositories{% if user.id %} with_extras{% endif %}'>
+            <thead>
+                <tr>
+                    {% include "core/repositories/sort_th_name.html" %}
+                    {% if repository.backend|supports:'repository_owner' %}
+                        {% include "core/repositories/sort_th_owner.html" %}
+                    {% endif %}
+                    {% include "core/repositories/sort_th_updated.html" %}
+                    {% include "core/th_extra.html" %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for repository in page.object_list %}
+                <tr>
+                    <td>
+                        {% include "core/repositories/main_repository_cell.html" with no_parent_fork=1 %}
+                    </td>
+                    {% if repository.backend|supports:'repository_owner' %}
+                        <td>
+                            {% include "core/accounts/owner_cell.html" %}
+                        </td>
+                    {% endif %}
+                    <td>
+                        {% include "core/repositories/date_modified_cell.html" %}
+                    </td>
+                    {% include "core/repositories/list_extra.html" %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if page.has_previous or page.has_next %}
+            <div>{{ page.render }}</div>
+        {% endif %}
+
+    {% else %}
+        <p>No forks found</p>
+    {% endif %}
+
+{% endblock repository_content %}
+

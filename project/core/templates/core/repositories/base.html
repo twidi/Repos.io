@@ -69,6 +69,14 @@
                 {% endif %}
             {% endif %}
 
+            {% if repository.backend|supports:'repository_parent_fork' %}
+                {% if repository.forks_count or repository.forks_count == 0 or subsection == 'forks' %}
+                    <li{% if subsection == 'forks' %} class="active"{% endif %}>
+                        <a href="{{ repository.get_forks_url }}">{{ repository.forks_count|default:0 }} forks</a>
+                    </li>
+                {% endif %}
+            {% endif %}
+
         </ul>
 
         {% block repository_content %}{% endblock %}

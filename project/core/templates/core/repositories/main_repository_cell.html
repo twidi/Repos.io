@@ -2,7 +2,7 @@
 {% cache cache_timeout.repository_main_cell repository_main_cell_part1 repository.pk repository.modified %}
 {% include "core/repositories/logo.html" %}
 <strong>{% include "core/repositories/link_no_owner.html" %}</strong>
-{% if repository.is_fork %}
+{% if repository.is_fork and not no_parent_fork %}
 <small>
     <span class="label warning">Fork</span>
     {% if repository.parent_fork %}

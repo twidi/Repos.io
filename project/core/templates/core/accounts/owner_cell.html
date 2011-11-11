@@ -1,3 +1,4 @@
+{% load cache %}
 {% cache cache_timeout.repository_owner_cell repository_owner_cell repository.owner.pk repository.owner.modified %}
 {% with account=repository.owner %}
     {% include "core/accounts/avatar_small.html" %}
