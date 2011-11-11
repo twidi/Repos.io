@@ -56,6 +56,11 @@ a.label:hover {
 ul.tags li {
     display: inline-block;
 }
+ul.tags li small {
+    color: #444;
+    font-family: serif;
+    font-size: 8px;
+}
 ul.tags li a {
     color: white;
 }
