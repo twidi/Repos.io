@@ -1197,6 +1197,8 @@ class Repository(SyncableModel):
     official_forks_count = models.PositiveIntegerField(blank=True, null=True)
     # Project name of the repository from which this repo is the fork (from the backend)
     official_fork_of = models.TextField(blank=True, null=True)
+    # Saved count
+    forks_count = models.PositiveIntegerField(blank=True, null=True)
 
     # Followers count (from the backend)
     official_followers_count = models.PositiveIntegerField(blank=True, null=True)
@@ -1374,6 +1376,7 @@ class Repository(SyncableModel):
         save_needed = False
         fetched = False
 
+        parent_is_new = False
         if not self.parent_fork_id:
             save_needed = True
             parent_fork = Repository.objects.get_or_new(self.backend,
@@ -1382,6 +1385,8 @@ class Repository(SyncableModel):
             parent_fork = self.parent_fork
 
         if parent_fork.fetch_needed():
+            if parent_fork.is_new():
+                parent_fork.forks_count = 1
             parent_fork.fetch(token=token)
             fetched = True
 
@@ -1389,6 +1394,8 @@ class Repository(SyncableModel):
             if not self.parent_fork_id:
                 self.parent_fork = parent_fork
             self.save()
+            if not parent_is_new:
+                self.parent_fork.update_count('forks', async=True)
 
         return fetched
 
