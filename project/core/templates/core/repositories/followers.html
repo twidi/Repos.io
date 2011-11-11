@@ -11,7 +11,7 @@
 
             <p>{{ repository.slug }} (by {{ repository.owner.slug }}) is followed by {{ repository.followers_count }} people : <small>(last fetch on {{ repository.followers_modified }})</small></p>
 
-            <table class='zebra-striped condensed-table accounts{% if user.id %} with_extras{% endif %}'>
+            <table class='zebra-striped condensed-table accounts{% if user.id %} with_extras{% endif %} with_owner'>
                 <thead>
                     <tr>
                         {% include "core/accounts/sort_th_name.html" %}

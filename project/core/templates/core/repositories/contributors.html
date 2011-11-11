@@ -11,7 +11,7 @@
 
             <p>{{ repository.slug }} (by {{ repository.owner.slug }}) has {{ repository.contributors_count }} contributors : <small>(last fetch on {{ repository.contributors_modified }})</small></p>
 
-            <table class='zebra-stripe condensed-tabled accounts{% if user.id %} with_extras{% endif %}'>
+            <table class='zebra-stripe condensed-tabled accounts{% if user.id %} with_extras{% endif %} with_owner'>
                 <thead>
                     <tr>
                         {% include "core/accounts/sort_th_name.html"%}
