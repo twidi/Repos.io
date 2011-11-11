@@ -74,6 +74,10 @@ def prepare_private(objects, ignore=None):
                     dict_objects[obj_id].current_user_tags = []
                 dict_objects[obj_id].current_user_tags.append(dict(name=tag, slug=slug))
 
+            for obj in dict_objects.values():
+                obj.current_user_tags = split_tags_and_flags(obj.current_user_tags, tags_are_dict=True)
+
+
         if not (ignore and '-related' in ignore):
             if model_name == 'account':
                 # self

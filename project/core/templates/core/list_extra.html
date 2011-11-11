@@ -3,7 +3,7 @@
         <a href="{{ obj.get_absolute_url }}"><img src="{{ STATIC_URL }}img/sticky_note.png" alt="Private note" /></a>
         <div><div class="extra_container{% if obj.current_user_has_note %} with_note {% endif %}{% if obj.current_user_has_tags %} with_tags{% endif %}">
             {% if obj.current_user_has_tags %}
-                {% with tags=obj.current_user_tags %}{% include "dashboard/include_tags.html" %}{% endwith %}
+                {% with tags=obj.current_user_tags with_flags=1 %}{% include "dashboard/include_tags.html" %}{% endwith %}
             {% endif %}
             {% if obj.current_user_has_note %}
                 <blockquote>{{ obj.current_user_rendered_note|safe }}</blockquote>

@@ -23,7 +23,7 @@
                 {% include "core/repositories/date_modified_cell.html" %}
             </td>
             <td>
-                {% with obj_type="repositories" tags=repository.current_user_tags %}{% include "dashboard/include_tags.html" %}{% endwith %}
+                {% with obj_type="repositories" tags=repository.current_user_tags with_flags=1 %}{% include "dashboard/include_tags.html" %}{% endwith %}
             </td>
             {% include "core/repositories/list_extra.html" %}
         </tr>
