@@ -5,6 +5,7 @@ from utils.views import paginate
 from core.models import Account
 from core.views.decorators import check_repository, check_support
 from core.views.sort import get_account_sort
+from tagging.flags import split_tags_and_flags
 
 @check_repository
 def home(request, backend, project, repository=None):
@@ -13,11 +14,15 @@ def home(request, backend, project, repository=None):
     """
     note = repository.get_user_note()
     private_tags = repository.get_user_tags()
+    if private_tags:
+        flags_and_tags = split_tags_and_flags(private_tags)
+    else:
+        flags_and_tags = None
 
     context = dict(
         note = note,
         repository = repository,
-        private_tags = private_tags,
+        flags_and_tags = flags_and_tags,
     )
 
     return render(request, 'core/repositories/home.html', context)

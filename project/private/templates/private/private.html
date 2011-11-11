@@ -8,13 +8,13 @@
             <a href="{% include "private/editor_link.html" %}"><small>Add a <strong>private</strong> note</small></a>
         {% endif %}
     </div>
-    <div id="tags-part"{% if private_tags %} class="with-tags"{% endif %}>
-        {% if private_tags %}
+    <div id="tags-part"{% if flags_and_tags %} class="with-tags"{% endif %}>
+        {% if flags_and_tags %}
             <a href="{% include "private/editor_link.html" %}" title="Edit your private tags"><small>edit your tags</small></a>
             {% if section == "user" %}
-                {% with obj_type="accounts" tags=private_tags %}{% include "dashboard/include_tags.html" %}{% endwith %}
+                {% with obj_type="accounts" tags=flags_and_tags with_flags=1 %}{% include "dashboard/include_tags.html" %}{% endwith %}
             {% else %}
-                {% with obj_type="repositories" tags=private_tags %}{% include "dashboard/include_tags.html" %}{% endwith %}
+                {% with obj_type="repositories" tags=flags_and_tags with_flags=1 %}{% include "dashboard/include_tags.html" %}{% endwith %}
             {% endif %}
         {% else %}
             <a href="{% include "private/editor_link.html" %}"><small>Add <strong>private</strong> tags</small></a>
