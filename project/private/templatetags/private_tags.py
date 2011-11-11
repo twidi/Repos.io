@@ -10,6 +10,7 @@ from core.models import Account, Repository
 from utils.model_utils import get_app_and_model
 from utils.views import get_request_param
 from tagging.models import Tag
+from tagging.flags import split_tags_and_flags
 
 register = template.Library()
 
@@ -72,6 +73,10 @@ def prepare_private(objects, ignore=None):
                     dict_objects[obj_id].current_user_has_tags = True
                     dict_objects[obj_id].current_user_tags = []
                 dict_objects[obj_id].current_user_tags.append(dict(name=tag, slug=slug))
+
+            for obj in dict_objects.values():
+                obj.current_user_tags = split_tags_and_flags(obj.current_user_tags, tags_are_dict=True)
+
 
         if not (ignore and '-related' in ignore):
             if model_name == 'account':
@@ -155,6 +160,8 @@ def edit_private(object_str):
         else:
             model_name_plural = 'repositories'
 
+        # special tags
+        flags_and_tags = split_tags_and_flags(private_tags)
 
         return dict(
             edit_object = edit_object,
@@ -162,8 +169,10 @@ def edit_private(object_str):
             note_delete_form = NoteDeleteForm(instance=note) if note else None,
             tag_save_form = TagsBaseForm(tagged_object=edit_object),
             tags_delete_form = TagsDeleteForm(tagged_object=edit_object) if private_tags else None,
-            private_tags = private_tags,
+            private_tags = flags_and_tags['normal'],
             other_tags = other_tags,
+            special_tags = flags_and_tags['special'],
+            used_special_tags = flags_and_tags['special_used'],
             url_tags = reverse('dashboard_tags', kwargs=dict(obj_type=model_name_plural)),
             edit_url = get_request_param(globals.request, 'edit_url', globals.request.get_full_path()),
             when_finished = get_request_param(globals.request, 'when_finished'),

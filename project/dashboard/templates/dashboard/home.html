@@ -15,8 +15,12 @@
             {% url dashboard_tags obj_type="repositories" as repositories_tags_url %}
             {% if all_tags.repository %}
                 <ul class="tags unstyled">
-                    {% for tag in all_tags.repository %}
-                        <li><a href="{{ repositories_tags_url }}?tag={{ tag.0 }}" class="label success" title="{% for obj in tag.2 %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.1 }}{% if tag.2|length > 1 %}<small> ({{ tag.2|length }})</small>{% endif %}</a></li>
+                    {% for tag in all_tags.repository.special_used %}
+                        <li><a href="{{ accounts_tags_url }}?tag={{ tag.slug }}" class="label warning" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
+                    {% endfor %}
+                    {% if all_tags.repository.normal and all_tags.repository.special_used %}<br />{% endif %}
+                    {% for tag in all_tags.repository.normal %}
+                        <li><a href="{{ accounts_tags_url }}?tag={{ tag.slug }}" class="label success" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
                     {% endfor %}
                 </ul>
             {% else %}
@@ -30,8 +34,12 @@
             {% url dashboard_tags obj_type="accounts" as accounts_tags_url %}
             {% if all_tags.account %}
                 <ul class="tags unstyled">
-                    {% for tag in all_tags.account %}
-                        <li><a href="{{ accounts_tags_url }}?tag={{ tag.0 }}" class="label success" title="{% for obj in tag.2 %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.1 }}{% if tag.2|length > 1 %}<small> ({{ tag.2|length }})</small>{% endif %}</a></li>
+                    {% for tag in all_tags.account.special_used %}
+                        <li><a href="{{ accounts_tags_url }}?tag={{ tag.slug }}" class="label warning" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
+                    {% endfor %}
+                    {% if all_tags.account.normal and all_tags.account.special_used %}<br />{% endif %}
+                    {% for tag in all_tags.account.normal %}
+                        <li><a href="{{ accounts_tags_url }}?tag={{ tag.slug }}" class="label success" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
                     {% endfor %}
                 </ul>
             {% else %}

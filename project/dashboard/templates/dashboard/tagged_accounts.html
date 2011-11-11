@@ -21,7 +21,7 @@
                 {% include "core/accounts/links.html" %}
             </td>
             <td>
-                {% with obj_type="accounts" tags=account.current_user_tags %}{% include "dashboard/include_tags.html" %}{% endwith %}
+                {% with obj_type="accounts" tags=account.current_user_tags with_flags=1 %}{% include "dashboard/include_tags.html" %}{% endwith %}
             </td>
             {% include "core/accounts/list_extra.html" %}
         </tr>

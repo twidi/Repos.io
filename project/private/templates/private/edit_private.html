@@ -52,9 +52,16 @@
 
                 <div>
                     {# existing tags that can be removed #}
-                    {% if private_tags %}
+                    {% if private_tags or used_special_tags%}
                         <label>Current: </label>
                         <ul id="tags-deletable" class="tags unstyled">
+                            {% for tag in used_special_tags %}
+                                <li class="label warning">
+                                    <a href="{{ url_tags }}?tag={{ tag.slug}}">{{ tag.name }}</a>
+                                    {% include "private/tag_remove.html" %}
+                                </li>
+                            {% endfor %}
+                            {% if private_tags and used_special_tags %}<br />{% endif %}
                             {% for tag in private_tags %}
                                 <li class="label success">
                                     <a href="{{ url_tags }}?tag={{ tag.slug}}">{{ tag.name }}</a>
@@ -66,20 +73,33 @@
                         <p>No tags yet</p>
                     {% endif %}
 
-                    {% if private_tags and other_tags %}<hr />{% endif %}
+                    <hr />
 
                     {# tags that can be added #}
-                    {% if other_tags %}
+                    {% if special_tags or other_tags %}
                         <label>Add: </label>
-                        <ul id="tags-addable" class="tags unstyled{% if other_tags|length > 20 %} small{% endif %}">
-                            {# user's tags #}
-                            {% for tag in other_tags %}
-                                <li class="label success">
-                                    <a href="{{ url_tags }}?tag={{ tag.slug}}">{{ tag.name }}</a>
-                                    {% include "private/tag_add.html" %}
-                                </li>
-                            {% endfor %}
-                        </ul>
+                        {% if special_tags %}
+                            <ul id="tags-special" class="tags unstyled">
+                                {# special tags #}
+                                {% for tag in special_tags %}
+                                    <li class="label warning">
+                                        <a href="{{ url_tags }}?tag={{ tag.slug}}">{{ tag.name }}</a>
+                                        {% include "private/tag_add.html" %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        {% if other_tags %}
+                            <ul id="tags-addable" class="tags unstyled{% if other_tags|length > 20 %} small{% endif %}">
+                                {# user's tags #}
+                                {% for tag in other_tags %}
+                                    <li class="label success">
+                                        <a href="{{ url_tags }}?tag={{ tag.slug}}">{{ tag.name }}</a>
+                                        {% include "private/tag_add.html" %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
                     {% endif %}
                 </div>
 
