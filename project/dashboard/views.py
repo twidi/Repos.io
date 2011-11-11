@@ -11,6 +11,7 @@ from core.core_utils import get_user_accounts
 from utils.sort import prepare_sort
 from utils.views import paginate
 from search.views import parse_keywords, make_query, RepositorySearchView
+from tagging.flags import split_tags_and_flags
 
 def _get_sorted_user_tags(user, only=None):
     """
@@ -36,10 +37,10 @@ def _get_sorted_user_tags(user, only=None):
 
         for tag_slug, tag_name, obj in tagged_items:
             if tag_slug not in tags:
-                tags[tag_slug] = [tag_slug, tag_name, []]
-            tags[tag_slug][2].append(obj)
+                tags[tag_slug] = dict(slug=tag_slug, name=tag_name, objects=[])
+            tags[tag_slug]['objects'].append(obj)
 
-        result[obj_type] = [t[1] for t in sorted(tags.iteritems(), key=lambda t: (-len(t[1][2]), t[0]), reverse=False)]
+        result[obj_type] = sorted(tags.values(), key=lambda tag: (-len(tag['objects']), tag['slug']), reverse=False)
 
     return result
 
@@ -93,7 +94,8 @@ def home(request):
     """
 
     def get_tags():
-        return _get_sorted_user_tags(request.user)
+        tags_dict = _get_sorted_user_tags(request.user)
+        return dict((obj_type, split_tags_and_flags(tags, True)) for obj_type, tags in tags_dict.items() if tags)
     def get_notes():
         return _get_last_user_notes(request.user, 5)
 

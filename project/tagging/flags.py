@@ -2,7 +2,7 @@ from core.core_utils import slugify
 
 FLAGS = ('starred', 'used', 'check later')
 
-def split_tags_and_flags(tags):
+def split_tags_and_flags(tags, tags_are_dict=False):
     """
     Based on the given list of flags, we return a dict with 3 list of flags :
     - one with flags used
@@ -13,7 +13,10 @@ def split_tags_and_flags(tags):
     special_tags = list(FLAGS)
     used_special_tags = []
     for tag in tags:
-        lower_tag = tag.name.lower()
+        if tags_are_dict:
+            lower_tag = tag['name'].lower()
+        else:
+            lower_tag = tag.name.lower()
         if lower_tag in FLAGS:
             used_special_tags.append(tag)
             special_tags.remove(lower_tag)
