@@ -4,7 +4,7 @@
 {% block repository_content %}
 
     {% if page.paginator.count %}
-        {% prepare_private page.object_list %}
+        {% prepare_private all_displayed %}
 
         <p>Here are {{ page.paginator.count }} forks of {{ repository.slug }} by {{ repository.owner.slug }}</p>
 
@@ -21,20 +21,27 @@
             </thead>
             <tbody>
                 {% for repository in page.object_list %}
-                <tr>
-                    <td>
-                        {% include "core/repositories/main_repository_cell.html" with no_parent_fork=1 %}
-                    </td>
-                    {% if repository.backend|supports:'repository_owner' %}
+                    <tr>
                         <td>
-                            {% include "core/accounts/owner_cell.html" %}
+                            {% include "core/repositories/main_repository_cell.html" with no_parent_fork=1 %}
                         </td>
+                        {% if repository.backend|supports:'repository_owner' %}
+                            <td>
+                                {% include "core/accounts/owner_cell.html" %}
+                            </td>
+                        {% endif %}
+                        <td>
+                            {% include "core/repositories/date_modified_cell.html" %}
+                        </td>
+                        {% include "core/repositories/list_extra.html" %}
+                    </tr>
+                    {% if repository.direct_forks %}
+                        <tr>
+                            <td colspan="{% if user.id %}4{% else %}3{% endif %}" class="subforks">
+                                {% include "core/repositories/subforks.html" with parent_fork=repository %}
+                            </td>
+                        </tr>
                     {% endif %}
-                    <td>
-                        {% include "core/repositories/date_modified_cell.html" %}
-                    </td>
-                    {% include "core/repositories/list_extra.html" %}
-                </tr>
                 {% endfor %}
             </tbody>
         </table>

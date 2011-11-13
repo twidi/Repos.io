@@ -1,0 +1,34 @@
+{% load reposio_core %}
+<table class='zebra-striped condensed-table repositories{% if user.id %} with_extras{% endif %}'>
+    <thead>
+        <th class="orange">Sub-fork's name</th>
+        <th class="blue">Owner</th>
+        <th class="green">Updated</th>
+        {% include "core/th_extra.html" %}
+    </thead>
+    <tbody>
+        {% for repository in parent_fork.direct_forks %}
+            <tr>
+                <td>
+                    {% include "core/repositories/main_repository_cell.html" with no_parent_fork=1 %}
+                </td>
+                {% if repository.backend|supports:'repository_owner' %}
+                    <td>
+                        {% include "core/accounts/owner_cell.html" %}
+                    </td>
+                {% endif %}
+                <td>
+                    {% include "core/repositories/date_modified_cell.html" %}
+                </td>
+                {% include "core/repositories/list_extra.html" %}
+            </tr>
+            {% if repository.direct_forks %}
+                <tr>
+                    <td colspan="{% if user.id %}4{% else %}3{% endif %}" class="subforks">
+                        {% include "core/repositories/subforks.html" with parent_fork=repository %}
+                    </td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </tbody>
+</table>

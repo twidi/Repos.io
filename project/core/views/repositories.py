@@ -86,9 +86,26 @@ def forks(request, backend, project, repository=None):
 
     page = paginate(request, sorted_forks, settings.REPOSITORIES_PER_PAGE)
 
+    all_displayed_repositories = list(page.object_list)
+
+    # check sub forks, one query / level
+    current_forks = page.object_list
+    while True:
+        by_id = dict((obj.id, obj) for obj in current_forks)
+        current_forks = Repository.for_list.filter(parent_fork__in=by_id.keys()).order_by('-official_modified')
+        if not current_forks:
+            break
+        all_displayed_repositories += list(current_forks)
+        for fork in current_forks:
+            parent_fork = by_id[fork.parent_fork_id]
+            if not hasattr(parent_fork, 'direct_forks'):
+                parent_fork.direct_forks = []
+            parent_fork.direct_forks.append(fork)
+
     context = dict(
         repository = repository,
         page = page,
+        all_displayed = all_displayed_repositories,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],

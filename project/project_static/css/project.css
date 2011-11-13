@@ -457,6 +457,20 @@ table.repositories td:nth-child(2) img {
 table.repositories td:nth-child(3) {
     white-space: nowrap;
 }
+table.repositories td.subforks {
+    opacity: 1;
+    border: none;
+    padding: 0 0 0 37px;
+}
+table.repositories td.subforks table {
+    margin: 0;
+}
+table.repositories td.subforks table th {
+    background: none;
+}
+table.repositories td.subforks table tr:last-child td {
+    border-bottom: none;
+}
 
 /* Style accounts table */
 table.accounts {
