@@ -36,11 +36,7 @@
                         {% include "core/repositories/list_extra.html" %}
                     </tr>
                     {% if repository.direct_forks %}
-                        <tr>
-                            <td colspan="{% if user.id %}4{% else %}3{% endif %}" class="subforks">
-                                {% include "core/repositories/subforks.html" with parent_fork=repository %}
-                            </td>
-                        </tr>
+                        {% include "core/repositories/subforks.html" with parent_fork=repository fork_level=1 %}
                     {% endif %}
                 {% endfor %}
             </tbody>
