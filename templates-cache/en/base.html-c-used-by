@@ -26,3 +26,4 @@ home.html
 search/accounts.html
 search/base.html
 search/repositories.html
+core/repositories/forks.html

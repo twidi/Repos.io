@@ -2,3 +2,4 @@ core/repositories/base.html
 core/repositories/contributors.html
 core/repositories/followers.html
 core/repositories/home.html
+core/repositories/forks.html

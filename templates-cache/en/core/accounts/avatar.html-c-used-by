@@ -30,3 +30,4 @@ dashboard/tagged_accounts.html
 dashboard/tagged_repositories.html
 dashboard/tags.html
 home.html
+core/repositories/forks.html

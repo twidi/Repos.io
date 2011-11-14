@@ -24,3 +24,4 @@ dashboard/tags.html
 home.html
 private/account.html
 private/repository.html
+core/repositories/forks.html

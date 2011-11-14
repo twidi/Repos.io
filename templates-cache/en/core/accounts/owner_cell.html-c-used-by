@@ -8,3 +8,4 @@ dashboard/notes.html
 dashboard/repositories.html
 dashboard/tagged_repositories.html
 dashboard/tags.html
+core/repositories/forks.html

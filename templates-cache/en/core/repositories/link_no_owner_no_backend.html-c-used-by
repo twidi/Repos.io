@@ -18,3 +18,4 @@ dashboard/repositories.html
 dashboard/tagged_repositories.html
 dashboard/tags.html
 private/account.html
+core/repositories/forks.html

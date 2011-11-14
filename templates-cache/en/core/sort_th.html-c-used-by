@@ -22,3 +22,4 @@ dashboard/tagged_repositories.html
 dashboard/tags.html
 search/accounts.html
 search/repositories.html
+core/repositories/forks.html

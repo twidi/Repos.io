@@ -11,3 +11,4 @@ core/repositories/followers.html
 core/repositories/home.html
 private/account.html
 private/repository.html
+core/repositories/forks.html
