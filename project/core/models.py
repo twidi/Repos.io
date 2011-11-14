@@ -19,7 +19,7 @@ from core import REDIS_KEYS
 from core.backends import BACKENDS, get_backend
 from core.managers import AccountManager, RepositoryManager, OptimForListAccountManager, OptimForListRepositoryManager
 from core.core_utils import slugify
-from core.exceptions import MultipleBackendError
+from core.exceptions import MultipleBackendError, BackendNotFoundError
 
 from tagging.models import PublicTaggedAccount, PublicTaggedRepository, PrivateTaggedAccount, PrivateTaggedRepository, all_official_tags
 from tagging.words import get_tags_for_repository
@@ -61,6 +61,7 @@ class SyncableModel(TimeStampedModel):
 
     # A status field, using STATUS
     status = StatusField(max_length=15, db_index=True)
+    deleted = models.BooleanField(default=False, db_index=True)
 
     # Date of last own full fetch
     last_fetch = models.DateTimeField(blank=True, null=True, db_index=True)
@@ -891,6 +892,10 @@ class Account(SyncableModel):
         """
         Remove the given account from the ones the user own/watch
         """
+        # mark the repository as deleted if it is removed from it's owner account
+        if repository.owner_id and repository.owner_id == self.id:
+            repository.update(deleted=True)
+
         return self.remove_related_repository_entry(repository, 'repositories', 'followers', update_self_count)
 
     def _get_url(self, url_type, **kwargs):
@@ -1283,7 +1288,16 @@ class Repository(SyncableModel):
         if not super(Repository, self).fetch(token, log_stderr):
             return False
 
-        self.get_backend().repository_fetch(self, token=token)
+        try:
+            self.get_backend().repository_fetch(self, token=token)
+        except BackendNotFoundError, e:
+            if self.id:
+                self.update(
+                    deleted = True,
+                    last_fetch = datetime.now()
+                )
+            raise e
+
         self.last_fetch = datetime.now()
 
         if not self.official_followers_count:
