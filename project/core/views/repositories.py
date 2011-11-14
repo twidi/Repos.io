@@ -94,8 +94,6 @@ def forks(request, backend, project, repository=None):
 
     page = paginate(request, sorted_forks, settings.REPOSITORIES_PER_PAGE)
 
-    all_displayed_repositories = list(page.object_list)
-
     # check sub forks, one query / level
     if mode == 'real_forks':
         current_forks = page.object_list
@@ -104,18 +102,29 @@ def forks(request, backend, project, repository=None):
             current_forks = Repository.for_list.filter(parent_fork__in=by_id.keys()).order_by('-official_modified')
             if not current_forks:
                 break
-            all_displayed_repositories += list(current_forks)
             for fork in current_forks:
                 parent_fork = by_id[fork.parent_fork_id]
                 if not hasattr(parent_fork, 'direct_forks'):
                     parent_fork.direct_forks = []
                 parent_fork.direct_forks.append(fork)
+        # make one list for each first level fork, to avoid recursion in templates
+        all_forks = []
+        def get_all_forks_for(fork, level):
+            fork.fork_level = level
+            all_subforks = [fork,]
+            if hasattr(fork, 'direct_forks'):
+                for subfork in fork.direct_forks:
+                    all_subforks += get_all_forks_for(subfork, level+1)
+                delattr(fork, 'direct_forks')
+            return all_subforks
+        for fork in page.object_list:
+            all_forks += get_all_forks_for(fork, 0)
+        page.object_list = all_forks
 
     context = dict(
         forks_mode = mode,
         repository = repository,
         page = page,
-        all_displayed = all_displayed_repositories,
         sort = dict(
             key = sort['key'],
             reverse = sort['reverse'],

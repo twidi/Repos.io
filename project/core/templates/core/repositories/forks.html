@@ -9,7 +9,7 @@
     </ul>
 
     {% if page.paginator.count %}
-        {% prepare_private all_displayed %}
+        {% prepare_private page.object_list %}
 
         {% if forks_mode == 'real_forks' %}
             <p>Here are {{ page.paginator.count }} direct forks of {{ repository.slug }} by {{ repository.owner.slug }}, with their sub-forks</p>
@@ -33,7 +33,7 @@
             </thead>
             <tbody>
                 {% for repository in page.object_list %}
-                    <tr>
+                    <tr{% if repository.fork_level %} class="subfork level-{{ repository.fork_level}}" {% endif %}>
                         <td>
                             {% include "core/repositories/main_repository_cell.html" with no_parent_fork=1 %}
                         </td>
@@ -52,9 +52,6 @@
                         </td>
                         {% include "core/repositories/list_extra.html" %}
                     </tr>
-                    {% if forks_mode == 'real_forks' and repository.direct_forks %}
-                        {% include "core/repositories/subforks.html" with parent_fork=repository fork_level=1 %}
-                    {% endif %}
                 {% endfor %}
             </tbody>
         </table>
