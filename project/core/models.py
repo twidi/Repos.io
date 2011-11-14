@@ -532,6 +532,15 @@ class SyncableModel(TimeStampedModel):
         except:
             pass
 
+    def remove_from_search_index(self):
+        """
+        Remove the current object from the search index
+        """
+        try:
+            self.get_search_index().remove_object(self)
+        except:
+            pass
+
     def update_count(self, name, save=True, use_count=None, async=False):
 
         """
@@ -727,6 +736,18 @@ class SyncableModel(TimeStampedModel):
 
         return obj
 
+    def fake_delete(self, to_update):
+        """
+        Set the object as deleted and update all given field (*_count and
+        *_modified, set to 0 and now() by subclasses)
+        """
+        to_update.update(dict(
+            deleted = True,
+            last_fetch = datetime.now(),
+            score = 0,
+        ))
+        self.update(**to_update)
+        self.remove_from_search_index()
 
 class Account(SyncableModel):
     """
@@ -903,7 +924,7 @@ class Account(SyncableModel):
         """
         # mark the repository as deleted if it is removed from it's owner account
         if repository.owner_id and repository.owner_id == self.id:
-            repository.update(deleted=True)
+            repository.fake_delete()
 
         return self.remove_related_repository_entry(repository, 'repositories', 'followers', update_self_count)
 
@@ -1160,6 +1181,55 @@ class Account(SyncableModel):
         """
         return REDIS_KEYS[key][self.model_name]
 
+    def fake_delete(self):
+        """
+        Set the account as deleted and remove if from every automatic
+        lists (not from ones created by users : tags, notes...)
+        """
+        to_update = {}
+        now = datetime.now()
+
+        # manage following
+        for account in self.following.all():
+            account.update(
+                followers_count = models.F('followers_count') - 1
+            )
+        self.following.clear()
+        to_update['following_count'] = 0
+        to_update['following_modified'] = now
+
+        # manage followers
+        for account in self.followers.all():
+            account.update(
+                following_count = models.F('following_count') - 1
+            )
+        self.followers.clear()
+        to_update['followers_count'] = 0
+        to_update['followers_modified'] = now
+
+        # manage repositories
+        for repository in self.repositories.all():
+            if repository.owner__id == self.id:
+                repository.fake_delete()
+            else:
+                repository.update(
+                    followers_count = models.F('followers_count') - 1
+                )
+        self.repositories.clear()
+        to_update['repositories_count'] = 0
+        to_update['repositories_modified'] = now
+
+        # manage contributing
+        for Repository in self.contributing.all():
+            repository.update(
+                contributors_count = models.F('contributors_count') - 1
+            )
+        self.contributing.clear()
+        to_update['contributing_count'] = 0
+
+        # final update
+        super(Repository, self).fake_delete(to_update)
+
 
 class Repository(SyncableModel):
     """
@@ -1301,10 +1371,7 @@ class Repository(SyncableModel):
             self.get_backend().repository_fetch(self, token=token)
         except BackendNotFoundError, e:
             if self.id:
-                self.update(
-                    deleted = True,
-                    last_fetch = datetime.now()
-                )
+                self.fake_delete()
             raise e
         else:
             self.deleted = False
@@ -1757,6 +1824,53 @@ class Repository(SyncableModel):
         Return the search index for this model
         """
         return site.get_index(Repository)
+
+    def fake_delete(self):
+        """
+        Set the repository as deleted and remove if from every automatic
+        lists (not from ones created by users : tags, notes...)
+        """
+        to_update = {}
+        now = datetime.now()
+
+        # manage contributors
+        for account in self.contributors.all():
+            account.update(
+                contributing_count = models.F('contributing_count') - 1
+            )
+        self.contributors.clear()
+        to_update['contributors_count'] = 0
+        to_update['contributors_modified'] = now
+
+        # manage child forks
+        for fork in self.forks.all():
+            fork.update(
+                is_fork = False,
+                official_fork_of = None,
+            )
+        self.forks.clear()
+        to_update['forks_count'] = 0
+
+        # manage parent fork
+        if self.parent_fork_id:
+            self.parent_fork.update(
+                forks_count = models.F('forks_count') - 1,
+            )
+            to_update['parent_fork'] = None
+            to_update['official_fork_of'] = None
+
+        # manage followers
+        for follower in self.followers.all():
+            follower.update(
+                following_count = models.F('following_count') - 1,
+            )
+        self.followers.clear()
+        to_update['followers_count'] = 0
+        to_update['followers_modified'] = now
+
+        # final update
+        to_update['owner'] = None
+        super(Repository, self).fake_delete(to_update)
 
 
 from core.signals import *
