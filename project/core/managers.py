@@ -62,6 +62,7 @@ class AccountManager(SyncableModelManager):
         account = self.get_or_new(backend.name, original_login)
         account.access_token = access_token
         account.user = social_auth_user.user
+        account.deleted = False
 
         if account.fetch_needed():
             account.fetch()
