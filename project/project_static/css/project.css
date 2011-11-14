@@ -457,6 +457,100 @@ table.repositories td:nth-child(2) img {
 table.repositories td:nth-child(3) {
     white-space: nowrap;
 }
+table.repositories tr.subfork td:first-child div {
+    border-left: #ddd dashed 1px;
+    padding-left: 4px;
+}
+table.repositories tr.subfork.level-1 td:first-child {
+    padding-left: 32px;
+}
+table.repositories tr.subfork.level-2 td:first-child {
+    padding-left: 61px;
+}
+table.repositories tr.subfork.level-3 td:first-child {
+    padding-left: 87px;
+}
+table.repositories tr.subfork.level-4 td:first-child {
+    padding-left: 109px;
+}
+table.repositories tr.subfork.level-5 td:first-child {
+    padding-left: 128px;
+}
+table.repositories tr.subfork.level-6 td:first-child {
+    padding-left: 144px;
+}
+table.repositories tr.subfork.level-7 td:first-child {
+    padding-left: 158px;
+}
+table.repositories tr.subfork.level-8 td:first-child {
+    padding-left: 171px;
+}
+table.repositories tr.subfork.level-9 td:first-child {
+    padding-left: 182px;
+}
+table.repositories tr.subfork.level-10 td:first-child {
+    padding-left: 192px;
+}
+table.repositories tr.subfork.level-11 td:first-child {
+    padding-left: 200px;
+}
+table.repositories tr.subfork.level-12 td:first-child {
+    padding-left: 206px;
+}
+table.repositories tr.subfork.level-13 td:first-child {
+    padding-left: 212px;
+}
+table.repositories tr.subfork.level-14 td:first-child {
+    padding-left: 218px;
+}
+table.repositories tr.subfork.level-15 td:first-child {
+    padding-left: 224px;
+}
+table.repositories tr.subfork.level-16 td:first-child {
+    padding-left: 228px;
+}
+table.repositories tr.subfork.level-17 td:first-child {
+    padding-left: 232px;
+}
+table.repositories tr.subfork.level-18 td:first-child {
+    padding-left: 236px;
+}
+table.repositories tr.subfork.level-19 td:first-child {
+    padding-left: 240px;
+}
+table.repositories tr.subfork.level-20 td:first-child {
+    padding-left: 244px;
+}
+table.repositories tr.subfork.level-21 td:first-child {
+    padding-left: 248px;
+}
+table.repositories tr.subfork.level-22 td:first-child {
+    padding-left: 251px;
+}
+table.repositories tr.subfork.level-23 td:first-child {
+    padding-left: 254px;
+}
+table.repositories tr.subfork.level-24 td:first-child {
+    padding-left: 257px;
+}
+table.repositories tr.subfork.level-25 td:first-child {
+    padding-left: 260px;
+}
+table.repositories tr.subfork.level-26 td:first-child {
+    padding-left: 262px;
+}
+table.repositories tr.subfork.level-27 td:first-child {
+    padding-left: 264px;
+}
+table.repositories tr.subfork.level-28 td:first-child {
+    padding-left: 266px;
+}
+table.repositories tr.subfork.level-29 td:first-child {
+    padding-left: 268px;
+}
+table.repositories tr.subfork.level-30 td:first-child {
+    padding-left: 270px;
+}
 
 /* Style accounts table */
 table.accounts {

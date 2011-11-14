@@ -1,0 +1,71 @@
+{% extends "core/repositories/base.html" %}
+{% load private_tags %}
+{% load reposio_core %}
+{% block repository_content %}
+
+    <ul class="pills">
+        <li{% if forks_mode == 'real_forks' %} class="active"{% endif %}><a href="?mode=real_forks">Real forks, on {{ repository.backend }}</a></li>
+        <li{% if forks_mode == 'same_name' %} class="active"{% endif %}><a href="?mode=same_name">All with same name ({{ repository.name }})</a></li>
+    </ul>
+
+    {% if page.paginator.count %}
+        {% prepare_private all_displayed %}
+
+        {% if forks_mode == 'real_forks' %}
+            <p>Here are {{ page.paginator.count }} direct forks of {{ repository.slug }} by {{ repository.owner.slug }}, with their sub-forks</p>
+        {% else %}
+            <p>Here are {{ page.paginator.count }} "root" projects with <em>{{ repository.name }}</em> as name.</p>
+        {% endif %}
+
+        <table class='zebra-striped condensed-table repositories{% if user.id %} with_extras{% endif %}'>
+            <thead>
+                <tr>
+                    {% include "core/repositories/sort_th_name.html" %}
+                    {% if forks_mode == 'same_name' %}
+                        <th>Forks</th>
+                    {% endif %}
+                    {% if repository.backend|supports:'repository_owner' %}
+                        {% include "core/repositories/sort_th_owner.html" %}
+                    {% endif %}
+                    {% include "core/repositories/sort_th_updated.html" %}
+                    {% include "core/th_extra.html" %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for repository in page.object_list %}
+                    <tr>
+                        <td>
+                            {% include "core/repositories/main_repository_cell.html" with no_parent_fork=1 %}
+                        </td>
+                        {% if forks_mode == 'same_name' %}
+                            <td>
+                                <a href="{{ repository.get_forks_url }}">{{ repository.forks_count|default:0 }}</a>
+                            </td>
+                        {% endif %}
+                        {% if repository.backend|supports:'repository_owner' %}
+                            <td>
+                                {% include "core/accounts/owner_cell.html" %}
+                            </td>
+                        {% endif %}
+                        <td>
+                            {% include "core/repositories/date_modified_cell.html" %}
+                        </td>
+                        {% include "core/repositories/list_extra.html" %}
+                    </tr>
+                    {% if forks_mode == 'real_forks' and repository.direct_forks %}
+                        {% include "core/repositories/subforks.html" with parent_fork=repository fork_level=1 %}
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if page.has_previous or page.has_next %}
+            <div>{{ page.render }}</div>
+        {% endif %}
+
+    {% else %}
+        <p>No forks found</p>
+    {% endif %}
+
+{% endblock repository_content %}
+
