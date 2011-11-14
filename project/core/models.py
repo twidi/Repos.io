@@ -660,8 +660,13 @@ class SyncableModel(TimeStampedModel):
         instead of this method.
         """
         # save the object if it's a new one
-        is_new = obj.is_new()
-        if is_new:
+
+        to_save = is_new = obj.is_new()
+        if not is_new and obj.deleted:
+            obj.deleted = False
+            to_save = True
+
+        if to_save:
             setattr(obj, '%s_count' % reverse_entries_name, 1)
             obj.save()
 
@@ -1301,6 +1306,8 @@ class Repository(SyncableModel):
                     last_fetch = datetime.now()
                 )
             raise e
+        else:
+            self.deleted = False
 
         self.last_fetch = datetime.now()
 
