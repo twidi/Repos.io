@@ -4,7 +4,7 @@ import math
 import sys
 import traceback
 
-from django.db import models
+from django.db import models, transaction, IntegrityError
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.utils import simplejson
@@ -96,7 +96,25 @@ class SyncableModel(TimeStampedModel):
     class Meta:
         abstract = True
 
-    update = model_update
+    @transaction.commit_manually
+    def update(self, **kwargs):
+        """
+        Make an atomic update on the database, and fail gracefully
+        """
+        raise_if_error = kwargs.pop('raise_if_error', True)
+        try:
+            model_update(self, **kwargs)
+        except IntegrityError, e:
+            sys.stderr.write('\nError when updating %s with : %s\n' % (self, kwargs))
+            sys.stderr.write(' => %s\n' % e)
+            sys.stderr.write("====================================================================\n")
+            sys.stderr.write('\n'.join(traceback.format_exception(*sys.exc_info())) + '\n')
+            sys.stderr.write("====================================================================\n")
+            transaction.rollback()
+            if raise_if_error:
+                raise e
+        else:
+            transaction.commit()
 
     def __unicode__(self):
         return u'%s' % self.slug
@@ -1192,7 +1210,8 @@ class Account(SyncableModel):
         # manage following
         for account in self.following.all():
             account.update(
-                followers_count = models.F('followers_count') - 1
+                followers_count = models.F('followers_count') - 1,
+                raise_if_error = False
             )
         self.following.clear()
         to_update['following_count'] = 0
@@ -1201,7 +1220,8 @@ class Account(SyncableModel):
         # manage followers
         for account in self.followers.all():
             account.update(
-                following_count = models.F('following_count') - 1
+                following_count = models.F('following_count') - 1,
+                raise_if_error = False
             )
         self.followers.clear()
         to_update['followers_count'] = 0
@@ -1213,7 +1233,8 @@ class Account(SyncableModel):
                 repository.fake_delete()
             else:
                 repository.update(
-                    followers_count = models.F('followers_count') - 1
+                    followers_count = models.F('followers_count') - 1,
+                raise_if_error = False
                 )
         self.repositories.clear()
         to_update['repositories_count'] = 0
@@ -1222,12 +1243,14 @@ class Account(SyncableModel):
         # manage contributing
         for Repository in self.contributing.all():
             repository.update(
-                contributors_count = models.F('contributors_count') - 1
+                contributors_count = models.F('contributors_count') - 1,
+                raise_if_error = False
             )
         self.contributing.clear()
         to_update['contributing_count'] = 0
 
         # final update
+        to_update['user'] = None
         super(Repository, self).fake_delete(to_update)
 
 
@@ -1836,7 +1859,8 @@ class Repository(SyncableModel):
         # manage contributors
         for account in self.contributors.all():
             account.update(
-                contributing_count = models.F('contributing_count') - 1
+                contributing_count = models.F('contributing_count') - 1,
+                raise_if_error = False
             )
         self.contributors.clear()
         to_update['contributors_count'] = 0
@@ -1855,6 +1879,7 @@ class Repository(SyncableModel):
         if self.parent_fork_id:
             self.parent_fork.update(
                 forks_count = models.F('forks_count') - 1,
+                raise_if_error = False
             )
             to_update['parent_fork'] = None
             to_update['official_fork_of'] = None
@@ -1862,7 +1887,8 @@ class Repository(SyncableModel):
         # manage followers
         for follower in self.followers.all():
             follower.update(
-                following_count = models.F('following_count') - 1,
+                repositories_count = models.F('repositories_count') - 1,
+                raise_if_error = False
             )
         self.followers.clear()
         to_update['followers_count'] = 0
