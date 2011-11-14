@@ -78,9 +78,17 @@ def forks(request, backend, project, repository=None):
     Page listing forks of a repository
     """
 
+    mode = request.GET.get('mode')
+    if mode not in ('real_forks', 'same_name',):
+        mode = 'real_forks'
+
     sort = get_repository_sort(request.GET.get('sort_by', None), default='updated', default_reverse=True)
 
-    sorted_forks = Repository.for_list.filter(parent_fork=repository)
+    if mode == 'real_forks':
+        sorted_forks = Repository.for_list.filter(parent_fork=repository)
+    else:
+        sorted_forks = Repository.for_list.filter(name=repository.name).exclude(is_fork=True)
+
     if sort['key']:
         sorted_forks = sorted_forks.order_by(sort['db_sort'])
 
@@ -89,20 +97,22 @@ def forks(request, backend, project, repository=None):
     all_displayed_repositories = list(page.object_list)
 
     # check sub forks, one query / level
-    current_forks = page.object_list
-    while True:
-        by_id = dict((obj.id, obj) for obj in current_forks)
-        current_forks = Repository.for_list.filter(parent_fork__in=by_id.keys()).order_by('-official_modified')
-        if not current_forks:
-            break
-        all_displayed_repositories += list(current_forks)
-        for fork in current_forks:
-            parent_fork = by_id[fork.parent_fork_id]
-            if not hasattr(parent_fork, 'direct_forks'):
-                parent_fork.direct_forks = []
-            parent_fork.direct_forks.append(fork)
+    if mode == 'real_forks':
+        current_forks = page.object_list
+        while True:
+            by_id = dict((obj.id, obj) for obj in current_forks)
+            current_forks = Repository.for_list.filter(parent_fork__in=by_id.keys()).order_by('-official_modified')
+            if not current_forks:
+                break
+            all_displayed_repositories += list(current_forks)
+            for fork in current_forks:
+                parent_fork = by_id[fork.parent_fork_id]
+                if not hasattr(parent_fork, 'direct_forks'):
+                    parent_fork.direct_forks = []
+                parent_fork.direct_forks.append(fork)
 
     context = dict(
+        forks_mode = mode,
         repository = repository,
         page = page,
         all_displayed = all_displayed_repositories,

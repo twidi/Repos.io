@@ -77,7 +77,7 @@ class SyncableModel(TimeStampedModel):
     # The same, adapted for sorting
     slug_sort = models.CharField(max_length=255, blank=True, null=True, db_index=True)
     # The fullname
-    name = models.CharField(max_length=255, blank=True, null=True)
+    name = models.CharField(max_length=255, blank=True, null=True, db_index=True)
     # The web url
     url = models.URLField(max_length=255, blank=True, null=True)
 

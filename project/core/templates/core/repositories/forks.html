@@ -3,15 +3,27 @@
 {% load reposio_core %}
 {% block repository_content %}
 
+    <ul class="pills">
+        <li{% if forks_mode == 'real_forks' %} class="active"{% endif %}><a href="?mode=real_forks">Real forks, on {{ repository.backend }}</a></li>
+        <li{% if forks_mode == 'same_name' %} class="active"{% endif %}><a href="?mode=same_name">All with same name ({{ repository.name }})</a></li>
+    </ul>
+
     {% if page.paginator.count %}
         {% prepare_private all_displayed %}
 
-        <p>Here are {{ page.paginator.count }} forks of {{ repository.slug }} by {{ repository.owner.slug }}</p>
+        {% if forks_mode == 'real_forks' %}
+            <p>Here are {{ page.paginator.count }} direct forks of {{ repository.slug }} by {{ repository.owner.slug }}, with their sub-forks</p>
+        {% else %}
+            <p>Here are {{ page.paginator.count }} "root" projects with <em>{{ repository.name }}</em> as name.</p>
+        {% endif %}
 
         <table class='zebra-striped condensed-table repositories{% if user.id %} with_extras{% endif %}'>
             <thead>
                 <tr>
                     {% include "core/repositories/sort_th_name.html" %}
+                    {% if forks_mode == 'same_name' %}
+                        <th>Forks</th>
+                    {% endif %}
                     {% if repository.backend|supports:'repository_owner' %}
                         {% include "core/repositories/sort_th_owner.html" %}
                     {% endif %}
@@ -25,6 +37,11 @@
                         <td>
                             {% include "core/repositories/main_repository_cell.html" with no_parent_fork=1 %}
                         </td>
+                        {% if forks_mode == 'same_name' %}
+                            <td>
+                                <a href="{{ repository.get_forks_url }}">{{ repository.forks_count|default:0 }}</a>
+                            </td>
+                        {% endif %}
                         {% if repository.backend|supports:'repository_owner' %}
                             <td>
                                 {% include "core/accounts/owner_cell.html" %}
@@ -35,7 +52,7 @@
                         </td>
                         {% include "core/repositories/list_extra.html" %}
                     </tr>
-                    {% if repository.direct_forks %}
+                    {% if forks_mode == 'real_forks' and repository.direct_forks %}
                         {% include "core/repositories/subforks.html" with parent_fork=repository fork_level=1 %}
                     {% endif %}
                 {% endfor %}
