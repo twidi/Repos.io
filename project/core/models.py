@@ -191,6 +191,8 @@ class SyncableModel(TimeStampedModel):
         """
         Return True if a new fetch is allowed (not too recent)
         """
+        if self.deleted:
+            return False
         return bool(not self.last_fetch or self.last_fetch < datetime.now() - self.MIN_FETCH_DELTA)
 
     def fetch(self, token=None, log_stderr=False):
@@ -213,6 +215,8 @@ class SyncableModel(TimeStampedModel):
         Return True if a new fetch of related is allowed (if at least one is
         not too recent)
         """
+        if self.deleted:
+            return False
         for name, with_count, with_modified in self.related_operations:
             if not with_modified:
                 continue
