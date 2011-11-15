@@ -775,6 +775,12 @@ class SyncableModel(TimeStampedModel):
         self.update(**to_update)
         self.remove_from_search_index()
 
+    def get_redis_key(self, key):
+        """
+        Return the specific redis key for the current model
+        """
+        return REDIS_KEYS[key][self.model_name]
+
 class Account(SyncableModel):
     """
     Represent an account from a backend
@@ -1201,12 +1207,6 @@ class Account(SyncableModel):
         Return the search index for this model
         """
         return site.get_index(Account)
-
-    def get_redis_key(self, key):
-        """
-        Return the specific redis key for the current model
-        """
-        return REDIS_KEYS[key][self.model_name]
 
     def fake_delete(self):
         """
