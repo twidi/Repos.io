@@ -64,28 +64,32 @@
         <ul class="tabs">
             <li{% if subsection == 'home' %} class="active"{% endif %}><a href="{{ repository.get_absolute_url }}">Home</a></li>
 
-            {% if repository.backend|supports:'repository_followers' %}
-                {% if repository.followers_modified or subsection == 'followers' %}
-                    <li{% if subsection == 'followers' %} class="active"{% endif %}>
-                        <a href="{{ repository.get_followers_url }}">{{ repository.followers_count|default:0 }}{% if not repository.followers_modified %}?{% endif %} followers</a>
-                    </li>
-                {% endif %}
-            {% endif %}
+            {% if not repository.deleted %}
 
-            {% if repository.backend|supports:'repository_contributors' %}
-                {% if repository.contributors_modified or subsection == 'contributors' %}
-                    <li{% if subsection == 'contributors' %} class="active"{% endif %}>
-                        <a href="{{ repository.get_contributors_url }}">{% if repository.contributors_modified %}{{ repository.contributors_count|default:0 }}{% else %}??{% endif %} contributors</a>
-                    </li>
+                {% if repository.backend|supports:'repository_followers' %}
+                    {% if repository.followers_modified or subsection == 'followers' %}
+                        <li{% if subsection == 'followers' %} class="active"{% endif %}>
+                            <a href="{{ repository.get_followers_url }}">{{ repository.followers_count|default:0 }}{% if not repository.followers_modified %}?{% endif %} followers</a>
+                        </li>
+                    {% endif %}
                 {% endif %}
-            {% endif %}
 
-            {% if repository.backend|supports:'repository_parent_fork' %}
-                {% if repository.forks_count or repository.forks_count == 0 or subsection == 'forks' %}
-                    <li{% if subsection == 'forks' %} class="active"{% endif %}>
-                        <a href="{{ repository.get_forks_url }}" title="You will also be able to see sub-forks">{{ repository.forks_count|default:0 }} direct forks</a>
-                    </li>
+                {% if repository.backend|supports:'repository_contributors' %}
+                    {% if repository.contributors_modified or subsection == 'contributors' %}
+                        <li{% if subsection == 'contributors' %} class="active"{% endif %}>
+                            <a href="{{ repository.get_contributors_url }}">{% if repository.contributors_modified %}{{ repository.contributors_count|default:0 }}{% else %}??{% endif %} contributors</a>
+                        </li>
+                    {% endif %}
                 {% endif %}
+
+                {% if repository.backend|supports:'repository_parent_fork' %}
+                    {% if repository.forks_count or repository.forks_count == 0 or subsection == 'forks' %}
+                        <li{% if subsection == 'forks' %} class="active"{% endif %}>
+                            <a href="{{ repository.get_forks_url }}" title="You will also be able to see sub-forks">{{ repository.forks_count|default:0 }} direct forks</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+
             {% endif %}
 
         </ul>

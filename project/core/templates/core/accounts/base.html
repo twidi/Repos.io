@@ -31,36 +31,40 @@
             <ul class="tabs">
                 <li{% if subsection == 'home' %} class="active"{% endif %}><a href="{{ account.get_absolute_url }}">Home</a></li>
 
-                {% if account.backend|supports:'user_followers' %}
-                    {% if account.followers_modified or subsection == 'followers' %}
-                        <li{% if subsection == 'followers' %} class="active"{% endif %}>
-                            <a href="{{ account.get_followers_url }}">{{ account.followers_count|default:0 }}{% if not account.followers_modified %}?{% endif %} followers</a>
-                        </li>
-                    {% endif %}
-                {% endif %}
+                {% if not account.deleted %}
 
-                {% if account.backend|supports:'user_following' %}
-                    {% if account.following_modified or subsection == 'following' %}
-                        <li{% if subsection == 'following' %} class="active"{% endif %}>
-                            <a href="{{ account.get_following_url }}">{{ account.following_count|default:0 }}{% if not account.following_modified %}?{% endif %} following</a>
-                        </li>
+                    {% if account.backend|supports:'user_followers' %}
+                        {% if account.followers_modified or subsection == 'followers' %}
+                            <li{% if subsection == 'followers' %} class="active"{% endif %}>
+                                <a href="{{ account.get_followers_url }}">{{ account.followers_count|default:0 }}{% if not account.followers_modified %}?{% endif %} followers</a>
+                            </li>
+                        {% endif %}
                     {% endif %}
-                {% endif %}
 
-                {% if account.backend|supports:'user_repositories' %}
-                    {% if account.repositories_modified or subsection == 'repositories' %}
-                        <li{% if subsection == 'repositories' %} class="active"{% endif %}>
-                            <a href="{{ account.get_repositories_url }}">{% if account.repositories_modified %}{{ account.repositories_count|default:0 }}{% else %}??{% endif %} repositories</a>
-                        </li>
+                    {% if account.backend|supports:'user_following' %}
+                        {% if account.following_modified or subsection == 'following' %}
+                            <li{% if subsection == 'following' %} class="active"{% endif %}>
+                                <a href="{{ account.get_following_url }}">{{ account.following_count|default:0 }}{% if not account.following_modified %}?{% endif %} following</a>
+                            </li>
+                        {% endif %}
                     {% endif %}
-                {% endif %}
 
-                {% if account.backend|supports:'repository_contributors' %}
-                    {% if account.contributing_count or account.contributing_count == 0 or subsection == 'contributing' %}
-                        <li{% if subsection == 'contributing' %} class="active"{% endif %}>
-                            <a href="{{ account.get_contributing_url }}">{{ account.contributing_count|default:0 }} contributed repositories</a>
-                        </li>
+                    {% if account.backend|supports:'user_repositories' %}
+                        {% if account.repositories_modified or subsection == 'repositories' %}
+                            <li{% if subsection == 'repositories' %} class="active"{% endif %}>
+                                <a href="{{ account.get_repositories_url }}">{% if account.repositories_modified %}{{ account.repositories_count|default:0 }}{% else %}??{% endif %} repositories</a>
+                            </li>
+                        {% endif %}
                     {% endif %}
+
+                    {% if account.backend|supports:'repository_contributors' %}
+                        {% if account.contributing_count or account.contributing_count == 0 or subsection == 'contributing' %}
+                            <li{% if subsection == 'contributing' %} class="active"{% endif %}>
+                                <a href="{{ account.get_contributing_url }}">{{ account.contributing_count|default:0 }} contributed repositories</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+
                 {% endif %}
 
             </ul>

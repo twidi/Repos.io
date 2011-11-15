@@ -3,6 +3,10 @@
 
 {% block repository_content %}
 
+{% if repository.deleted %}
+    <p class="alert-message error">This project is deleted, it's kept here because you were interested in it.</p>
+{% else %}
+
 <div class="row" id="repository-main">
 
     <section class="span11">
@@ -57,6 +61,8 @@
     </section>
 
 </div>
+
+{% endif %}
 
 {% if repository.backend|supports:'repository_readme' %}
     <section class="readme">
