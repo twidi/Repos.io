@@ -76,10 +76,10 @@ def _get_last_user_notes(user, limit=None, only=None, sort_by='-modified'):
         notes_by_obj_id = dict((note[0], note[1:]) for note in notes)
 
         if sort_objs:
-            objs = types[obj_type].for_list.filter(id__in=notes_by_obj_id.keys()).order_by(sort_by)
+            objs = types[obj_type].for_user_list.filter(id__in=notes_by_obj_id.keys()).order_by(sort_by)
             result[obj_type] = [obj for obj in objs if obj.id in notes_by_obj_id]
         else:
-            objs = types[obj_type].for_list.in_bulk(notes_by_obj_id.keys())
+            objs = types[obj_type].for_user_list.in_bulk(notes_by_obj_id.keys())
             result[obj_type] = [objs[note[0]] for note in notes if note[0] in objs]
 
     return result
@@ -101,12 +101,12 @@ def home(request):
 
     best = dict(
         accounts = dict(
-            followers = Account.for_list.filter(following__user=request.user).order_by('-score').distinct()[:5],
-            following = Account.for_list.filter(followers__user=request.user).order_by('-score').distinct()[:5],
+            followers = Account.for_user_list.filter(following__user=request.user).order_by('-score').distinct()[:5],
+            following = Account.for_user_list.filter(followers__user=request.user).order_by('-score').distinct()[:5],
         ),
         repositories = dict(
-            followed = Repository.for_list.filter(followers__user=request.user).exclude(owner__user=request.user).order_by('-score').distinct()[:5],
-            owned = Repository.for_list.filter(owner__user=request.user).order_by('-score').distinct()[:5],
+            followed = Repository.for_user_list.filter(followers__user=request.user).exclude(owner__user=request.user).order_by('-score').distinct()[:5],
+            owned = Repository.for_user_list.filter(owner__user=request.user).order_by('-score').distinct()[:5],
         ),
     )
 
@@ -225,7 +225,7 @@ def following(request):
     Display following for all accounts of the user
     """
 
-    all_following = Account.for_list.filter(followers__user=request.user).extra(select=dict(current_user_account_id='core_account_following.from_account_id'))
+    all_following = Account.for_user_list.filter(followers__user=request.user).extra(select=dict(current_user_account_id='core_account_following.from_account_id'))
 
     sort = get_account_sort(request.GET.get('sort_by', None), default=None)
 
@@ -257,7 +257,7 @@ def followers(request):
     Display followers for all accounts of the user
     """
 
-    all_followers = Account.for_list.filter(following__user=request.user).extra(select=dict(current_user_account_id='core_account_following.to_account_id'))
+    all_followers = Account.for_user_list.filter(following__user=request.user).extra(select=dict(current_user_account_id='core_account_following.to_account_id'))
 
     sort = get_account_sort(request.GET.get('sort_by', None), default=None)
 
@@ -295,7 +295,7 @@ def _filter_repositories(request, param, extra):
     if owner_only:
         params['owner__user'] = request.user
 
-    all_repositories = Repository.for_list.filter(**params).extra(select=dict(current_user_account_id=extra))
+    all_repositories = Repository.for_user_list.filter(**params).extra(select=dict(current_user_account_id=extra))
 
     hide_forks = request.GET.get('hide-forks', False) == 'y'
     if hide_forks:

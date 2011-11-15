@@ -17,7 +17,9 @@ from redisco.containers import List, Set, Hash, SortedSet
 
 from core import REDIS_KEYS
 from core.backends import BACKENDS, get_backend
-from core.managers import AccountManager, RepositoryManager, OptimForListAccountManager, OptimForListRepositoryManager
+from core.managers import (AccountManager, RepositoryManager,
+                           OptimForListAccountManager, OptimForListRepositoryManager,
+                           OptimForListWithoutDeletedAccountManager, OptimForListWithoutDeletedRepositoryManager)
 from core.core_utils import slugify
 from core.exceptions import MultipleBackendError, BackendNotFoundError
 
@@ -825,7 +827,8 @@ class Account(SyncableModel):
 
     # The managers
     objects = AccountManager()
-    for_list = OptimForListAccountManager()
+    for_list = OptimForListWithoutDeletedAccountManager()
+    for_user_list = OptimForListAccountManager()
 
     # tags
     public_tags = TaggableManager(through=PublicTaggedAccount, related_name='public_on_accounts')
@@ -1332,7 +1335,8 @@ class Repository(SyncableModel):
 
     # The managers
     objects = RepositoryManager()
-    for_list = OptimForListRepositoryManager()
+    for_list = OptimForListWithoutDeletedRepositoryManager()
+    for_user_list = OptimForListRepositoryManager()
 
     # tags
     public_tags = TaggableManager(through=PublicTaggedRepository, related_name='public_on_repositories')
