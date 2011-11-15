@@ -49,7 +49,7 @@ class AccountManager(SyncableModelManager):
     """
     model_name = 'account'
 
-    def associate_to_social_auth_user(self, social_auth_user, is_new):
+    def associate_to_social_auth_user(self, social_auth_user):
         auth_backend = social_auth_user.provider
         backend = get_backend_from_auth(auth_backend)
 
@@ -78,6 +78,8 @@ class AccountManager(SyncableModelManager):
                     login = account.slug,
                     token = access_token
                 )
+
+        is_new = not account.get_last_full_fetched()
 
         account.fetch_full(
             token = token,

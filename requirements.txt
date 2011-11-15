@@ -1,7 +1,7 @@
 # Requirements files for repos.io
 # For each packages not on pypi (or without the needed version), i use my own fork, to avoid lost of original repository (it happens !)
 
-django==1.3.1
+django>=1.3.1,<1.3.99
 
 ####################
 ### django tools ###
@@ -51,7 +51,7 @@ termcolor
 ### django apps ###
 ###################
 
-django-social-auth
+django-social-auth>=0.6,,0.6.99
 django-markup-mixin
 django-notes
 django-taggit

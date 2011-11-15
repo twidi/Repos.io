@@ -225,6 +225,7 @@ GITHUB_EXTRA_DATA = [
 GITHUB_AUTH_EXTRA_ARGUMENTS = {'scope': 'user,public_repo'}
 SOCIAL_AUTH_ASSOCIATE_BY_MAIL = True
 SOCIAL_AUTH_ERROR_KEY = 'social_errors'
+SOCIAL_AUTH_UUID_LENGTH = 2
 
 LOGIN_REDIRECT_URL = '/accounts/manage/'
 LOGIN_URL = '/accounts/login/'

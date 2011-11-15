@@ -16,14 +16,20 @@ def CreateAccountOnSocialAccount(sender, user, response, details, **kwargs):
     if not getattr(sender, 'name', None) in BACKENDS_BY_AUTH:
         return False
 
-    if not getattr(user, 'social_user', False):
-        return False
-
-    is_new = not(user.pk)
-    if is_new:
-        user.save()
+    social_user = None
     try:
-        Account.objects.associate_to_social_auth_user(user.social_user, is_new)
+        social_users = user.social_auth.all()
+        for soc_user in social_users:
+            if details['username'] == soc_user.extra_data.get('original_login'):
+                social_user = soc_user
+                break
+    except:
+        pass
+
+    try:
+        if not social_user:
+            raise Exception('Social user not found')
+        Account.objects.associate_to_social_auth_user(social_user)
     except BackendError, e:
         messages.error(globals.request, e.message)
     except Exception:
