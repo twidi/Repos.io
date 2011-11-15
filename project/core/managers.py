@@ -130,6 +130,13 @@ class OptimForListAccountManager(AccountManager):
     def get_query_set(self):
         return super(OptimForListAccountManager, self).get_query_set().only(*self.list_needed_fields).select_related(*self.list_select_related)
 
+class OptimForListWithoutDeletedAccountManager(OptimForListAccountManager):
+    """
+    Exclude deleted accounts
+    """
+    def get_query_set(self):
+        return super(OptimForListWithoutDeletedAccountManager, self).get_query_set().exclude(deleted=True)
+
 
 class RepositoryManager(SyncableModelManager):
     """
@@ -206,3 +213,10 @@ class OptimForListRepositoryManager(RepositoryManager):
 
     def get_query_set(self):
         return super(OptimForListRepositoryManager, self).get_query_set().only(*self.list_needed_fields).select_related(*self.list_select_related)
+
+class OptimForListWithoutDeletedRepositoryManager(OptimForListRepositoryManager):
+    """
+    Exclude deleted repositories
+    """
+    def get_query_set(self):
+        return super(OptimForListWithoutDeletedRepositoryManager, self).get_query_set().exclude(deleted=True)

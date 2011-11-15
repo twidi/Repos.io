@@ -3,6 +3,10 @@
 
 {% block repository_content %}
 
+{% if repository.deleted %}
+    <p class="alert-message error">This project is deleted, it's kept here because you were interested in it.</p>
+{% else %}
+
 <div class="row" id="repository-main">
 
     <section class="span11">
@@ -51,10 +55,14 @@
     </section>
 
     <section class="span5">
-        <a class="btn primary" href="{{ repository.url }}"><img alt="{{ repository.backend }}" src="{{ STATIC_URL }}img/favicon_{{ repository.backend }}.png" /> Go to the {{ repository.backend }} page</a>
+        {% if not repository.deleted %}
+            <a class="btn primary" href="{{ repository.url }}"><img alt="{{ repository.backend }}" src="{{ STATIC_URL }}img/favicon_{{ repository.backend }}.png" /> Go to the {{ repository.backend }} page</a>
+        {% endif %}
     </section>
 
 </div>
+
+{% endif %}
 
 {% if repository.backend|supports:'repository_readme' %}
     <section class="readme">

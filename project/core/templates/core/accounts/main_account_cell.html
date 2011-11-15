@@ -2,6 +2,7 @@
 {% cache cache_timeout.account_main_cell account_main_cell account.pk account.modified %}
 {% include "core/accounts/avatar.html" %}
 {% include "core/accounts/link.html" %}
+{% if account.deleted %}{% include "core/deleted.html" with type_object="user" %}{% endif %}
 {% include "core/accounts/score.html" %}
 {% include "core/accounts/tags.html" %}
 {% endcache %}

@@ -1,6 +1,7 @@
 from functools import wraps
 
 from django.http import Http404
+from django.contrib import messages
 
 from core.models import Account, Repository
 from core.backends import get_backend
@@ -18,6 +19,8 @@ def check_account(function=None):
             except:
                 raise Http404
             else:
+                if account.deleted and view_func.__name__ != 'home':
+                    messages.error(request, 'This page is useless since the account has been deleted')
                 kwargs['account'] = account
                 return view_func(request, backend, slug, *args, **kwargs)
 
@@ -40,6 +43,8 @@ def check_repository(function=None):
             except:
                 raise Http404
             else:
+                if repository.deleted and view_func.__name__ != 'home':
+                    messages.error(request, 'This page is useless since the project has been deleted')
                 kwargs['repository'] = repository
                 return view_func(request, backend, project, *args, **kwargs)
 

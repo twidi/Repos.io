@@ -3,6 +3,10 @@
 
 {% block account_content %}
 
+{% if account.deleted %}
+    <p class="alert-message error">This account is deleted, it's kept here because you were interested in it.</p>
+{% else %}
+
 <div class="row">
 
     <section class="span11">
@@ -63,5 +67,7 @@
     </section>
 
 </div>
+
+{% endif %}
 
 {% endblock %}

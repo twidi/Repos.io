@@ -17,7 +17,9 @@ from redisco.containers import List, Set, Hash, SortedSet
 
 from core import REDIS_KEYS
 from core.backends import BACKENDS, get_backend
-from core.managers import AccountManager, RepositoryManager, OptimForListAccountManager, OptimForListRepositoryManager
+from core.managers import (AccountManager, RepositoryManager,
+                           OptimForListAccountManager, OptimForListRepositoryManager,
+                           OptimForListWithoutDeletedAccountManager, OptimForListWithoutDeletedRepositoryManager)
 from core.core_utils import slugify
 from core.exceptions import MultipleBackendError, BackendNotFoundError
 
@@ -380,6 +382,9 @@ class SyncableModel(TimeStampedModel):
         """
         Update the score and save it
         """
+        if self.deleted:
+            return
+
         self.score = self.compute_score()
         if save:
             self.update(score=self.score)
@@ -545,6 +550,9 @@ class SyncableModel(TimeStampedModel):
         """
         Update the search index for the current object
         """
+        if self.deleted:
+            return
+
         try:
             self.get_search_index().update_object(self)
         except:
@@ -766,6 +774,14 @@ class SyncableModel(TimeStampedModel):
         ))
         self.update(**to_update)
         self.remove_from_search_index()
+        SortedSet(self.get_redis_key('last_fetched')).remove(self.id)
+        SortedSet(self.get_redis_key('best_scored')).remove(self.id)
+
+    def get_redis_key(self, key):
+        """
+        Return the specific redis key for the current model
+        """
+        return REDIS_KEYS[key][self.model_name]
 
 class Account(SyncableModel):
     """
@@ -825,7 +841,8 @@ class Account(SyncableModel):
 
     # The managers
     objects = AccountManager()
-    for_list = OptimForListAccountManager()
+    for_list = OptimForListWithoutDeletedAccountManager()
+    for_user_list = OptimForListAccountManager()
 
     # tags
     public_tags = TaggableManager(through=PublicTaggedAccount, related_name='public_on_accounts')
@@ -1193,12 +1210,6 @@ class Account(SyncableModel):
         """
         return site.get_index(Account)
 
-    def get_redis_key(self, key):
-        """
-        Return the specific redis key for the current model
-        """
-        return REDIS_KEYS[key][self.model_name]
-
     def fake_delete(self):
         """
         Set the account as deleted and remove if from every automatic
@@ -1229,7 +1240,7 @@ class Account(SyncableModel):
 
         # manage repositories
         for repository in self.repositories.all():
-            if repository.owner__id == self.id:
+            if repository.owner_id == self.id:
                 repository.fake_delete()
             else:
                 repository.update(
@@ -1251,7 +1262,7 @@ class Account(SyncableModel):
 
         # final update
         to_update['user'] = None
-        super(Repository, self).fake_delete(to_update)
+        super(Account, self).fake_delete(to_update)
 
 
 class Repository(SyncableModel):
@@ -1332,7 +1343,8 @@ class Repository(SyncableModel):
 
     # The managers
     objects = RepositoryManager()
-    for_list = OptimForListRepositoryManager()
+    for_list = OptimForListWithoutDeletedRepositoryManager()
+    for_user_list = OptimForListRepositoryManager()
 
     # tags
     public_tags = TaggableManager(through=PublicTaggedRepository, related_name='public_on_repositories')

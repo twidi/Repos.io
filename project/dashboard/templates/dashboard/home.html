@@ -16,11 +16,11 @@
             {% if all_tags.repository %}
                 <ul class="tags unstyled">
                     {% for tag in all_tags.repository.special_used %}
-                        <li><a href="{{ accounts_tags_url }}?tag={{ tag.slug }}" class="label warning" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
+                        <li><a href="{{ repositories_tags_url }}?tag={{ tag.slug }}" class="label warning" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
                     {% endfor %}
                     {% if all_tags.repository.normal and all_tags.repository.special_used %}<br />{% endif %}
                     {% for tag in all_tags.repository.normal %}
-                        <li><a href="{{ accounts_tags_url }}?tag={{ tag.slug }}" class="label success" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
+                        <li><a href="{{ repositories_tags_url }}?tag={{ tag.slug }}" class="label success" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
                     {% endfor %}
                 </ul>
             {% else %}

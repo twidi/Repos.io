@@ -2,16 +2,20 @@
 {% cache cache_timeout.repository_main_cell repository_main_cell_part1 repository.pk repository.modified %}
 {% include "core/repositories/logo.html" %}
 <strong>{% include "core/repositories/link_no_owner.html" %}</strong>
-{% if repository.is_fork and not no_parent_fork %}
-<small>
-    <span class="label warning">Fork</span>
-    {% if repository.parent_fork %}
-        of
-        {% with repository=repository.parent_fork %}{% include "core/repositories/link_no_owner_no_backend.html" %}{% endwith %}
-        by
-        {% with account=repository.parent_fork.owner %}{% include "core/accounts/link_no_backend.html" %}{% endwith %}
+{% if repository.deleted %}
+    {% include "core/deleted.html" with type_object="project" %}
+{% else %}
+    {% if repository.is_fork and not no_parent_fork %}
+    <small>
+        <span class="label warning">Fork</span>
+        {% if repository.parent_fork %}
+            of
+            {% with repository=repository.parent_fork %}{% include "core/repositories/link_no_owner_no_backend.html" %}{% endwith %}
+            by
+            {% with account=repository.parent_fork.owner %}{% include "core/accounts/link_no_backend.html" %}{% endwith %}
+        {% endif %}
+    </small>
     {% endif %}
-</small>
 {% endif %}
 {% endcache %}
 {% if repository.distinct_others %}
