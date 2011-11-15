@@ -3,7 +3,7 @@
 {% include "core/repositories/logo.html" %}
 <strong>{% include "core/repositories/link_no_owner.html" %}</strong>
 {% if repository.deleted %}
-    <span class="label important">DELETED</span>
+    {% include "core/deleted.html" with type_object="project" %}
 {% else %}
     {% if repository.is_fork and not no_parent_fork %}
     <small>

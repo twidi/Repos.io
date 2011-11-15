@@ -9,7 +9,7 @@
                 {% include "core/repositories/logo_big.html" %}
                 <h1>
                     {% include "core/repositories/link_no_owner.html" %}
-                    {% if repository.deleted %}<span class="label important">DELETED</span>{% endif %}
+                    {% if repository.deleted %}{% include "core/deleted.html" with type_object="project" %}{% endif %}
                 </h1>
                 {% with obj=repository max_score=125 ratio=4 %}{% include "core/score.html"%}{% endwith %}
                 {% if not repository.deleted %}
