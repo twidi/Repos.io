@@ -1232,7 +1232,7 @@ class Account(SyncableModel):
 
         # manage repositories
         for repository in self.repositories.all():
-            if repository.owner__id == self.id:
+            if repository.owner_id == self.id:
                 repository.fake_delete()
             else:
                 repository.update(
@@ -1254,7 +1254,7 @@ class Account(SyncableModel):
 
         # final update
         to_update['user'] = None
-        super(Repository, self).fake_delete(to_update)
+        super(Account, self).fake_delete(to_update)
 
 
 class Repository(SyncableModel):
