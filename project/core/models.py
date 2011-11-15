@@ -774,6 +774,8 @@ class SyncableModel(TimeStampedModel):
         ))
         self.update(**to_update)
         self.remove_from_search_index()
+        SortedSet(self.get_redis_key('last_fetched')).remove(self.id)
+        SortedSet(self.get_redis_key('best_scored')).remove(self.id)
 
     def get_redis_key(self, key):
         """
