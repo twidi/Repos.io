@@ -6,17 +6,22 @@
         <header class="row main_header">
             <div class="span-two-thirds">
                 {% include "core/accounts/avatar_big.html" %}
-                <h1> {% include "core/accounts/link.html" %}</h1>
+                <h1>
+                    {% include "core/accounts/link.html" %}
+                    {% if account.deleted %}{% include "core/deleted.html" with type_object="user" %}{% endif %}
+                </h1>
                 {% with max_score=250 ratio=2 %}{% include "core/accounts/score.html" %}{% endwith %}
                 <p>
-                    {{ account.name|default:account.slug }}
+                    {% if account.name and account.name != account.slug %}{{ account.name|default:account.slug }}{% endif %}
                     {% include "core/accounts/links.html" %}
                 </p>
                 {% if account.last_fetch %}<p>On {{ account.backend }} since {{ account.official_created }}.</p>{% endif %}
                 {% with tag_style="success" %}{% include "core/accounts/tags.html" %}{% endwith %}
             </div>
             <div class="span-one-third">
-                {% include "core/accounts/fetch_form.html" %}{% with for_related=1 %}{% include "core/accounts/fetch_form.html" %}{% endwith %}
+                {% if not account.deleted %}
+                    {% include "core/accounts/fetch_form.html" %}{% with for_related=1 %}{% include "core/accounts/fetch_form.html" %}{% endwith %}
+                {% endif %}
             </div>
         </header>
 

@@ -59,7 +59,9 @@
     </section>
 
     <section class="span5">
-        <a class="btn primary" href="{{ account.url }}"><img alt="{{ account.backend }}" src="{{ STATIC_URL }}img/favicon_{{ account.backend }}.png" /> Go to the {{ account.backend }} page</a>
+        {% if not account.deleted %}
+            <a class="btn primary" href="{{ account.url }}"><img alt="{{ account.backend }}" src="{{ STATIC_URL }}img/favicon_{{ account.backend }}.png" /> Go to the {{ account.backend }} page</a>
+        {% endif %}
     </section>
 
 </div>
