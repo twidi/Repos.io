@@ -6,6 +6,7 @@ core/accounts/link.html
 core/accounts/avatar_big.html
 core/accounts/avatar.html
 core/accounts/link.html
+core/deleted.html
 core/accounts/score.html
 core/score.html
 core/accounts/links.html
@@ -42,6 +43,7 @@ core/repositories/main_repository_cell.html
 core/repositories/logo.html
 core/repositories/link_no_owner.html
 core/repositories/link.html
+core/deleted.html
 core/repositories/link_no_owner_no_backend.html
 core/repositories/link.html
 core/accounts/link_no_backend.html

@@ -5,6 +5,7 @@ core/repositories/logo_big.html
 core/repositories/logo.html
 core/repositories/link_no_owner.html
 core/repositories/link.html
+core/deleted.html
 core/score.html
 core/accounts/avatar_small.html
 core/accounts/avatar.html
