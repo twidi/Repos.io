@@ -382,6 +382,9 @@ class SyncableModel(TimeStampedModel):
         """
         Update the score and save it
         """
+        if self.deleted:
+            return
+
         self.score = self.compute_score()
         if save:
             self.update(score=self.score)
@@ -547,6 +550,9 @@ class SyncableModel(TimeStampedModel):
         """
         Update the search index for the current object
         """
+        if self.deleted:
+            return
+
         try:
             self.get_search_index().update_object(self)
         except:
