@@ -98,6 +98,9 @@ ul.tags.small li form input[type=submit] {
 ul#tags-deletable.tags.small li form input[type=submit] {
     padding-left: 1px;
 }
+.tags .label.current {
+    border: 2px solid black;
+}
 
 .helptext {
   font-size: 11px;
