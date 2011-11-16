@@ -8,10 +8,10 @@ def caching(request):
         repository_main_cell = 86400,
         account_main_cell = 86400,
         repository_owner_cell = 86400,
-        repository_extra = 300,
-        account_extra = 300,
         home_accounts = 52,
         home_repositories = 56,
+        private_common_part = 120,
+        private_specific_part = 300,
     ))
 
 def design(request):

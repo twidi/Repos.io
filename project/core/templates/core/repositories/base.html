@@ -59,7 +59,9 @@
             </div>
         </header>
 
-        {% include "private/repository.html" with object=repository %}
+        {% if request.user and request.user.is_authenticated %}
+            {% include "private/repository.html" with object=repository %}
+        {% endif %}
 
         <ul class="tabs">
             <li{% if subsection == 'home' %} class="active"{% endif %}><a href="{{ repository.get_absolute_url }}">Home</a></li>

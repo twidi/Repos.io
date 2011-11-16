@@ -1,7 +1,7 @@
 from django import template
 
 from core.backends import BaseBackend, get_backend
-from core.models import Account, Repository
+from tagging.flags import split_tags_and_flags
 
 register = template.Library()
 
@@ -29,5 +29,25 @@ def links_with_user(obj, user):
     """
     try:
         return obj.links_with_user(user)
+    except:
+        return {}
+
+@register.filter
+def note_and_tags(obj, user):
+    """
+    Return the note and tags for the given object (account or repository) by the given user
+    """
+    try:
+        note = obj.get_user_note(user)
+        private_tags = obj.get_user_tags(user)
+        if private_tags:
+            flags_and_tags = split_tags_and_flags(private_tags)
+        else:
+            flags_and_tags = None
+
+        return dict(
+            note = note,
+            flags_and_tags = flags_and_tags
+        )
     except:
         return {}

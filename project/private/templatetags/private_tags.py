@@ -26,6 +26,8 @@ def prepare_private(objects, ignore=None):
         if not (globals.user and globals.user.is_authenticated()):
             return ''
 
+        objects = list(objects)
+
         # find objects' type
         obj = objects[0]
 
