@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.shortcuts import redirect
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponseBadRequest
 
 from notes.models import Note
 
@@ -58,7 +58,7 @@ def note_save(request):
     else:
         noted_object = form.get_related_object()
         if not noted_object:
-            return HttpResponseNotAllowed('Vilain :)')
+            return HttpResponseBadRequest('Vilain :)')
         messages.error(request, 'We were unable to save your note !')
 
     return redirect_from_editor(request, noted_object)
@@ -78,7 +78,7 @@ def note_delete(request):
     else:
         noted_object = form.get_related_object()
         if not noted_object:
-            return HttpResponseNotAllowed('Vilain :)')
+            return HttpResponseBadRequest('Vilain :)')
         messages.error(request, 'We were unable to delete your note !')
 
     return redirect_from_editor(request, noted_object)
@@ -134,7 +134,7 @@ def tags_save(request):
     else:
         tagged_object = form.get_related_object()
         if not tagged_object:
-            return HttpResponseNotAllowed('Vilain :)')
+            return HttpResponseBadRequest('Vilain :)')
         messages.error(request, view_data[action]['error'])
 
     return redirect_from_editor(request, tagged_object)
@@ -153,7 +153,7 @@ def tags_delete(request):
     else:
         tagged_object = form.get_related_object()
         if not tagged_object:
-            return HttpResponseNotAllowed('Vilain :)')
+            return HttpResponseBadRequest('Vilain :)')
         messages.error(request, 'We were unable to delete your tags !')
 
     return redirect_from_editor(request, tagged_object)
