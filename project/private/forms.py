@@ -161,6 +161,8 @@ class TagsBaseForm(forms.Form):
                 object_id = self.tagged_object.id,
             ))
         super(TagsBaseForm, self).__init__(*args, **kwargs)
+        self.content_type = None
+        self.object_id = None
 
     def get_related_object(self):
         """
@@ -170,21 +172,26 @@ class TagsBaseForm(forms.Form):
             return self.tagged_object
         else:
             try:
-                content_type = self.cleaned_data['content_type']
+                return self.content_type.get_object_for_this_type(pk=self.object_id)
             except:
-                content_type = None
-            if not content_type:
                 return None
-            return content_type.get_object_for_this_type(pk=self.cleaned_data['object_id'])
 
     def clean_content_type(self):
         """
-        Check if the content_type is in allowed models
+        Check if the content_type is in allowed models, and save the content_type
         """
         content_type = ContentType.objects.get_for_id(self.cleaned_data['content_type'])
         if '%s.%s' % (content_type.app_label, content_type.model) not in ALLOWED_MODELS:
             raise forms.ValidationError('It\'s not possible to manage tags for this kind of object')
-        return content_type
+        self.content_type = content_type
+        return self.content_type
+
+    def clean_object_id(self):
+        """
+        Save the object id
+        """
+        self.object_id = self.cleaned_data['object_id']
+        return self.object_id
 
 class TagsForm(TagsBaseForm):
     """
