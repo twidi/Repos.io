@@ -1,28 +1,28 @@
-{% load reposio_core %}
-{% if request.user and request.user.is_authenticated %}
-{% with note_and_tags=object|note_and_tags:request.user %}
-    <section class="sticky taped for-{{ section }}{% if subsection == "home" %} open{% endif %}" id="private">
-        <div id="note-part"{% if note_and_tags.note %} class="with-note"{% endif %}>
-            {% if note_and_tags.note %}
-                <div>{{ note_and_tags.note.rendered_content|safe }}</div>
-                <a href="{% include "private/editor_link.html" %}"><small>edit your note (last update : {{ note_and_tags.note.modified }})</small></a>
-            {% else %}
-                <a href="{% include "private/editor_link.html" %}"><small>Add a <strong>private</strong> note</small></a>
-            {% endif %}
-        </div>
-        <div id="tags-part"{% if note_and_tags.flags_and_tags %} class="with-tags"{% endif %}>
-            {% if note_and_tags.flags_and_tags %}
-                <a href="{% include "private/editor_link.html" %}" title="Edit your private tags"><small>edit your tags</small></a>
-                {% if section == "user" %}
-                    {% with obj_type="accounts" tags=note_and_tags.flags_and_tags with_flags=1 %}{% include "dashboard/include_tags.html" %}{% endwith %}
+{% load reposio_core cache %}
+{% cache cache_timeout.private_common_part object.simple_str request.user.id object.modified %}
+    {% with note_and_tags=object|note_and_tags:request.user %}
+        <section class="sticky taped for-{{ section }}{% if subsection == "home" %} open{% endif %}" id="private">
+            <div id="note-part"{% if note_and_tags.note %} class="with-note"{% endif %}>
+                {% if note_and_tags.note %}
+                    <div>{{ note_and_tags.note.rendered_content|safe }}</div>
+                    <a href="{% include "private/editor_link.html" %}"><small>edit your note (last update : {{ note_and_tags.note.modified }})</small></a>
                 {% else %}
-                    {% with obj_type="repositories" tags=note_and_tags.flags_and_tags with_flags=1 %}{% include "dashboard/include_tags.html" %}{% endwith %}
+                    <a href="{% include "private/editor_link.html" %}"><small>Add a <strong>private</strong> note</small></a>
                 {% endif %}
-            {% else %}
-                <a href="{% include "private/editor_link.html" %}"><small>Add <strong>private</strong> tags</small></a>
-            {% endif %}
-        </div>
-        {% block specific_part %}{% endblock %}
-    </section>
-{% endwith %}
-{% endif %}
+            </div>
+            <div id="tags-part"{% if note_and_tags.flags_and_tags %} class="with-tags"{% endif %}>
+                {% if note_and_tags.flags_and_tags %}
+                    <a href="{% include "private/editor_link.html" %}" title="Edit your private tags"><small>edit your tags</small></a>
+                    {% if section == "user" %}
+                        {% with obj_type="accounts" tags=note_and_tags.flags_and_tags with_flags=1 %}{% include "dashboard/include_tags.html" %}{% endwith %}
+                    {% else %}
+                        {% with obj_type="repositories" tags=note_and_tags.flags_and_tags with_flags=1 %}{% include "dashboard/include_tags.html" %}{% endwith %}
+                    {% endif %}
+                {% else %}
+                    <a href="{% include "private/editor_link.html" %}"><small>Add <strong>private</strong> tags</small></a>
+                {% endif %}
+            </div>
+            {% block specific_part %}{% endblock %}
+        </section>
+    {% endwith %}
+{% endcache %}
