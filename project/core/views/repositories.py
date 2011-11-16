@@ -3,13 +3,8 @@ from django.conf import settings
 
 from utils.views import paginate
 from core.models import Account, Repository
-from core.views import context_private_part
 from core.views.decorators import check_repository, check_support
 from core.views.sort import get_account_sort, get_repository_sort
-
-def _render_with_private(request, template, context):
-    context.update(context_private_part(context['repository']))
-    return render(request, template, context)
 
 @check_repository
 def home(request, backend, project, repository=None):
@@ -17,7 +12,7 @@ def home(request, backend, project, repository=None):
     Home page of a repository
     """
     context = dict(repository = repository)
-    return _render_with_private(request, 'core/repositories/home.html', context)
+    return render(request, 'core/repositories/home.html', context)
 
 @check_support('repository_followers')
 @check_repository
@@ -43,7 +38,7 @@ def followers(request, backend, project, repository=None):
         ),
     )
 
-    return _render_with_private(request, 'core/repositories/followers.html', context)
+    return render(request, 'core/repositories/followers.html', context)
 
 @check_support('repository_contributors')
 @check_repository
@@ -69,7 +64,7 @@ def contributors(request, backend, project, repository=None):
         ),
     )
 
-    return _render_with_private(request, 'core/repositories/contributors.html', context)
+    return render(request, 'core/repositories/contributors.html', context)
 
 @check_support('repository_parent_fork')
 @check_repository
@@ -131,6 +126,6 @@ def forks(request, backend, project, repository=None):
         ),
     )
 
-    return _render_with_private(request, 'core/repositories/forks.html', context)
+    return render(request, 'core/repositories/forks.html', context)
 
 

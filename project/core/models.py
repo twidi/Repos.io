@@ -353,17 +353,17 @@ class SyncableModel(TimeStampedModel):
             STATIC_URL = settings.STATIC_URL,
         )
 
-    def get_user_note(self):
+    def get_user_note(self, user=None):
         """
-        Return the note for the current user
+        Return the note for the current (or given) user
         """
-        return get_user_note_for_object(self)
+        return get_user_note_for_object(self, user)
 
-    def get_user_tags(self):
+    def get_user_tags(self, user=None):
         """
-        Return the tags for the current user
+        Return the tags for the current (or given) user
         """
-        return get_user_tags_for_object(self)
+        return get_user_tags_for_object(self, user)
 
     def compute_score(self):
         """

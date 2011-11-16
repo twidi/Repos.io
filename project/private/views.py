@@ -11,27 +11,26 @@ from private.forms import (NoteForm, NoteDeleteForm,
         TagsForm, TagsDeleteForm, TagsAddOneForm, TagsRemoveOneForm, TagsCreateOneForm)
 from utils.model_utils import get_app_and_model
 
-def get_user_note_for_object(obj):
+def get_user_note_for_object(obj, user=None):
     """
     Return a note by the current logged user for the given object
     A user can only have one note by object
     """
-    user = globals.user
+    user = user or globals.user
     if not (user and user.is_authenticated()):
         return None
 
     app_label, model_name = get_app_and_model(obj)
 
-    notes = Note.objects.filter(
-        author=user,
-        content_type__app_label = app_label,
-        content_type__model = model_name,
-        object_id=obj.id
-    )
-    if notes:
-        return notes[0]
-
-    return None
+    try:
+        return Note.objects.filter(
+            author=user,
+            content_type__app_label = app_label,
+            content_type__model = model_name,
+            object_id=obj.id
+        )[0]
+    except:
+        return None
 
 def redirect_from_editor(request, default):
     """
@@ -85,11 +84,11 @@ def note_delete(request):
     return redirect_from_editor(request, noted_object)
 
 
-def get_user_tags_for_object(obj):
+def get_user_tags_for_object(obj, user=None):
     """
     Return all tags associated to an object by the current logged user
     """
-    user = globals.user
+    user = user or globals.user
     if not (user and user.is_authenticated()):
         return None
 

@@ -9,7 +9,6 @@ from core.backends import get_backend
 from core.models import Account, Repository
 from core.exceptions import BackendError, MultipleBackendError
 from core.tokens import AccessTokenManager
-from tagging.flags import split_tags_and_flags
 
 def default(request, identifier):
     """
@@ -95,20 +94,3 @@ def fetch(request):
         redirect_url = '/'
 
     return redirect(redirect_url)
-
-def context_private_part(obj):
-    """
-    Create the context part of the private block
-    """
-    note = obj.get_user_note()
-    private_tags = obj.get_user_tags()
-    if private_tags:
-        flags_and_tags = split_tags_and_flags(private_tags)
-    else:
-        flags_and_tags = None
-
-    return dict(
-        note = note,
-        flags_and_tags = flags_and_tags
-    )
-
