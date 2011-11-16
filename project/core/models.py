@@ -1730,7 +1730,10 @@ class Repository(SyncableModel):
         tags = sorted(rep_tags.iteritems(), key=lambda t: t[1], reverse=True)
         self.public_tags.set(tags[:5])
 
-    def all_public_tags(self, with_weight=False):
+        # force cache update
+        self.all_public_tags(force_cache=True)
+
+    def all_public_tags(self, with_weight=False, force_cache=False):
         """
         Return all public tags for this repository.
         Use this instead of self.public_tags.all() because
@@ -1741,10 +1744,16 @@ class Repository(SyncableModel):
         in both cases, sort is by weight (desc) and slug (asc)
         """
         if with_weight:
-            qs = self.publictaggedrepository_set.select_related('tag').all()
+            return self.publictaggedrepository_set.select_related('tag').all()
         else:
-            qs = self.public_tags.order_by('-public_repository_tags__weight', 'slug')
-        return qs
+            cache_key = self.get_redis_key('public_tags') % self.id
+            tags = None
+            if not force_cache:
+                tags = cache.get(cache_key)
+            if tags is None:
+                tags = self.public_tags.order_by('-public_repository_tags__weight', 'slug')
+                cache.set(cache_key, tags, 2678400)
+            return tags
 
     def all_private_tags(self, user):
         """
