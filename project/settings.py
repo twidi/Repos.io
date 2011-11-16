@@ -271,6 +271,7 @@ REDIS_PARAMS = dict(
 
 # sessions
 SESSION_ENGINE='redisession.backend'
+MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
 # update the redisession default params
 REDIS_SESSION_CONFIG = {
     'SERVER': dict(
