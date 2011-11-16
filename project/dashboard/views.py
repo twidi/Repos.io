@@ -329,8 +329,6 @@ def _filter_repositories(request, param, extra):
         uniq = []
         slugs = {}
         for repository in all_repositories:
-            if repository.slug=='django-extended-choices':
-                print repository
             slug = '%s:%s' % (repository.backend, repository.slug)
             if slug in slugs:
                 slugs[slug].append(repository)

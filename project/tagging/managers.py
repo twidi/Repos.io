@@ -117,7 +117,6 @@ class _TaggableManager(_BaseTaggableManager):
                 tag = tag.name
             str_tags.add(tag)
 
-        print str_tags
         self.through.objects.filter(**self._lookup_kwargs(**filters)).filter(
             tag__name__in=str_tags).delete()
 
