@@ -1,1 +1,1 @@
-{% url search as url_search %}{% with tags=repository.prepared_public_tags|default:repository.all_public_tags tag_link=url_search %}{% include "core/tags.html" %}{% endwith %}
+{% url search as url_search %}{% with tags=repository.all_public_tags tag_link=url_search %}{% include "core/tags.html" %}{% endwith %}

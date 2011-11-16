@@ -1,5 +1,5 @@
 {% extends 'dashboard/base.html' %}
-{% load private_tags utils_tags dashboard_tags tagging_tags %}
+{% load private_tags utils_tags dashboard_tags %}
 {% block title %}Your followers on {% endblock %}
 
 {% block dashboard_content %}
@@ -7,7 +7,6 @@
     {% if page.paginator.count %}
         {% with user_accounts_by_id=accounts user_followers=page.object_list|distinctify:"current_user_account_id" %}
             {% prepare_private user_followers %}
-            {% prepare_public_tags user_followers %}
 
             <p>You are followed by {{ page.paginator.count }} people :</p>
 
