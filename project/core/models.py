@@ -8,6 +8,7 @@ from django.db import models, transaction, IntegrityError
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.utils import simplejson
+from django.core.cache import cache
 
 from model_utils import Choices
 from model_utils.models import TimeStampedModel
@@ -1102,7 +1103,10 @@ class Account(SyncableModel):
 
         self.public_tags.set(tags[:5])
 
-    def all_public_tags(self, with_weight=False):
+        # force cache update
+        self.all_public_tags(force_cache=True)
+
+    def all_public_tags(self, with_weight=False, force_cache=False):
         """
         Return all public tags for this account.
         Use this instead of self.public_tags.all() because
@@ -1113,11 +1117,16 @@ class Account(SyncableModel):
         in both cases, sort is by weight (desc) and slug (asc)
         """
         if with_weight:
-            qs = self.publictaggedaccount_set.select_related('tag').all()
+            return self.publictaggedaccount_set.select_related('tag').all()
         else:
-            qs = self.public_tags.order_by('-public_account_tags__weight', 'slug')
-
-        return qs
+            cache_key = self.get_redis_key('public_tags') % self.id
+            tags = None
+            if not force_cache:
+                tags = cache.get(cache_key)
+            if tags is None:
+                tags = self.public_tags.order_by('-public_account_tags__weight', 'slug')
+                cache.set(cache_key, tags, 2678400)
+            return tags
 
     def all_private_tags(self, user):
         """
