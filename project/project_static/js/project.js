@@ -16,15 +16,6 @@ $(document).ready(function() {
     if (extra_editor.length) {
         // Ajaxify post for the extra editor
 
-        function close_editor() {
-            // close the editor
-            extra_editor.animate({
-                opacity: 0
-            }, 'fast', function() {
-                $(this).hide();
-            });
-        } // close
-
         var actions = {
             '/private/notes/delete/': 'Deleting note',
             '/private/notes/save/': 'Saving note',
@@ -34,6 +25,34 @@ $(document).ready(function() {
 
         var overlay = $('<div id="extra-ajax-overlay" />');
         extra_editor.append(overlay);
+
+        function close_editor() {
+            extra_editor.animate({
+                opacity: 0
+            }, 'fast', function() {
+                $(this).hide();
+            });
+        } // close
+
+        function show_overlay() {
+            overlay.show().animate({
+                opacity: 0.5
+            }, 'fast', function() {
+                $(this).addClass('displayed');
+            });
+        } // show_overlay
+
+        function hide_overlay() {
+            overlay.stop().removeClass('displayed').animate({
+                opacity: 0
+            }, 'fast', function() {
+                $(this).hide();
+            });
+        } // hide_overlay
+
+        function ask_note_changed() {
+            return window.confirm("Your note was changed but not saved. Continue and lose note's changes ?");
+        } // ask_note_changed
 
         // manage submit of forms
         extra_editor.delegate('form', 'submit', function(ev) {
@@ -47,11 +66,15 @@ $(document).ready(function() {
 
             // display the ovjerlay
             overlay.text(actions[post_url]+'…');
-            overlay.show().animate({
-                opacity: 0.5
-            }, 'fast', function() {
-                $(this).addClass('displayed');
-            });
+            show_overlay();
+
+            // check if note changed when submitting a tag form
+            if (post_url.indexOf('/private/notes/') != 0 && extra_editor.find('#note-save-form #id_content').data('changed')) {
+                if (!ask_note_changed()) {
+                    hide_overlay();
+                    return false;
+                }
+            }
 
             // simple post of the query
             $.ajax({
@@ -72,7 +95,7 @@ $(document).ready(function() {
                 if (!new_body.length) {
                     // action if we want to close
                     close_editor();
-                    var messages = $('#container .messages');
+                    var messages = $('#container > .messages');
                     if (messages.length) {
                         messages.replaceWith(new_messages);
                     } else {
@@ -90,16 +113,16 @@ $(document).ready(function() {
             }) // error
 
             .complete(function() {
-                // when done, hide the overlay
-                overlay.removeClass('displayed').animate({
-                    opacity: 0
-                }, 'fast', function() {
-                    $(this).hide();
-                });
+                hide_overlay();
             }); // complete
 
             return false;
         }); // form submit
+
+        // save when note changed
+        extra_editor.delegate('#note-save-form #id_content', 'change', function() {
+            $(this).data('changed', true);
+        });
 
         // manage note save buttons
         extra_editor.delegate('#note-save-form input[type=submit]', 'click', function() {
@@ -118,6 +141,12 @@ $(document).ready(function() {
 
         // manage close buttons
         extra_editor.find('.close, .modal-footer .btn').click(function() {
+            if (extra_editor.find('#note-save-form #id_content').data('changed')) {
+                if (!ask_note_changed()) {
+                    hide_overlay();
+                    return false;
+                }
+            }
             close_editor();
             return false;
         });
