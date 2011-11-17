@@ -12,9 +12,24 @@ $(document).ready(function() {
         placement: 'left'
     });
 
+    var body_overlay;
+    function show_body_overlay() {
+        if (!body_overlay) {
+            body_overlay = $('<div />').attr('id', 'boverlay');
+            $('body').append(body_overlay);
+        }
+        body_overlay.fadeIn('fast');
+    } // show_body_overlay
+
+    function hide_body_overlay() {
+        body_overlay.fadeOut('fast');
+    } // hide_body_overlay
+
     var extra_editor = $('#extra-editor');
     if (extra_editor.length) {
         // Ajaxify post for the extra editor
+
+        show_body_overlay();
 
         var actions = {
             '/private/notes/delete/': 'Deleting note',
@@ -23,33 +38,25 @@ $(document).ready(function() {
             '/private/tags/save/': 'Saving tags',
         };
 
+        extra_editor.addClass('ajaxified');
         var overlay = $('<div id="extra-ajax-overlay" />');
         extra_editor.append(overlay);
 
         function close_editor() {
-            extra_editor.animate({
-                opacity: 0
-            }, 'fast', function() {
-                $(this).hide();
-            });
+            hide_body_overlay();
+            extra_editor.fadeOut('fast');
         } // close
 
         function show_overlay() {
-            overlay.show().animate({
-                opacity: 0.5
-            }, 'fast', function() {
-                $(this).addClass('displayed');
-            });
+            overlay.fadeIn('fast');
         } // show_overlay
 
         function hide_overlay() {
-            overlay.stop().removeClass('displayed').fadeOut('fast', function() {
-                $(this).hide();
-            });
+            overlay.fadeOut('fast');
         } // hide_overlay
 
         function ask_note_changed() {
-            return window.confirm("Your note was changed but not saved. Continue and lose note's changes ?");
+            return window.confirm("Your note was changed but not saved. Continue and lose changes ?");
         } // ask_note_changed
 
         // manage submit of forms
@@ -160,6 +167,11 @@ $(document).ready(function() {
             }
             close_editor();
             return false;
+        });
+
+        // click on rest of the page
+        body_overlay.click(function() {
+            $('#extra-editor').animate({borderColor: 'rgba(255, 0, 0, 1)'}, 'fast').delay(500).animate({borderColor: 'rgba(0, 0, 0, 0.3)'}, 'fast')
         });
 
     } // if extra_editor
