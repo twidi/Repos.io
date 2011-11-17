@@ -16,7 +16,6 @@ def paginate(request, objects, per_page):
 
 def get_request_param(request, key='next', default=None):
     """
-    Try to retrieve and return the `key` parameter. If not found, try with the
-    referer and then the current path
+    Try to retrieve and return the `key` parameter.
     """
     return request.POST.get(key, request.GET.get(key, None)) or default
