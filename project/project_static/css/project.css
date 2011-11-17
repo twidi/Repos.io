@@ -941,6 +941,11 @@ body#user-repositories p.row span:last-child {
 #extra-editor #tags-form ul li.label:hover {
     opacity: 1 !important;
 }
+#extra-editor #tags-form .error {
+    color: #b94a48;
+    margin-left: 55px;
+    display: none;
+}
 #extra-ajax-overlay {
   position: absolute;
   bottom: 0;

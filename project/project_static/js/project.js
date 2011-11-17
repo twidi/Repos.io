@@ -43,9 +43,7 @@ $(document).ready(function() {
         } // show_overlay
 
         function hide_overlay() {
-            overlay.stop().removeClass('displayed').animate({
-                opacity: 0
-            }, 'fast', function() {
+            overlay.stop().removeClass('displayed').fadeOut('fast', function() {
                 $(this).hide();
             });
         } // hide_overlay
@@ -62,6 +60,19 @@ $(document).ready(function() {
             var post_url = form.attr('action');
             if (!actions[post_url]) {
                 return true;
+            }
+
+            // check if the new tag to create is not empty
+            if (post_url == '/private/tags/save/' && form.find('input[name=act]').val() == 'create') {
+                if (!form.find('input[name=tag]').val().trim()) {
+                    var span = form.find('.error');
+                    if (!span.length) {
+                        span = $('<span />').addClass('error').text('You must add a tag...');
+                        form.append(span);
+                    }
+                    span.stop().show().delay(1000).fadeOut(400);
+                    return false;
+                }
             }
 
             // display the ovjerlay
