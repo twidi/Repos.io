@@ -73,13 +73,7 @@
 </div>
 
 <div id="container" class="container">
-    {% if messages %}
-        <ul id="messages" class="unstyled">
-            {% for message in messages %}
-            <li data-alert="1" class="alert-message fade in {% if message.tags %}{{ message.tags }}{% else %}info{% endif %}"><a href='#' class='close'>&times;</a><p>{{ message }}</p></li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+    {% include "messages.html" %}
 
     <div id="content"{% if messages %} class="with_messages"{% endif %}>
 

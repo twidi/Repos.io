@@ -2,7 +2,7 @@ from django_globals import globals
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib import messages
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.http import HttpResponseBadRequest
 
 from notes.models import Note
@@ -32,7 +32,7 @@ def get_user_note_for_object(obj, user=None):
     except:
         return None
 
-def redirect_from_editor(request, default):
+def return_from_editor(request, obj):
     """
     Manage redirect when we came from the editor.
     If the used clicked a button named "submit-close", he wants to
@@ -40,10 +40,17 @@ def redirect_from_editor(request, default):
     url, else use the `edit_url`.
     If not from the editor, redirect to the object default page.
     """
+    if request.is_ajax():
+        context = dict(
+            edit_extra = obj.simple_str(),
+            want_close = bool(request.POST.get('submit-close')),
+        )
+        return render(request, 'private/edit_private_ajax.html', context)
+
     param_name = 'edit_url'
     if request.POST.get('submit-close'):
         param_name = 'when_finished'
-    return redirect(request.POST.get(param_name) or default)
+    return redirect(request.POST.get(param_name) or obj)
 
 @require_POST
 @login_required
@@ -61,7 +68,7 @@ def note_save(request):
             return HttpResponseBadRequest('Vilain :)')
         messages.error(request, 'We were unable to save your note !')
 
-    return redirect_from_editor(request, noted_object)
+    return return_from_editor(request, noted_object)
 
 
 @require_POST
@@ -81,7 +88,7 @@ def note_delete(request):
             return HttpResponseBadRequest('Vilain :)')
         messages.error(request, 'We were unable to delete your note !')
 
-    return redirect_from_editor(request, noted_object)
+    return return_from_editor(request, noted_object)
 
 
 def get_user_tags_for_object(obj, user=None):
@@ -120,7 +127,7 @@ def tags_save(request):
         create = dict(
             form = TagsCreateOneForm,
             success = 'Your private tags was added',
-            error = 'We were unable to add your tag !',
+            error = 'We were unable to add your tag ! (you must provide one...)',
         ),
     )
 
@@ -137,7 +144,7 @@ def tags_save(request):
             return HttpResponseBadRequest('Vilain :)')
         messages.error(request, view_data[action]['error'])
 
-    return redirect_from_editor(request, tagged_object)
+    return return_from_editor(request, tagged_object)
 
 @require_POST
 @login_required
@@ -156,4 +163,4 @@ def tags_delete(request):
             return HttpResponseBadRequest('Vilain :)')
         messages.error(request, 'We were unable to delete your tags !')
 
-    return redirect_from_editor(request, tagged_object)
+    return return_from_editor(request, tagged_object)
