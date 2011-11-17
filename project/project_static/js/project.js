@@ -157,16 +157,18 @@ $(document).ready(function() {
             }
         }); // note-save-form click;
 
-        // manage close buttons
-        extra_editor.find('.close, .modal-footer .btn').click(function() {
+        // manage links and close buttons
+        extra_editor.find('a').click(function() {
             if (extra_editor.find('#note-save-form #id_content').data('changed')) {
                 if (!ask_note_changed()) {
                     hide_overlay();
                     return false;
                 }
             }
-            close_editor();
-            return false;
+            if ($(this).is('.close, .btn')) {
+                close_editor();
+                return false;
+            }
         });
 
         // click on rest of the page
