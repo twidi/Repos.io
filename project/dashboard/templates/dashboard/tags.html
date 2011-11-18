@@ -13,7 +13,7 @@
     {% if all_tags %}
         Filter with :
         <ul class="tags unstyled">
-            <li><a href="." class="label success{% if not tag_filter %} current{% endif %}">All tags<small> ({{ all_tags.special_used|add:all_tags.normal|length }})</small></a></li>
+            <li><a href="." class="label success{% if not tag_filter %} current{% endif %}">All tags</a></li>
             {% for tag in all_tags.special_used %}
                 <li><a href=".?tag={{ tag.slug }}" class="label warning{% if tag_filter == tag.slug %} current{% endif %}" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
             {% endfor %}
