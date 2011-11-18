@@ -151,12 +151,18 @@ def edit_private(object_str):
         note = edit_object.get_user_note()
         private_tags = edit_object.get_user_tags()
 
+        # special tags
+        flags_and_tags = split_tags_and_flags(private_tags)
+
         # get other private tags
         other_tags = Tag.objects.filter(
                 **{'private_%s_tags__owner' % model_name:globals.user})
         if private_tags:
             other_tags = other_tags.exclude(
                     id__in=[t.id for t in private_tags])
+        if flags_and_tags['special']:
+            other_tags = other_tags.exclude(
+                    slug__in=[t['slug'] for t in flags_and_tags['special']])
         other_tags = other_tags.distinct()
 
         # for tags url
@@ -164,9 +170,6 @@ def edit_private(object_str):
             model_name_plural = 'accounts'
         else:
             model_name_plural = 'repositories'
-
-        # special tags
-        flags_and_tags = split_tags_and_flags(private_tags)
 
         # urls for edit link and when_finished link
         if globals.request.is_ajax():
