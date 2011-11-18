@@ -29,9 +29,56 @@ $(document).ready(function() {
     } // hide_body_overlay
 
     function show_editor() {
-        show_body_overlay('not-allowed');
-        extra_editor.fadeIn('fast');
+        if (!extra_editor.is(':visible')) {
+            show_body_overlay('not-allowed');
+            extra_editor.fadeIn('fast');
+        }
     } // show_editor
+
+    function close_editor() {
+        hide_body_overlay();
+        extra_editor.fadeOut('fast');
+    } // close
+
+    function update_editor(new_dom) {
+        var new_messages = new_dom.find('ul.messages'),
+            close = false,
+            new_body;
+
+        if (extra_editor.length) {
+            new_body = new_dom.find('.modal-body');
+            if (new_body.length) {
+                extra_editor.find('.modal-body').replaceWith(new_body);
+                var new_object_link = new_dom.find('.modal-header h3 a');
+                extra_editor.find('.modal-header h3 a').replaceWith(new_object_link);
+            } else {
+                close = true;
+            }
+        } else {
+            var new_extra_editor = new_dom.find('#extra-editor');
+            if (new_extra_editor.length) {
+                $('#content').prepend(new_extra_editor);
+                extra_editor = $('#extra-editor');
+                new_body = extra_editor.find('.modal-body');
+                ajaxify_extra_editor();
+            }
+        }
+
+        if (close) {
+            close_editor();
+            if (new_messages.length) {
+                var messages = $('#container > .messages');
+                if (messages.length) {
+                    messages.replaceWith(new_messages);
+                } else {
+                    $('#container').prepend(new_messages);
+                }
+            }
+        } else {
+            new_body.prepend(new_messages);
+            show_editor();
+        }
+    } // update_editor
 
     function ajaxify_extra_editor() {
         // Ajaxify post for the extra editor
@@ -45,11 +92,6 @@ $(document).ready(function() {
             overlay = $('<div id="extra-ajax-overlay" />');
 
         extra_editor.addClass('ajaxified').append(overlay);
-
-        function close_editor() {
-            hide_body_overlay();
-            extra_editor.fadeOut('fast');
-        } // close
 
         function show_overlay() {
             overlay.fadeIn('fast');
@@ -109,24 +151,7 @@ $(document).ready(function() {
 
             // action on success
             .success(function(data, text_status, xhr) {
-                // parse html
-                var j_data = $(data),
-                    new_body = j_data.find('.modal-body'),
-                    new_messages = j_data.find('ul.messages');
-                if (!new_body.length) {
-                    // action if we want to close
-                    close_editor();
-                    var messages = $('#container > .messages');
-                    if (messages.length) {
-                        messages.replaceWith(new_messages);
-                    } else {
-                        $('#container').prepend(new_messages);
-                    }
-                } else {
-                    // action if we stay in the window
-                    new_body.prepend(new_messages);
-                    extra_editor.find('.modal-body').replaceWith(new_body);
-                }
+                update_editor($(data));
             }) // success
 
             .error(function(xhr, text_status) {
@@ -193,17 +218,7 @@ $(document).ready(function() {
             url = '/private/edit-ajax/' + obj + '/';
         $.get(url)
         .success(function(data, text_status, xhr) {
-            var j_data = $(data);
-            if (extra_editor.length) {
-                var new_body = j_data.find('.modal-body');
-                extra_editor.find('.modal-body').replaceWith(new_body);
-            } else {
-                var new_extra_editor = j_data.find('#extra-editor');
-                $('#content').prepend(new_extra_editor);
-                extra_editor = $('#extra-editor');
-                ajaxify_extra_editor();
-            }
-            show_editor();
+            update_editor($(data));
         })
         .error(function(xhr, text_status) {
             window.location.href = href;

@@ -958,6 +958,9 @@ body#user-repositories p.row span:last-child {
     margin-left: 55px;
     display: none;
 }
+#extra-editor.ajaxified {
+    display: none;
+}
 #extra-editor.ajaxified .modal-footer .btn small {
     display: none;
 }
