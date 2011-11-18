@@ -1,0 +1,7 @@
+{% load private_tags %}
+<div>
+    {% include "messages.html" %}
+    {% if not want_close %}
+        {% edit_private edit_extra %}
+    {% endif %}
+</div>

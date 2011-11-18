@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.min.css?1.4" />
     <link rel="stylesheet" href="{{ STATIC_URL }}css/project.css" />
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.5.2.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.color.js"></script>
     {#<script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap/bootstrap-modal.js?1.4"></script>#}
     <script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap/bootstrap-buttons.js?1.4"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap/bootstrap-alerts.js?1.4"></script>
@@ -61,7 +62,7 @@
                             <li><a href="{% url accounts_manage %}" class="dropdown-toggle">Your accounts</a></li>
                         {% endif %}
                     {% endwith %}
-                    <li><a href="{% url accounts_logout %}?next={{ request.get_full_path }}">Logout</a></li>
+                    <li><a href="{% url accounts_logout %}?next={{ request.get_full_path|urlencode }}">Logout</a></li>
                 {% else %}
                     <li><a href="{% url accounts_login %}?next=/">Login / Register</a></li>
                 {% endif %}
@@ -73,13 +74,7 @@
 </div>
 
 <div id="container" class="container">
-    {% if messages %}
-        <ul id="messages" class="unstyled">
-            {% for message in messages %}
-            <li data-alert="1" class="alert-message fade in {% if message.tags %}{{ message.tags }}{% else %}info{% endif %}"><a href='#' class='close'>&times;</a><p>{{ message }}</p></li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+    {% include "messages.html" %}
 
     <div id="content"{% if messages %} class="with_messages"{% endif %}>
 

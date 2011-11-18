@@ -11,4 +11,209 @@ $(document).ready(function() {
     $('.rel_popover_left').popover({
         placement: 'left'
     });
+
+    var body_overlay = $('<div />').attr('id', 'boverlay'),
+        extra_editor = $('#extra-editor');
+
+    $('body').append(body_overlay);
+
+    function show_body_overlay(cursor) {
+        body_overlay.css('cursor', cursor);
+        if (!body_overlay.is(':visible')) {
+            body_overlay.fadeIn('fast');
+        }
+    } // show_body_overlay
+
+    function hide_body_overlay() {
+        body_overlay.fadeOut('fast');
+    } // hide_body_overlay
+
+    function show_editor() {
+        show_body_overlay('not-allowed');
+        extra_editor.fadeIn('fast');
+    } // show_editor
+
+    function ajaxify_extra_editor() {
+        // Ajaxify post for the extra editor
+
+        var actions = {
+                '/private/notes/delete/': 'Deleting note',
+                '/private/notes/save/': 'Saving note',
+                '/private/tags/delete/': 'Deleting tags',
+                '/private/tags/save/': 'Saving tags'
+            },
+            overlay = $('<div id="extra-ajax-overlay" />');
+
+        extra_editor.addClass('ajaxified').append(overlay);
+
+        function close_editor() {
+            hide_body_overlay();
+            extra_editor.fadeOut('fast');
+        } // close
+
+        function show_overlay() {
+            overlay.fadeIn('fast');
+        } // show_overlay
+
+        function hide_overlay() {
+            overlay.fadeOut('fast');
+        } // hide_overlay
+
+        function ask_note_changed() {
+            return window.confirm("Your note was changed but not saved. Continue and lose changes ?");
+        } // ask_note_changed
+
+        // manage submit of forms
+        extra_editor.delegate('form', 'submit', function(ev) {
+            var form = $(this),
+                post_url = form.attr('action');
+
+            // if an allowed action ?
+            if (!actions[post_url]) {
+                return true;
+            }
+
+            // check if the new tag to create is not empty
+            if (post_url === '/private/tags/save/' && form.find('input[name=act]').val() === 'create') {
+                if (!form.find('input[name=tag]').val().trim()) {
+                    var span = form.find('.error');
+                    if (!span.length) {
+                        span = $('<span />').addClass('error').text('You must add a tag...');
+                        form.append(span);
+                    }
+                    span.stop().show().delay(1000).fadeOut(400);
+                    return false;
+                }
+            }
+
+            // display the ovjerlay
+            overlay.text(actions[post_url]+'…');
+            show_overlay();
+
+            // check if note changed when submitting a tag form
+            if (post_url.indexOf('/private/notes/') !== 0 && extra_editor.find('#note-save-form #id_content').data('changed')) {
+                if (!ask_note_changed()) {
+                    hide_overlay();
+                    return false;
+                }
+            }
+
+            // simple post of the query
+            $.ajax({
+                type: 'POST',
+                url: post_url,
+                data: form.serialize(),
+                context: extra_editor,
+                dataType: 'text html'
+            }) // base ajax
+
+            // action on success
+            .success(function(data, text_status, xhr) {
+                // parse html
+                var j_data = $(data),
+                    new_body = j_data.find('.modal-body'),
+                    new_messages = j_data.find('ul.messages');
+                if (!new_body.length) {
+                    // action if we want to close
+                    close_editor();
+                    var messages = $('#container > .messages');
+                    if (messages.length) {
+                        messages.replaceWith(new_messages);
+                    } else {
+                        $('#container').prepend(new_messages);
+                    }
+                } else {
+                    // action if we stay in the window
+                    new_body.prepend(new_messages);
+                    extra_editor.find('.modal-body').replaceWith(new_body);
+                }
+            }) // success
+
+            .error(function(xhr, text_status) {
+                window.alert("We couldn't save your data : " + text_status);
+            }) // error
+
+            .complete(function() {
+                hide_overlay();
+            }); // complete
+
+            return false;
+        }); // form submit
+
+        // save when note changed
+        extra_editor.delegate('#note-save-form #id_content', 'change', function() {
+            $(this).data('changed', true);
+        });
+
+        // manage note save buttons
+        extra_editor.delegate('#note-save-form input[type=submit]', 'click', function() {
+            var button = $(this),
+                form = button.parents('form'),
+                hidden = form.find('input[type=hidden][name=submit-close]');
+            if (button.attr('name') === 'submit-close') {
+                if (!hidden.length) {
+                    hidden = $('<input />').attr('type', 'hidden').attr('name', 'submit-close').attr('value', button.val());
+                    form.append(hidden);
+                }
+            } else if (hidden.length) {
+                hidden.remove();
+            }
+        }); // note-save-form click;
+
+        // manage links and close buttons
+        extra_editor.find('a').click(function() {
+            if (extra_editor.find('#note-save-form #id_content').data('changed')) {
+                if (!ask_note_changed()) {
+                    hide_overlay();
+                    return false;
+                }
+            }
+            if ($(this).is('.close, .btn')) {
+                close_editor();
+                return false;
+            }
+        });
+
+        // click on rest of the page
+        body_overlay.click(function() {
+            $('#extra-editor').animate({borderColor: 'rgba(255, 0, 0, 1)'}, 'fast').delay(500).animate({borderColor: 'rgba(0, 0, 0, 0.3)'}, 'fast')
+        });
+
+    } // ajaxify_extra_editor
+
+    // click on links to open the editor
+    var re_edit_extra = /[\?&]edit_extra=((?:core\.)?(?:account|repository):\d+)(?:&|\s+|$)/;
+    $('a[href*="edit_extra="]').click(function() {
+        var href = $(this).attr('href');
+        if (!href) { return; }
+        var match = href.match(re_edit_extra);
+        if (!match) { return; }
+        show_body_overlay('wait');
+        var obj = match[1],
+            url = '/private/edit-ajax/' + obj + '/';
+        $.get(url)
+        .success(function(data, text_status, xhr) {
+            var j_data = $(data);
+            if (extra_editor.length) {
+                var new_body = j_data.find('.modal-body');
+                extra_editor.find('.modal-body').replaceWith(new_body);
+            } else {
+                var new_extra_editor = j_data.find('#extra-editor');
+                $('#content').prepend(new_extra_editor);
+                extra_editor = $('#extra-editor');
+                ajaxify_extra_editor();
+            }
+            show_editor();
+        })
+        .error(function(xhr, text_status) {
+            window.location.href = href;
+        });
+        return false;
+    });
+
+    // manage the exta_editor if exists
+    if (extra_editor.length) {
+        ajaxify_extra_editor();
+        show_editor();
+    }
 });

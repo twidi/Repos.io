@@ -1,17 +1,21 @@
 from django.core.urlresolvers import resolve
+from django.conf import settings
 
 def caching(request):
     """
     Returns timeout to use in template caching
     """
+    min_timeout = 1000000
+    if settings.DEBUG:
+        min_timeout = getattr(settings, 'DEBUG_MAX_TMPL_CACHE_TIMEOUT', None) or min_timeout
     return dict(cache_timeout=dict(
-        repository_main_cell = 86400,
-        account_main_cell = 86400,
-        repository_owner_cell = 86400,
-        home_accounts = 52,
-        home_repositories = 56,
-        private_common_part = 120,
-        private_specific_part = 300,
+        repository_main_cell = min(86400, min_timeout),
+        account_main_cell = min(86400, min_timeout),
+        repository_owner_cell = min(86400, min_timeout),
+        home_accounts = min(52, min_timeout),
+        home_repositories = min(56, min_timeout),
+        private_common_part = min(120, min_timeout),
+        private_specific_part = min(300, min_timeout),
     ))
 
 def design(request):

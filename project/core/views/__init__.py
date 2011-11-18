@@ -1,6 +1,6 @@
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponseBadRequest
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -52,7 +52,7 @@ def fetch(request):
             project = request.POST['project']
             obj = Repository.objects.get(id=id, backend=backend.name, project=project)
     except:
-        return HttpResponseNotAllowed('Vilain :)')
+        return HttpResponseBadRequest('Vilain :)')
     else:
 
         # find a access token

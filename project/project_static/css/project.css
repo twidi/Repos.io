@@ -6,6 +6,21 @@ body {
     padding-top: 40px;
     background: transparent;
 }
+body.progress {
+    cursor: progress;
+}
+
+#boverlay {
+    background: rgba(0, 0, 0, 0.2);
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 10500;
+    display: none;
+    cursor: wait;
+}
 
 #content {
     margin: 20px -20px;
@@ -117,10 +132,10 @@ ul#tags-deletable.tags.small li form input[type=submit] {
     display: none;
 }
 
-#messages {
+ul.messages {
     margin: 20px -20px 15px;
 }
-#messages .alert-message {
+ul.messages .alert-message {
     margin-bottom: 5px;
 }
 
@@ -839,6 +854,12 @@ body#user-repositories p.row span:last-child {
     width: 830px;
     margin-left: -410px;
 }
+#extra-editor .messages {
+    margin: 0 0 10px;
+}
+#extra-editor .messages .alert-message .close {
+    margin-top: 1px;
+}
 #extra-editor .modal-header h3 a {
     font-style: italic;
 }
@@ -931,6 +952,31 @@ body#user-repositories p.row span:last-child {
 }
 #extra-editor #tags-form ul li.label:hover {
     opacity: 1 !important;
+}
+#extra-editor #tags-form .error {
+    color: #b94a48;
+    margin-left: 55px;
+    display: none;
+}
+#extra-editor.ajaxified .modal-footer .btn small {
+    display: none;
+}
+#extra-ajax-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  border-radius: 6px;
+  color: white;
+  font-size: 48px;
+  padding-top: 250px;
+  text-align: center;
+  display: none;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 12000;
 }
 
 /* List filter */
