@@ -1,5 +1,6 @@
 base.html
 core/accounts/link.html
+messages.html
 core/accounts/minimal_cell_small.html
 core/accounts/avatar_small.html
 core/accounts/avatar.html

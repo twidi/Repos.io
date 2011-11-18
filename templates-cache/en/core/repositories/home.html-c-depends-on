@@ -2,6 +2,7 @@ core/repositories/base.html
 core/base.html
 base.html
 core/accounts/link.html
+messages.html
 core/repositories/logo_big.html
 core/repositories/logo.html
 core/repositories/link_no_owner.html

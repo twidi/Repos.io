@@ -1,3 +1,4 @@
 base.html
 core/accounts/link.html
+messages.html
 accounts/include_about.html

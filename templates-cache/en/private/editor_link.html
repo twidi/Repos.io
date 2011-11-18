@@ -1,1 +1,1 @@
-?{%if request.META.QUERY_STRING%}{{request.META.QUERY_STRING}}&amp;{%endif%}edit_extra={{object.simple_str}}&amp;when_finished={{current_request|urlencode}}#extra-editor 
+?{%if request.META.QUERY_STRING%}{{request.META.QUERY_STRING}}&amp;{%endif%}{%if 'edit_extra' in request.META.QUERY_STRING%}_={%now "u" %}{%else%}edit_extra={{object.simple_str}}&amp;when_finished={{current_request|urlencode}}{%endif%}#extra-editor 

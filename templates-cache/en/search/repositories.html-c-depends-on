@@ -1,6 +1,7 @@
 search/base.html
 base.html
 core/accounts/link.html
+messages.html
 core/repositories/sort_th_name.html
 core/sort_th.html
 core/repositories/sort_th_owner.html

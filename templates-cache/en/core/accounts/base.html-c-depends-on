@@ -1,6 +1,7 @@
 core/base.html
 base.html
 core/accounts/link.html
+messages.html
 core/accounts/avatar_big.html
 core/accounts/avatar.html
 core/accounts/link.html
