@@ -41,7 +41,7 @@ def _get_sorted_user_tags(user, only=None):
             tags[tag_slug]['objects'].append(obj)
 
         tags = sorted(tags.values(), key=lambda tag: (-len(tag['objects']), tag['slug']), reverse=False)
-        result[obj_type] = split_tags_and_flags(tags, True) if tags else []
+        result[obj_type] = split_tags_and_flags(tags, obj_type, True) if tags else []
 
     return result
 

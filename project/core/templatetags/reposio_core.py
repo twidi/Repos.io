@@ -2,6 +2,7 @@ from django import template
 
 from core.backends import BaseBackend, get_backend
 from tagging.flags import split_tags_and_flags
+from utils.model_utils import get_app_and_model
 
 register = template.Library()
 
@@ -41,7 +42,8 @@ def note_and_tags(obj, user):
         note = obj.get_user_note(user)
         private_tags = obj.get_user_tags(user)
         if private_tags:
-            flags_and_tags = split_tags_and_flags(private_tags)
+            app_label, model_name = get_app_and_model(obj)
+            flags_and_tags = split_tags_and_flags(private_tags, model_name)
         else:
             flags_and_tags = None
 

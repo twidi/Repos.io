@@ -80,7 +80,7 @@ def prepare_private(objects, ignore=None):
             for obj in dict_objects.values():
                 if not hasattr(obj, 'current_user_tags'):
                     continue
-                obj.current_user_tags = split_tags_and_flags(obj.current_user_tags, tags_are_dict=True)
+                obj.current_user_tags = split_tags_and_flags(obj.current_user_tags, model_name, tags_are_dict=True)
 
 
         if not (ignore and '-related' in ignore):
@@ -152,7 +152,7 @@ def edit_private(object_str):
         private_tags = edit_object.get_user_tags()
 
         # special tags
-        flags_and_tags = split_tags_and_flags(private_tags)
+        flags_and_tags = split_tags_and_flags(private_tags, model_name)
 
         # get other private tags
         other_tags = Tag.objects.filter(
