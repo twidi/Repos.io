@@ -12,7 +12,9 @@ $(document).ready(function() {
         placement: 'left'
     });
 
-    var body_overlay = $('<div />').attr('id', 'boverlay');
+    var body_overlay = $('<div />').attr('id', 'boverlay'),
+        extra_editor = $('#extra-editor');
+
     $('body').append(body_overlay);
 
     function show_body_overlay() {
@@ -23,9 +25,6 @@ $(document).ready(function() {
         body_overlay.fadeOut('fast');
     } // hide_body_overlay
 
-
-    var extra_editor = $('#extra-editor');
-
     function show_editor() {
         show_body_overlay();
         extra_editor.fadeIn('fast');
@@ -35,15 +34,14 @@ $(document).ready(function() {
         // Ajaxify post for the extra editor
 
         var actions = {
-            '/private/notes/delete/': 'Deleting note',
-            '/private/notes/save/': 'Saving note',
-            '/private/tags/delete/': 'Deleting tags',
-            '/private/tags/save/': 'Saving tags',
-        };
+                '/private/notes/delete/': 'Deleting note',
+                '/private/notes/save/': 'Saving note',
+                '/private/tags/delete/': 'Deleting tags',
+                '/private/tags/save/': 'Saving tags'
+            },
+            overlay = $('<div id="extra-ajax-overlay" />');
 
-        extra_editor.addClass('ajaxified');
-        var overlay = $('<div id="extra-ajax-overlay" />');
-        extra_editor.append(overlay);
+        extra_editor.addClass('ajaxified').append(overlay);
 
         function close_editor() {
             hide_body_overlay();
@@ -64,16 +62,16 @@ $(document).ready(function() {
 
         // manage submit of forms
         extra_editor.delegate('form', 'submit', function(ev) {
-            var form = $(this);
+            var form = $(this),
+                post_url = form.attr('action');
 
             // if an allowed action ?
-            var post_url = form.attr('action');
             if (!actions[post_url]) {
                 return true;
             }
 
             // check if the new tag to create is not empty
-            if (post_url == '/private/tags/save/' && form.find('input[name=act]').val() == 'create') {
+            if (post_url === '/private/tags/save/' && form.find('input[name=act]').val() === 'create') {
                 if (!form.find('input[name=tag]').val().trim()) {
                     var span = form.find('.error');
                     if (!span.length) {
@@ -90,7 +88,7 @@ $(document).ready(function() {
             show_overlay();
 
             // check if note changed when submitting a tag form
-            if (post_url.indexOf('/private/notes/') != 0 && extra_editor.find('#note-save-form #id_content').data('changed')) {
+            if (post_url.indexOf('/private/notes/') !== 0 && extra_editor.find('#note-save-form #id_content').data('changed')) {
                 if (!ask_note_changed()) {
                     hide_overlay();
                     return false;
@@ -109,10 +107,9 @@ $(document).ready(function() {
             // action on success
             .success(function(data, text_status, xhr) {
                 // parse html
-                var j_data = $(data);
-                // find interesting parts
-                var new_body = j_data.find('.modal-body');
-                var new_messages = j_data.find('ul.messages');
+                var j_data = $(data),
+                    new_body = j_data.find('.modal-body'),
+                    new_messages = j_data.find('ul.messages');
                 if (!new_body.length) {
                     // action if we want to close
                     close_editor();
@@ -130,7 +127,7 @@ $(document).ready(function() {
             }) // success
 
             .error(function(xhr, text_status) {
-                alert("We couldn't save your data : " + text_status);
+                window.alert("We couldn't save your data : " + text_status);
             }) // error
 
             .complete(function() {
@@ -150,7 +147,7 @@ $(document).ready(function() {
             var button = $(this),
                 form = button.parents('form'),
                 hidden = form.find('input[type=hidden][name=submit-close]');
-            if (button.attr('name') == 'submit-close') {
+            if (button.attr('name') === 'submit-close') {
                 if (!hidden.length) {
                     hidden = $('<input />').attr('type', 'hidden').attr('name', 'submit-close').attr('value', button.val());
                     form.append(hidden);
@@ -182,13 +179,14 @@ $(document).ready(function() {
     } // ajaxify_extra_editor
 
     // click on links to open the editor
+    var re_edit_extra = /[\?&]edit_extra=((?:core\.)?(?:account|repository):\d+)(?:&|\s+|$)/;
     $('a[href*="edit_extra="]').click(function() {
-        var href=$(this).attr('href');
+        var href = $(this).attr('href');
         if (!href) { return; }
-        var match = href.match(/[\?&]edit_extra=((?:core\.)?(?:account|repository):\d+)(?:&|\s+|$)/);
+        var match = href.match(re_edit_extra);
         if (!match) { return; }
-        var obj = match[1];
-        var url = '/private/edit-ajax/' + obj + '/';
+        var obj = match[1],
+            url = '/private/edit-ajax/' + obj + '/';
         $.get(url)
         .success(function(data, text_status, xhr) {
             var j_data = $(data);
