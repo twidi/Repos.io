@@ -19,6 +19,7 @@ body.progress {
     right: 0;
     z-index: 10500;
     display: none;
+    cursor: wait;
 }
 
 #content {

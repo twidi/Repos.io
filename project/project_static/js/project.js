@@ -17,8 +17,11 @@ $(document).ready(function() {
 
     $('body').append(body_overlay);
 
-    function show_body_overlay() {
-        body_overlay.fadeIn('fast');
+    function show_body_overlay(cursor) {
+        body_overlay.css('cursor', cursor);
+        if (!body_overlay.is(':visible')) {
+            body_overlay.fadeIn('fast');
+        }
     } // show_body_overlay
 
     function hide_body_overlay() {
@@ -26,7 +29,7 @@ $(document).ready(function() {
     } // hide_body_overlay
 
     function show_editor() {
-        show_body_overlay();
+        show_body_overlay('not-allowed');
         extra_editor.fadeIn('fast');
     } // show_editor
 
@@ -185,6 +188,7 @@ $(document).ready(function() {
         if (!href) { return; }
         var match = href.match(re_edit_extra);
         if (!match) { return; }
+        show_body_overlay('wait');
         var obj = match[1],
             url = '/private/edit-ajax/' + obj + '/';
         $.get(url)
