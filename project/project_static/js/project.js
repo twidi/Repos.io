@@ -12,12 +12,10 @@ $(document).ready(function() {
         placement: 'left'
     });
 
-    var body_overlay;
+    var body_overlay = $('<div />').attr('id', 'boverlay');
+    $('body').append(body_overlay);
+
     function show_body_overlay() {
-        if (!body_overlay) {
-            body_overlay = $('<div />').attr('id', 'boverlay');
-            $('body').append(body_overlay);
-        }
         body_overlay.fadeIn('fast');
     } // show_body_overlay
 
@@ -25,11 +23,16 @@ $(document).ready(function() {
         body_overlay.fadeOut('fast');
     } // hide_body_overlay
 
-    var extra_editor = $('#extra-editor');
-    if (extra_editor.length) {
-        // Ajaxify post for the extra editor
 
+    var extra_editor = $('#extra-editor');
+
+    function show_editor() {
         show_body_overlay();
+        extra_editor.fadeIn('fast');
+    } // show_editor
+
+    function ajaxify_extra_editor() {
+        // Ajaxify post for the extra editor
 
         var actions = {
             '/private/notes/delete/': 'Deleting note',
@@ -176,5 +179,39 @@ $(document).ready(function() {
             $('#extra-editor').animate({borderColor: 'rgba(255, 0, 0, 1)'}, 'fast').delay(500).animate({borderColor: 'rgba(0, 0, 0, 0.3)'}, 'fast')
         });
 
-    } // if extra_editor
+    } // ajaxify_extra_editor
+
+    // click on links to open the editor
+    $('a[href*="edit_extra="]').click(function() {
+        var href=$(this).attr('href');
+        if (!href) { return; }
+        var match = href.match(/[\?&]edit_extra=((?:core\.)?(?:account|repository):\d+)(?:&|\s+|$)/);
+        if (!match) { return; }
+        var obj = match[1];
+        var url = '/private/edit-ajax/' + obj + '/';
+        $.get(url)
+        .success(function(data, text_status, xhr) {
+            var j_data = $(data);
+            if (extra_editor.length) {
+                var new_body = j_data.find('.modal-body');
+                extra_editor.find('.modal-body').replaceWith(new_body);
+            } else {
+                var new_extra_editor = j_data.find('#extra-editor');
+                $('#content').prepend(new_extra_editor);
+                extra_editor = $('#extra-editor');
+                ajaxify_extra_editor();
+            }
+            show_editor();
+        })
+        .error(function(xhr, text_status) {
+            window.location.href = href;
+        });
+        return false;
+    });
+
+    // manage the exta_editor if exists
+    if (extra_editor.length) {
+        ajaxify_extra_editor();
+        show_editor();
+    }
 });

@@ -1,5 +1,6 @@
 from django import template
 from django.core.urlresolvers import reverse
+from django.utils.http import urlquote
 
 from django_globals import globals
 from notes.models import Note
@@ -167,6 +168,29 @@ def edit_private(object_str):
         # special tags
         flags_and_tags = split_tags_and_flags(private_tags)
 
+        # urls for edit link and when_finished link
+        if globals.request.is_ajax():
+            when_finished = globals.request.META.get('HTTP_REFERER')
+            if when_finished:
+                host = 'http%s://%s' % (
+                    's' if globals.request.is_secure() else '',
+                    globals.request.get_host()
+                )
+                if when_finished.startswith(host):
+                    when_finished = when_finished[len(host):]
+                else:
+                    when_finished = None
+            if not when_finished:
+                when_finished = edit_object.get_absolute_url()
+            edit_url = when_finished + '%sedit_extra=%s&when_finished=%s' % (
+                '&' if '?' in when_finished else '?',
+                edit_object.simple_str(),
+                urlquote(when_finished),
+            )
+        else:
+            when_finished = get_request_param(globals.request, 'when_finished')
+            edit_url = get_request_param(globals.request, 'edit_url', globals.request.get_full_path())
+
         return dict(
             edit_object = edit_object,
             note_save_form = NoteForm(instance=note) if note else NoteForm(noted_object=edit_object),
@@ -178,8 +202,8 @@ def edit_private(object_str):
             special_tags = flags_and_tags['special'],
             used_special_tags = flags_and_tags['special_used'],
             url_tags = reverse('dashboard_tags', kwargs=dict(obj_type=model_name_plural)),
-            edit_url = get_request_param(globals.request, 'edit_url', globals.request.get_full_path()),
-            when_finished = get_request_param(globals.request, 'when_finished'),
+            edit_url = edit_url,
+            when_finished = when_finished,
         )
 
     except:

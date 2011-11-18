@@ -62,7 +62,7 @@
                             <li><a href="{% url accounts_manage %}" class="dropdown-toggle">Your accounts</a></li>
                         {% endif %}
                     {% endwith %}
-                    <li><a href="{% url accounts_logout %}?next={{ request.get_full_path }}">Logout</a></li>
+                    <li><a href="{% url accounts_logout %}?next={{ request.get_full_path|urlencode }}">Logout</a></li>
                 {% else %}
                     <li><a href="{% url accounts_login %}?next=/">Login / Register</a></li>
                 {% endif %}

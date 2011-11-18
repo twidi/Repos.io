@@ -52,6 +52,12 @@ def return_from_editor(request, obj):
         param_name = 'when_finished'
     return redirect(request.POST.get(param_name) or obj)
 
+def ajax_edit(request, object_key):
+    """
+    Render the edit form, without other html, for use in ajax
+    """
+    return render(request, 'private/edit_private_ajax.html', dict(edit_extra = object_key))
+
 @require_POST
 @login_required
 def note_save(request):
