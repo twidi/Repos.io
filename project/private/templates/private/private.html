@@ -1,7 +1,8 @@
 {% load reposio_core cache %}
 {% cache cache_timeout.private_common_part object.simple_str request.user.id object.modified %}
     {% with note_and_tags=object|note_and_tags:request.user %}
-        <section class="sticky taped for-{{ section }}{% if subsection == "home" %} open{% endif %}" id="private">
+    <section class="sticky taped for-{{ section }}{% if subsection == "home" %} open{% endif %}" id="private" data-object-key="{{ object.simple_str }}">
+        <div>
             <div id="note-part"{% if note_and_tags.note %} class="with-note"{% endif %}>
                 {% if note_and_tags.note %}
                     <div>{{ note_and_tags.note.rendered_content|safe }}</div>
@@ -23,6 +24,7 @@
                 {% endif %}
             </div>
             {% block specific_part %}{% endblock %}
-        </section>
+        </div>
+    </section>
     {% endwith %}
 {% endcache %}

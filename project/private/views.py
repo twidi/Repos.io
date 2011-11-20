@@ -10,6 +10,7 @@ from notes.models import Note
 from private.forms import (NoteForm, NoteDeleteForm,
         TagsForm, TagsDeleteForm, TagsAddOneForm, TagsRemoveOneForm, TagsCreateOneForm)
 from utils.model_utils import get_app_and_model
+from core.models import get_object_from_str
 
 def get_user_note_for_object(obj, user=None):
     """
@@ -42,6 +43,8 @@ def return_from_editor(request, obj):
     """
     if request.is_ajax():
         context = dict(
+            obj_type = get_app_and_model(obj)[1],
+            object = obj,
             edit_extra = obj.simple_str(),
             want_close = bool(request.POST.get('submit-close')),
         )
@@ -58,12 +61,26 @@ def ajax_edit(request, object_key):
     """
     return render(request, 'private/edit_private_ajax.html', dict(edit_extra = object_key))
 
+def ajax_close(request, object_key):
+    """
+    Render the html to replace existing when closing via ajax the private editor
+    """
+    obj = get_object_from_str(object_key)
+    return render(request, 'private/edit_private_ajax_onclose.html', dict(
+        obj_type = get_app_and_model(obj)[1],
+        object = obj,
+    ))
+
+
 @require_POST
 @login_required
 def note_save(request):
     """
     Save a note for the current user
     """
+    if not request.POST.get('content'):
+        return note_delete(request)
+
     form = NoteForm(request.POST)
     if form.is_valid():
         noted_object = form.save().content_object

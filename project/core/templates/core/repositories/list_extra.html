@@ -1,5 +1,5 @@
 {% if user.id %}
-    <td class="{% if repository.current_user_has_extra %}full{% else %}empty{% endif %}">
+    <td class="{% if repository.current_user_has_extra %}full{% else %}empty{% endif %}" data-object-key="{{ repository.simple_str }}">
         <div><a href="{% include "private/editor_link.html" with object=repository %}" title="{% if repository.current_user_has_extra %}Edit your private tags and private note{% else %}Add some private tags or a private note{% endif %}" class="btn">{% if repository.current_user_has_extra %}edit{% else %}+{% endif %}</a></div>
         {% if repository.current_user_has_extra %}
             <div class="extra{% if repository.current_user_has_note %} with_note {% endif %}{% if repository.current_user_has_tags %} with_tags{% endif %}{% if repository.current_user_follows or repository.current_user_owns or repository.current_user_has_fork %} with_special_tags{% endif %}">

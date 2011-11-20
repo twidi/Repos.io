@@ -128,7 +128,7 @@ ul#tags-deletable.tags.small li form input[type=submit] {
     margin-left: -5px;
 }
 
-.rel_popover div, .rel_popover_left div {
+.rel_popover div, .rel_popover_extra div {
     display: none;
 }
 
@@ -388,11 +388,11 @@ body#dashboard-home table.with_extras td.empty:last-child a {
 table.with_extras div.extra {
     margin-top: 0;
 }
-table.with_extras div.extra .rel_popover_left {
+table.with_extras div.extra .rel_popover_extra {
     float: right;
     margin-left: 5px;
 }
-body#dashboard-home table.with_extras div.extra .rel_popover_left {
+body#dashboard-home table.with_extras div.extra .rel_popover_extra {
     float: none;
     margin-left: 2px;
     text-align: center;
@@ -755,73 +755,73 @@ body#user-repositories p.row span:last-child {
 #private:hover, #private.open {
     padding-bottom: 15px;
 }
-#private > #note-part, #private > #tags-part, #private > #specific-part {
-    display: none;
-}
-#private:hover > #note-part, #private:hover > #tags-part, #private:hover > #specific-part,
-#private.open > #note-part, #private.open > #tags-part, #private.open > #specific-part {
-    display: block;
-}
-#private.open > #note-part > div{
-    max-height: 200px;
+#private > div {
     overflow: auto;
 }
-#private.open:hover > #note-part > div {
-    max-height: none;
-}
-#private > div {
+#private > div > div {
+    display: none;
     float: left;
     margin-left: 20px;
 }
-#private > div > a, #private > div > a small {
+#private:hover > div > div, #private.open > div > div {
+    display: block;
+}
+#private.open #note-part > div > div {
+    max-height: 200px;
+    overflow: auto;
+}
+#private.open:hover #note-part > div > div {
+    max-height: none;
+}
+#private > div > div > a, #private > div > div > a small {
     color: #a28514;
 }
-#private > #note-part {
+#private #note-part {
     margin-left: 0;
     width: 610px;
     padding-bottom: 10px;
-    border-right: dashed 1px #bfbfbf;
+    border-right: solid 1px #F8E498;
 }
-#private > #note-part > div {
+#private #note-part > div {
     margin-right: 15px;
 }
-#private > #note-part.with-note > a {
+#private #note-part.with-note > a {
     position: absolute;
     top: -2px;
     left: 4px;
 }
-#private > #note-part.with-note > a small {
+#private #note-part.with-note > a small {
     color: #F8E498;
 }
-#private:hover > #note-part.with-note > a small {
+#private:hover #note-part.with-note > a small {
     color: #a28514;
 }
-#private > #note-part > div:first-child >  p:last-child {
+#private #note-part > div:first-child >  p:last-child {
     margin-bottom: 0;
 }
-#private > #tags-part {
+#private #tags-part {
     width: 264px;
     padding-left: 15px;
-    border-left: dashed 1px #bfbfbf;
+    border-left: solid 1px #F8E498;
     padding-bottom: 10px;
     margin-left: -1px;
 }
-#private > #tags-part ul {
+#private #tags-part ul {
     margin-bottom: 0;
 }
-#private > #tags-part.with-tags > a {
+#private #tags-part.with-tags > a {
     position: absolute;
     top: -2px;
     right: 4px;
 }
-#private > #tags-part.with-tags > a small {
+#private #tags-part.with-tags > a small {
     color: #F8E498;
 }
-#private:hover > #tags-part.with-tags > a small {
+#private:hover #tags-part.with-tags > a small {
     color: #a28514;
 }
 #private #specific-part {
-    border-top: dashed 1px #bfbfbf;
+    border-top: solid 1px #F8E498;
     float: none;
     margin: 0;
     padding-top: 10px;
