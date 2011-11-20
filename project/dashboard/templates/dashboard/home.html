@@ -61,7 +61,7 @@
 
             {% if last_notes.repository %}
                 {% prepare_private last_notes.repository "-related" %}
-                <table class="condensed-table with_extras">
+                <table class="condensed-table with_extras" data-private-exclude="-related">
                     <tbody>
                         {% for repository in last_notes.repository %}
                         <tr>
@@ -84,7 +84,7 @@
 
             {% if last_notes.account %}
                 {% prepare_private last_notes.account "-related" %}
-                <table class="condensed-table with_extras">
+                <table class="condensed-table with_extras" data-private-exclude="-related">
                     <tbody>
                         {% for account in last_notes.account %}
                         <tr>
@@ -114,7 +114,7 @@
         {% if best.accounts.followers %}
             {% prepare_private best.accounts.followers "-related" %}
             {% with minimal=1 %}
-            <table class="condensed-table with_extras">
+            <table class="condensed-table with_extras" data-private-exclude="-related">
                 <tbody>
                     {% for account in best.accounts.followers %}
                         <tr>
@@ -136,7 +136,7 @@
         <h3>Most popular following</h3>
         {% if best.accounts.following %}
             {% prepare_private best.accounts.following "-related" %}
-            <table class="condensed-table with_extras">
+            <table class="condensed-table with_extras" data-private-exclude="-related">
                 <tbody>
                     {% for account in best.accounts.following %}
                         <tr>
@@ -163,7 +163,7 @@
         <h3>Most popular owned repositories</h3>
         {% if best.repositories.owned %}
             {% prepare_private best.repositories.owned "-related" %}
-            <table class="condensed-table with_extras">
+            <table class="condensed-table with_extras" data-private-exclude="-related">
                 <tbody>
                     {% for repository in best.repositories.owned %}
                         <tr>
@@ -185,7 +185,7 @@
         <h3>Most popular followed repositories</h3>
         {% if best.repositories.followed %}
             {% prepare_private best.repositories.followed "-related" %}
-            <table class="condensed-table with_extras">
+            <table class="condensed-table with_extras" data-private-exclude="-related">
                 <tbody>
                     {% for repository in best.repositories.followed %}
                         <tr>

@@ -1,0 +1,30 @@
+{% load private_tags %}
+<div>
+{# html to remplace some content in the page #}
+{% if request.GET.main %}
+    {# the private block, for the main object of the page #}
+    {% if obj_type == 'account' %}
+        {% include "private/account.html" with account=object %}
+    {% endif %}
+    {% if obj_type == 'repository' %}
+        {% include "private/repository.html" with repository=object %}
+    {% endif %}
+{% else %}
+    {# content to use in the popover for the edited object #}
+    {% if request.GET.exclude %}
+        {% prepare_private object request.GET.exclude %}
+    {% else %}
+        {% prepare_private object %}
+    {% endif %}
+    <table><tr>
+    {% with obj=object %}
+        {% if obj_type == 'account' %}
+            {% include "core/accounts/list_extra.html" with account=object %}
+        {% endif %}
+        {% if obj_type == 'repository' %}
+            {% include "core/repositories/list_extra.html" with repository=object %}
+        {% endif %}
+    {% endwith %}
+    </tr></table>
+ {% endif %}
+</div>

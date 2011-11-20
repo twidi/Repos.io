@@ -31,8 +31,6 @@ from tagging.managers import TaggableManager
 from utils.model_utils import get_app_and_model, update as model_update
 from utils import now_timestamp, dt2timestamp
 
-from private.views import get_user_note_for_object, get_user_tags_for_object
-
 BACKENDS_CHOICES = Choices(*BACKENDS.keys())
 
 class SyncableModel(TimeStampedModel):
@@ -358,12 +356,14 @@ class SyncableModel(TimeStampedModel):
         """
         Return the note for the current (or given) user
         """
+        from private.views import get_user_note_for_object
         return get_user_note_for_object(self, user)
 
     def get_user_tags(self, user=None):
         """
         Return the tags for the current (or given) user
         """
+        from private.views import get_user_tags_for_object
         return get_user_tags_for_object(self, user)
 
     def compute_score(self):
@@ -1933,6 +1933,25 @@ class Repository(SyncableModel):
         # final update
         to_update['owner'] = None
         super(Repository, self).fake_delete(to_update)
+
+
+def get_object_from_str(object_str):
+    """
+    Try to get an object from its str representation, "core.account:123"
+    (same represetation as returned by simple_str)
+    """
+    model_name, id = object_str.split(':')
+    if '.' in model_name:
+        model_name = model_name.split('.')[-1]
+
+    if model_name == 'account':
+        model = Account
+    elif model_name == 'repository':
+        model = Repository
+    else:
+        raise Exception('Invalid object')
+
+    return model.objects.get(id=id)
 
 
 from core.signals import *

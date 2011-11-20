@@ -1,4 +1,7 @@
 {% if edit_object %}
+<script type="text/javascript">
+    var edit_object_key = '{{ edit_object.simple_str }}';
+</script>
 <div id="extra-editor" class="modal">
     <header class="modal-header">
         <a class="close" href="{{ when_finished }}">&times;</a>

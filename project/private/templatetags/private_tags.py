@@ -7,7 +7,7 @@ from notes.models import Note
 
 from private.models import ALLOWED_MODELS
 from private.forms import NoteForm, NoteDeleteForm, TagsDeleteForm, TagsBaseForm
-from core.models import Account, Repository
+from core.models import Account, Repository, get_object_from_str
 from utils.model_utils import get_app_and_model
 from utils.views import get_request_param
 from tagging.models import Tag
@@ -27,7 +27,10 @@ def prepare_private(objects, ignore=None):
         if not (globals.user and globals.user.is_authenticated()):
             return ''
 
-        objects = list(objects)
+        if hasattr(objects,'__len__'):
+            objects = list(objects)
+        else:
+            objects = [objects]
 
         # find objects' type
         obj = objects[0]
@@ -133,19 +136,10 @@ def edit_private(object_str):
     if not (object_str and globals.user and globals.user.is_authenticated()):
         return {}
 
-    model_name, id = object_str.split(':')
-    if '.' in model_name:
-        model_name = model_name.split('.')[-1]
-
-    if model_name == 'account':
-        model = Account
-        model_name_plural = 'accounts'
-    else:
-        model = Repository
-        model_name_plural = 'repositories'
-
     try:
-        edit_object = model.objects.get(id=id)
+        # find the object
+        edit_object = get_object_from_str(object_str)
+        app_label, model_name = get_app_and_model(edit_object)
 
         # get private data
         note = edit_object.get_user_note()

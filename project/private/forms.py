@@ -129,7 +129,7 @@ class NoteDeleteForm(NoteBaseForm):
         """
         cleaned_data = super(NoteBaseForm, self).clean()
         if not self.get_note_from_content_type():
-            raise forms.ValidationError('This note is not yours or does\'t exist')
+            raise forms.ValidationError('This note is not yours or doesn\'t exist')
 
         return cleaned_data
 
