@@ -5,3 +5,5 @@ core/accounts/followers.html
 core/accounts/following.html
 core/accounts/home.html
 core/accounts/repositories.html
+private/edit_private_ajax.html
+private/edit_private_ajax_onclose.html

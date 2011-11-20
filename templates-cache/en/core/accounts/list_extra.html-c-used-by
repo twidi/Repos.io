@@ -10,3 +10,5 @@ dashboard/tagged_accounts.html
 dashboard/tags.html
 search/accounts.html
 dashboard/home.html
+private/edit_private_ajax.html
+private/edit_private_ajax_onclose.html

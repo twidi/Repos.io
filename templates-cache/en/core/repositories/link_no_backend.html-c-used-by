@@ -12,3 +12,5 @@ core/repositories/home.html
 private/account.html
 private/repository.html
 core/repositories/forks.html
+private/edit_private_ajax.html
+private/edit_private_ajax_onclose.html

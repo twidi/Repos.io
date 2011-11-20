@@ -19,3 +19,5 @@ dashboard/tagged_repositories.html
 dashboard/tags.html
 private/account.html
 core/repositories/forks.html
+private/edit_private_ajax.html
+private/edit_private_ajax_onclose.html

@@ -40,3 +40,5 @@ search/accounts.html
 search/base.html
 search/repositories.html
 core/repositories/forks.html
+private/edit_private_ajax.html
+private/edit_private_ajax_onclose.html
