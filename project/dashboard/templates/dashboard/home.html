@@ -60,7 +60,7 @@
             <h3>For repositories</h3>
 
             {% if last_notes.repository %}
-                {% prepare_private last_notes.repository "-related" %}
+                {% prepare_private last_notes.repository "-related,-notes" %}
                 <table class="condensed-table with_extras" data-private-exclude="-related">
                     <tbody>
                         {% for repository in last_notes.repository %}
@@ -83,7 +83,7 @@
             <h3>For people</h3>
 
             {% if last_notes.account %}
-                {% prepare_private last_notes.account "-related" %}
+                {% prepare_private last_notes.account "-related,-notes" %}
                 <table class="condensed-table with_extras" data-private-exclude="-related">
                     <tbody>
                         {% for account in last_notes.account %}

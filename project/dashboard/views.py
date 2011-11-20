@@ -82,6 +82,12 @@ def _get_last_user_notes(user, limit=None, only=None, sort_by='-modified'):
             objs = types[obj_type].for_user_list.in_bulk(notes_by_obj_id.keys())
             result[obj_type] = [objs[note[0]] for note in notes if note[0] in objs]
 
+        for obj in result[obj_type]:
+            obj.current_user_has_extra = True
+            obj.current_user_has_note = True
+            obj.current_user_rendered_note = notes_by_obj_id[obj.id][0]
+            obj.current_user_note_modified = notes_by_obj_id[obj.id][1]
+
     return result
 
 
