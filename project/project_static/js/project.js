@@ -79,10 +79,13 @@ $(document).ready(function() {
             }
             if (!is_main) {
                 manage_extra_popover(opener.find('.rel_popover_extra'));
-                if ($('body').attr('id') == 'dashboard-tags') {
+                var page = $('body').attr('id');
+                if (page == 'dashboard-tags') {
                     var td_tags = opener.prev();
                     var opener_tags = opener.find('ul.tags');
                     td_tags.empty().append(opener_tags.clone());
+                } else if (page == 'dashboard-notes') {
+                    opener.prev().text('Just now');
                 }
             }
         }
