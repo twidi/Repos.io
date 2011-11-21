@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 import os.path, sys
 PROJECT_PATH = os.path.dirname(__file__)
 sys.path[0:0] = [PROJECT_PATH,]

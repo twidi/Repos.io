@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 """
 Full fetch of objects (core.models.SyncableModel.fetch_full)
 """

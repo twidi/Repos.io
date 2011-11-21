@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 from tagging.models import Tag
 from django.http import HttpResponse
 from django.utils.datastructures import MultiValueDictKeyError

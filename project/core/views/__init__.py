@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 from django.http import HttpResponseBadRequest

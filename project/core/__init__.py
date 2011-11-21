@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 REDIS_KEYS = dict(
     last_fetched = 'last_fetched_%s',
     best_scored  = 'best_scored_%s',

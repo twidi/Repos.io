@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 """
 This module is here to create the firsts tags, based on thousands of
 repositories : get all words, keep the most importants and save them as tags

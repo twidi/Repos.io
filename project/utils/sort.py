@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 # example of sort map :
 #repository_sort_map = dict(
 #    request_key = 'db_field'

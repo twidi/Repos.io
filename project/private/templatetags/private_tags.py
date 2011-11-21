@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 from django import template
 from django.core.urlresolvers import reverse
 from django.utils.http import urlquote

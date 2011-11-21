@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 from taggit.managers import TaggableManager as BaseTaggableManager, _TaggableManager as _BaseTaggableManager
 from taggit.utils import require_instance_manager
 
