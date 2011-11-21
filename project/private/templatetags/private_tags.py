@@ -81,7 +81,7 @@ def prepare_private(objects, ignore=None):
                 dict_objects[obj_id].current_user_tags.append(dict(name=tag, slug=slug))
 
             for obj in dict_objects.values():
-                if not hasattr(obj, 'current_user_tags'):
+                if not getattr(obj, 'current_user_tags', None):
                     continue
                 obj.current_user_tags = split_tags_and_flags(obj.current_user_tags, model_name, tags_are_dict=True)
 
