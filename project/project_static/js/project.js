@@ -1,3 +1,5 @@
+/* Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license */
+
 $(document).ready(function() {
     $.fn.popover.defaults = $.extend($.fn.popover.defaults, {
         html: true,
