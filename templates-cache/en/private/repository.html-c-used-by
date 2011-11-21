@@ -1,0 +1,7 @@
+core/repositories/base.html
+core/repositories/contributors.html
+core/repositories/followers.html
+core/repositories/home.html
+core/repositories/forks.html
+private/edit_private_ajax.html
+private/edit_private_ajax_onclose.html

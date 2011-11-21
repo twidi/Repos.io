@@ -1,0 +1,104 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends "core/base.html" %}
+{% load reposio_core %}
+{% block title %}"{{ repository.slug }}"{% if repository.owner %} (by {{ repository.owner.slug }}){% endif %} @{{repository.backend }} on {% endblock %}
+{% block core_content %}
+    <section id="repository">
+
+        <header class="row main_header">
+            <div class="span-two-thirds">
+                {% include "core/repositories/logo_big.html" %}
+                <h1>
+                    {% include "core/repositories/link_no_owner.html" %}
+                    {% if repository.deleted %}{% include "core/deleted.html" with type_object="project" %}{% endif %}
+                </h1>
+                {% with obj=repository max_score=125 ratio=4 %}{% include "core/score.html"%}{% endwith %}
+                {% if not repository.deleted %}
+                    {% if repository.owner or repository.is_fork %}
+                        <h2>
+                            {% if repository.owner %}
+                                <small>
+                                    by
+                                    {% with account=repository.owner %}
+                                        {% include "core/accounts/avatar_small.html" %}
+                                        {% include "core/accounts/link_no_backend.html" %}
+                                    {% endwith %}
+                                </small>
+                            {% endif %}
+                            {% if repository.backend|supports:'repository_parent_fork' and repository.is_fork %}
+                                <small>
+                                    /
+                                    {% if repository.parent_fork %}
+                                    <span class="label warning">Fork</span> of {% with repository=repository.parent_fork %}{% include "core/repositories/link_no_owner_no_backend.html" %}{% endwith %}
+                                        by
+                                        {% with account=repository.parent_fork.owner %}
+                                            {% include "core/accounts/avatar_small.html" %}
+                                            {% include "core/accounts/link_no_backend.html" %}
+                                        {% endwith %}
+                                    {% else %}
+                                        it's a <span class="label warning">fork</span> but related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display.
+                                    {% endif %}
+                                </small>
+                            {% endif %}
+                        </h2>
+                    {% endif %}
+                {% endif %}
+                <p>
+                    {% if repository.name and repository.name != repository.slug %}{{ repository.name }}{% endif %}
+                    {% if not repository.deleted %}
+                        <a href="{{ repository.url }}" title="Go to the project's page on {{ repository.backend }}"><img src="{{ STATIC_URL }}img/favicon_{{ repository.backend }}.png" alt="Page on {{ repository.backend }}"/></a>
+                    {% endif %}
+                    {% if repository.homepage %}<a href="{{ repository.homepage }}" title="Go to the project's homepage: {{ repository.homepage }}"><img src="{{ STATIC_URL }}img/favicon_home.png" alt="His homepage" /></a>{% endif %}
+                </p>
+                <p>On {{ repository.backend }} since {{ repository.official_created }}, {% if repository.official_modified %}updated on {{ repository.official_modified }}{% else %}never updated{% endif %}</p>
+                {% with tag_style="success" %}{% include "core/repositories/tags.html" %}{% endwith %}
+            </div>
+            <div class="span-one-third">
+                {% if not repository.deleted %}
+                    {% include "core/repositories/fetch_form.html" %}{% with for_related=1 %}{% include "core/repositories/fetch_form.html" %}{% endwith %}
+                {% endif %}
+            </div>
+        </header>
+
+        {% if request.user and request.user.is_authenticated %}
+            {% include "private/repository.html" with object=repository %}
+        {% endif %}
+
+        <ul class="tabs">
+            <li{% if subsection == 'home' %} class="active"{% endif %}><a href="{{ repository.get_absolute_url }}">Home</a></li>
+
+            {% if not repository.deleted %}
+
+                {% if repository.backend|supports:'repository_followers' %}
+                    {% if repository.followers_modified or subsection == 'followers' %}
+                        <li{% if subsection == 'followers' %} class="active"{% endif %}>
+                            <a href="{{ repository.get_followers_url }}">{{ repository.followers_count|default:0 }}{% if not repository.followers_modified %}?{% endif %} followers</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+
+                {% if repository.backend|supports:'repository_contributors' %}
+                    {% if repository.contributors_modified or subsection == 'contributors' %}
+                        <li{% if subsection == 'contributors' %} class="active"{% endif %}>
+                            <a href="{{ repository.get_contributors_url }}">{% if repository.contributors_modified %}{{ repository.contributors_count|default:0 }}{% else %}??{% endif %} contributors</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+
+                {% if repository.backend|supports:'repository_parent_fork' %}
+                    {% if repository.forks_count or repository.forks_count == 0 or subsection == 'forks' %}
+                        <li{% if subsection == 'forks' %} class="active"{% endif %}>
+                            <a href="{{ repository.get_forks_url }}" title="You will also be able to see sub-forks">{{ repository.forks_count|default:0 }} direct forks</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+
+            {% endif %}
+
+        </ul>
+
+        {% block repository_content %}{% endblock %}
+
+    </section>
+{% endblock %}
+

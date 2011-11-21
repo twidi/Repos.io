@@ -1,0 +1,28 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% load cache %}
+{% cache cache_timeout.repository_main_cell repository_main_cell_part1 repository.pk repository.modified %}
+{% include "core/repositories/logo.html" %}
+<strong>{% include "core/repositories/link_no_owner.html" %}</strong>
+{% if repository.deleted %}
+    {% include "core/deleted.html" with type_object="project" %}
+{% else %}
+    {% if repository.is_fork and not no_parent_fork %}
+    <small>
+        <span class="label warning">Fork</span>
+        {% if repository.parent_fork %}
+            of
+            {% with repository=repository.parent_fork %}{% include "core/repositories/link_no_owner_no_backend.html" %}{% endwith %}
+            by
+            {% with account=repository.parent_fork.owner %}{% include "core/accounts/link_no_backend.html" %}{% endwith %}
+        {% endif %}
+    </small>
+    {% endif %}
+{% endif %}
+{% endcache %}
+{% if repository.distinct_others %}
+    <small title="{{ repository.distinct_others|join:', '}}"><em>(and {{ repository.distinct_others|length }} more)</em></small>
+{% endif %}
+{% cache cache_timeout.repository_main_cell repository_main_cell_part2 repository.pk repository.modified %}
+{% with max_width=200 ratio=2 %}{% include "core/repositories/score.html" %}{% endwith %}
+{% if repository.description %}<blockquote>{{ repository.description }}</blockquote>{% endif %}
+{% endcache %}

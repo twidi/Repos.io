@@ -1,0 +1,3 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+<a href="{{ repository.get_absolute_url }}"><img alt="{{ account.slug }}'s logo" width="{{ size|default:32 }}" height="{{ size|default:32 }}" src="{% if repository.logo %}{{ repository.logo }}{% else %}{{ STATIC_URL }}img/avatar_default_{{ repository.backend }}.png{% endif %}" /></a>
+

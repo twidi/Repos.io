@@ -1,0 +1,83 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends "private/private.html" %}
+{% load reposio_core cache %}
+
+{% block specific_part %}
+    {% cache cache_timeout.private_specific_part object.simple_str request.user.id object.modified %}
+        {% with links=repository|links_with_user:request.user %}
+            {% if links %}
+                <div id="specific-part">
+                    Links between you and <em>{{ repository.project }}</em> :
+                    <ul>
+                        {% if links.owning %}
+                            <li>
+                                You ( {% with account=links.owning %}{% include "core/accounts/link_no_backend.html" %}{% endwith %} ) are the owner
+                            </li>
+                        {% endif %}
+                        {% if links.following or links.project_following %}
+                            <li>
+                                {% if links.following %}
+                                    You (
+                                    {% for account in links.following %}
+                                        {% include "core/accounts/link_no_backend.html" %}
+                                        {% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                    ) are following this project
+                                {% endif %}
+                                {% if links.project_following %}
+                                    {% if links.following %}
+                                        and
+                                        {% if links.project_following|length > 1 %}related ones{% else %}a related one{% endif %}
+                                    {% else %}
+                                        You are following
+                                        {% if links.project_following|length > 1 %}related projects{% else %}a related project{% endif %}
+                                    {% endif %}
+                                    (
+                                    {% for repository in links.project_following %}
+                                            {% include "core/repositories/link.html" %}
+                                        {% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                    )
+                                {% endif %}
+                            </li>
+                        {% endif %}
+                        {% if links.contributing %}
+                            <li>
+                                You (
+                                {% for account in links.contributing %}
+                                    {% include "core/accounts/link_no_backend.html" %}
+                                    {% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                                ) made some contributions to this project.
+                            </li>
+                        {% endif %}
+                        {% if links.forks or links.project_forks %}
+                            <li>
+                                You have
+                                {% if links.forks %}
+                                    {% if links.forks|length > 1 %}forks{% else %} a fork{% endif %} (
+                                    {% for repository in links.forks %}
+                                        {% include "core/repositories/link_no_backend.html" %}
+                                        {% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                    )
+                                {% endif %}
+                                {% if links.project_forks %}
+                                    {% if links.forks %} and {% endif %}
+                                    {% if links.project_forks|length > 1 %}indirect forks{% else %} an indirect fork{% endif %} (
+                                    {% for repository in links.project_forks %}
+                                        {% include "core/repositories/link.html" %}
+                                        {% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                    )
+                                {% endif %}
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            {% else %}
+                <br />
+            {% endif %}
+        {% endwith %}
+    {% endcache %}
+{% endblock %}

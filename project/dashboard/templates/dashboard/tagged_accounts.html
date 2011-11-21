@@ -1,0 +1,30 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+<table class='zebra-striped condensed-table accounts with_extras'>
+    <thead>
+        <tr>
+            {% with param1_key="tag" param1_value=tag_filter %}
+                {% include "core/accounts/sort_th_name.html" %}
+            {% endwith %}
+            <th class="green">Links</th>
+            <th>Your tags</th>
+            {% include "core/th_extra.html" %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for account in page.object_list %}
+        <tr>
+            <td>
+                {% include "core/accounts/main_account_cell.html" %}
+            </td>
+            <td>
+                {% include "core/accounts/links.html" %}
+            </td>
+            <td>
+                {% with obj_type="accounts" tags=account.current_user_tags with_flags=1 %}{% include "dashboard/include_tags.html" %}{% endwith %}
+            </td>
+            {% include "core/accounts/list_extra.html" %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+

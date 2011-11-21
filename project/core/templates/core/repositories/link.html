@@ -1,0 +1,2 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+<a href="{{ repository.get_absolute_url }}">{% if no_owner %}{{ repository.slug }}{% else %}{{ repository.project }}{% endif %}{% if not no_backend %}<small> @ {{ repository.backend }}</small>{% endif %}</a>

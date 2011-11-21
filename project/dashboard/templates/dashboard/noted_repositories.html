@@ -1,0 +1,31 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+<table class='zebra-striped condensed-table repositories with_extras'>
+    <thead>
+        <tr>
+            {% include "core/repositories/sort_th_name.html" %}
+            {% include "core/repositories/sort_th_owner.html" %}
+            {% include "core/repositories/sort_th_updated.html" %}
+            {% with key="note" name="Note date" default_reverse=1 %}{% include "core/sort_th.html" %}{% endwith %}
+            {% include "core/th_extra.html" %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for repository in page.object_list %}
+        <tr>
+            <td>
+                {% include "core/repositories/main_repository_cell.html" %}
+            </td>
+            <td>
+                {% include "core/accounts/owner_cell.html" %}
+            </td>
+            <td>
+                {% include "core/repositories/date_modified_cell.html" %}
+            </td>
+            <td>{{ repository.current_user_note_modified|date }}</td>
+            {% include "core/repositories/list_extra.html" %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+

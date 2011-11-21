@@ -1,0 +1,4 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% if not account.deleted %}<a href="{{ account.url }}" title="Go to its page on {{ account.backend }}"><img src="{{ STATIC_URL }}img/favicon_{{ account.backend }}.png" alt="Page on {{ account.backend }}"/></a>{% endif %}
+{% if account.homepage %}<a href="{{ account.homepage }}" title="Go to its homepage: {{ account.homepage }}"><img src="{{ STATIC_URL }}img/favicon_home.png" alt="His homepage" /></a>{% endif %}
+

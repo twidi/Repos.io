@@ -1,0 +1,25 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends 'base.html' %}
+{% block title %}Login on {% endblock %}
+{% block content %}
+
+    <header class='main_header'>
+        <h1>Login/Register <small>on Repos.io</small></h1>
+    </header>
+
+    <section>
+
+        <p>Please login with one of these providers :</p>
+
+        <p>
+            {% for backend, auth_backend in backends_map.items %}
+                <a class="btn large" href="{% url socialauth_begin auth_backend %}"><img alt='{{ backend }}' src="{{ STATIC_URL }}img/favicon_{{ backend }}.png" /> {{ backend }}</a>
+            {% endfor %}
+            <span>(more to come)</span>
+        </p>
+
+        {% include "accounts/include_about.html" %}
+
+    </section>
+
+{% endblock content %}

@@ -1,0 +1,53 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends "core/accounts/base.html" %}
+{% load private_tags %}
+{% block title %}Following of {{ block.super }}{% endblock %}
+{% block account_content %}
+
+    {% if account.following_modified %}
+
+        {% if page.paginator.count %}
+            {% prepare_private page.object_list %}
+
+            <p>{{ account.slug }} follows {{ account.following_count }} people : <small>(last fetch on {{ account.following_modified }})</small></p>
+
+            <table class='zebra-striped condensed-table accounts{% if user.id %} with_extras{% endif %}'>
+                <thead>
+                    <tr>
+                        {% with color="orange" key="name" name="Name" %}{% include "core/sort_th.html" %}{% endwith %}
+                        <th class="blue">Reciprocity</th>
+                        <th class="green">Links</th>
+                        {% include "core/th_extra.html" %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% with viewed_account=account %}
+                    {% for account in page.object_list %}
+                    <tr>
+                        <td>
+                            {% include "core/accounts/main_account_cell.html" %}
+                        </td>
+                        {% if account.id in viewed_account.followers_ids %}<td title="{{ account.slug }} follows {{ viewed_account.slug }} too !">&check;</td>{% else %}<td></td>{% endif %}
+                        <td>
+                            {% include "core/accounts/links.html" %}
+                        </td>
+                        {% include "core/accounts/list_extra.html" %}
+                    </tr>
+                    {% endfor %}
+                    {% endwith %}
+                </tbody>
+            </table>
+
+            {% if page.has_previous or page.has_next %}
+                <div>{{ page.render }}</div>
+            {% endif %}
+
+        {% else %}
+            <p>{{ account.slug }} doesn't follow anyone</p>
+        {% endif %}
+
+    {% else %}
+        <p>{{ account.slug }} has {{ account.official_following_count }} following, but they need to be fetched{% if not user.is_authenticated %} by an authenticated user{% endif %}</p>
+    {% endif %}
+
+{% endblock account_content %}

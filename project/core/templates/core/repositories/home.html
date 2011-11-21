@@ -1,0 +1,83 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends "core/repositories/base.html" %}
+{% load reposio_core %}
+
+{% block repository_content %}
+
+{% if repository.deleted %}
+    <p class="alert-message error">This project is deleted, it's kept here because you were interested in it.</p>
+{% else %}
+
+<div class="row" id="repository-main">
+
+    <section class="span11">
+
+        {% if repository.description %}
+            Description :
+            <pre>{{ repository.description }}</pre>
+        {% endif %}
+
+        <dl>
+            {% if repository.backend|supports:'repository_followers' %}
+                <dt>
+                    {% if repository.followers_modified %}
+                    <a href="{{ repository.get_followers_url }}">{{ repository.followers_count|default:0 }} followers</a> <small>(updated on {{ repository.followers_modified }})</small>
+                    {% else %}
+                        {{ repository.official_followers_count|default:0 }} followers <small>(related{% if not user.is_authenticated %} by an authenticated user {% endif %} must be fetched before display)</small>
+                    {% endif %}
+                </dt>
+                <dd>Followers are people who are following {{ repository.slug }} to have news on this repository on {{ account.backend }}</dd>
+            {% endif %}
+
+            {% if repository.backend|supports:'repository_contributors' %}
+                <dt>
+                    {% if repository.contributors_modified %}
+                        <a href="{{ repository.get_contributors_url }}">{{ repository.contributors_count|default:0 }} contributors</a> <small>(updated on {{ repository.contributors_modified }})</small>
+                    {% else %}
+                        unknown number of contributors <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
+                    {% endif %}
+                </dt>
+                <dd>Contributors are all people who, sometimes, even just one time, worked on {{ repository.slug }} on {{ repository.backend }}</dd>
+            {% endif %}
+
+            {% if repository.backend|supports:'repository_parent_fork' %}
+                <dt>
+                    {% if repository.forks_count or repository.forks_count == 0 %}
+                        <a href="{{ repository.get_forks_url }}">{{ repository.forks_count|default:0 }} (or more) direct forks</a>
+                    {% else %}
+                        unknown number of forks
+                    {% endif %}
+                </dt>
+                <dd>Fork are all repositories directly based on {{ repository.slug }} on {{ repository.backend }}</dd>
+            {% endif %}
+
+        </dl>
+
+    </section>
+
+    <section class="span5">
+        {% if not repository.deleted %}
+            <a class="btn primary" href="{{ repository.url }}"><img alt="{{ repository.backend }}" src="{{ STATIC_URL }}img/favicon_{{ repository.backend }}.png" /> Go to the {{ repository.backend }} page</a>
+        {% endif %}
+    </section>
+
+</div>
+
+{% endif %}
+
+{% if repository.backend|supports:'repository_readme' %}
+    <section class="readme">
+        {% if repository.readme_modified %}
+            {% if repository.readme %}
+                Readme : <small>(updated on {{ repository.readme_modified }})</small>
+                <pre>{{ repository.readme }}</pre>
+            {% else %}
+                No readme.
+            {% endif %}
+        {% else %}
+            Reame : <small>(related must be fetched{% if not user.is_authenticated %} by an authenticated user {% endif %} before display)</small>
+        {% endif %}
+    </section>
+{% endif %}
+
+{% endblock repository_content %}

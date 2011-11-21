@@ -1,0 +1,210 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends 'dashboard/base.html' %}
+{% load private_tags %}
+
+{% block dashboard_content %}
+<div class="row">
+
+    <section id="d-tags" class="span4">
+        <h2>Tags</h2>
+        <p>All your tags</p>
+
+        {% with tags as all_tags %}
+
+            <h3>For repositories</h3>
+
+            {% url dashboard_tags obj_type="repositories" as repositories_tags_url %}
+            {% if all_tags.repository %}
+                <ul class="tags unstyled">
+                    {% for tag in all_tags.repository.special_used %}
+                        <li><a href="{{ repositories_tags_url }}?tag={{ tag.slug }}" class="label warning" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
+                    {% endfor %}
+                    {% if all_tags.repository.normal and all_tags.repository.special_used %}<br />{% endif %}
+                    {% for tag in all_tags.repository.normal %}
+                        <li><a href="{{ repositories_tags_url }}?tag={{ tag.slug }}" class="label success" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p><em>No tags !</em></p>
+            {% endif %}
+
+            <a href="{{ repositories_tags_url }}">Manage your tags...</a>
+
+            <h3>For people</h3>
+
+            {% url dashboard_tags obj_type="accounts" as accounts_tags_url %}
+            {% if all_tags.account %}
+                <ul class="tags unstyled">
+                    {% for tag in all_tags.account.special_used %}
+                        <li><a href="{{ accounts_tags_url }}?tag={{ tag.slug }}" class="label warning" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
+                    {% endfor %}
+                    {% if all_tags.account.normal and all_tags.account.special_used %}<br />{% endif %}
+                    {% for tag in all_tags.account.normal %}
+                        <li><a href="{{ accounts_tags_url }}?tag={{ tag.slug }}" class="label success" title="{% for obj in tag.objects %}{{ obj }}{% if not forloop.last %}, {% endif %}{% endfor %}">{{ tag.name }}<small> ({{ tag.objects|length }})</small></a></li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p><em>No tags !</em></p>
+            {% endif %}
+
+            <a href="{{ accounts_tags_url }}">Manage your tags...</a>
+        {% endwith %}
+
+    </section>
+
+    <section id="d-notes" class="span4">
+        <h2>Notes</h2>
+        <p>Your last notes</p>
+
+        {% with notes as last_notes %}
+
+            <h3>For repositories</h3>
+
+            {% if last_notes.repository %}
+                {% prepare_private last_notes.repository "-related,-notes" %}
+                <table class="condensed-table with_extras" data-private-exclude="-related">
+                    <tbody>
+                        {% for repository in last_notes.repository %}
+                        <tr>
+                            <td title="{{ repository.description }}">
+                                {% include "core/repositories/logo_small.html" %}
+                                {% include "core/repositories/link.html" %}
+                            </td>
+                            {% include "core/repositories/list_extra.html" %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p><em>No notes !</em></p>
+            {% endif %}
+
+            <a href="{% url dashboard_notes obj_type="repositories" %}">Manage your notes...</a>
+
+            <h3>For people</h3>
+
+            {% if last_notes.account %}
+                {% prepare_private last_notes.account "-related,-notes" %}
+                <table class="condensed-table with_extras" data-private-exclude="-related">
+                    <tbody>
+                        {% for account in last_notes.account %}
+                        <tr>
+                            <td>
+                                {% include "core/accounts/minimal_cell_small.html" %}
+                            </td>
+                            {% include "core/accounts/list_extra.html" %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p><em>No notes !</em></p>
+            {% endif %}
+
+            <a href="{% url dashboard_notes obj_type="accounts" %}">Manage your notes...</a>
+
+        {% endwith %}
+
+    </section>
+
+    <section id="d-people" class="span4">
+
+        <h2>People</h2>
+
+        <h3>Most popular followers</h3>
+        {% if best.accounts.followers %}
+            {% prepare_private best.accounts.followers "-related" %}
+            {% with minimal=1 %}
+            <table class="condensed-table with_extras" data-private-exclude="-related">
+                <tbody>
+                    {% for account in best.accounts.followers %}
+                        <tr>
+                            <td>
+                                {% include "core/accounts/minimal_cell_small.html" %}
+                            </td>
+                            {% include "core/accounts/list_extra.html" %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endwith %}
+        {% else %}
+            <p><em>No followers !</em></p>
+        {% endif %}
+
+        <a href="{% url dashboard_followers %}">More followers...</a>
+
+        <h3>Most popular following</h3>
+        {% if best.accounts.following %}
+            {% prepare_private best.accounts.following "-related" %}
+            <table class="condensed-table with_extras" data-private-exclude="-related">
+                <tbody>
+                    {% for account in best.accounts.following %}
+                        <tr>
+                            <td>
+                                {% include "core/accounts/minimal_cell_small.html" %}
+                            </td>
+                            {% include "core/accounts/list_extra.html" %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p><em>No following !</em></p>
+        {% endif %}
+
+        <a href="{% url dashboard_following %}">More following...</a>
+
+    </section>
+
+    <section id="d-repositories" class="span4">
+
+        <h2>Repositories</h2>
+
+        <h3>Most popular owned repositories</h3>
+        {% if best.repositories.owned %}
+            {% prepare_private best.repositories.owned "-related" %}
+            <table class="condensed-table with_extras" data-private-exclude="-related">
+                <tbody>
+                    {% for repository in best.repositories.owned %}
+                        <tr>
+                            <td title="{{ repository.description }}">
+                                {% include "core/repositories/logo_small.html" %}
+                                {% include "core/repositories/link.html" %}
+                            </td>
+                            {% include "core/repositories/list_extra.html" %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p><em>No owned repositories !</em></p>
+        {% endif %}
+
+        <a href="{% url dashboard_repositories %}">More repositories...</a>
+
+        <h3>Most popular followed repositories</h3>
+        {% if best.repositories.followed %}
+            {% prepare_private best.repositories.followed "-related" %}
+            <table class="condensed-table with_extras" data-private-exclude="-related">
+                <tbody>
+                    {% for repository in best.repositories.followed %}
+                        <tr>
+                            <td title="{{ repository.description }}">
+                                {% include "core/repositories/logo_small.html" %}
+                                {% include "core/repositories/link.html" %}
+                            </td>
+                            {% include "core/repositories/list_extra.html" %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p><em>No followed repositories !</em></p>
+        {% endif %}
+
+        <a href="{% url dashboard_repositories %}">More repositories...</a>
+    </section>
+
+</div>
+{% endblock %}

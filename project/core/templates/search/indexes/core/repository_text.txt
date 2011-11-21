@@ -1,0 +1,24 @@
+{{ object.slug}}
+{{ object.slug }}
+{{ object.slug }}
+{{ object.slug }}
+{{ object.slug_sort }}
+{{ object.slug_sort }}
+{{ object.slug_sort }}
+{% if object.slug != object.project %}
+    {{ object.project }}
+    {{ object.project }}
+    {{ object.project }}
+{% endif %}
+{% if object.name != object.slug %}
+    {{ object.name }}
+    {{ object.name }}
+    {{ object.name }}
+{% endif %}
+{% if object.description %}
+    {{ object.description }}
+    {{ object.description }}
+{% endif %}
+{% if object.readme %}
+    {{ object.readme }}
+{% endif %}

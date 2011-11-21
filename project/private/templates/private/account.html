@@ -1,0 +1,66 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends "private/private.html" %}
+{% load reposio_core cache %}
+
+{% block specific_part %}
+    {% cache cache_timeout.private_specific_part object.simple_str request.user.id object.modified %}
+        {% with links=account|links_with_user:request.user %}
+            {% if links %}
+                <div id="specific-part">
+                    Links between you and <em>{{ account.slug }} </em>:
+                    <ul>
+                        {% if account.user.id == request.user.id %}
+                            <li>It's you !</li>
+                        {% else %}
+                            {% if links.following %}
+                                <li>
+                                    You (
+                                    {% for account in links.following %}
+                                        {% include "core/accounts/link_no_backend.html" %}
+                                        {% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                    ) are following him
+                                </li>
+                            {% endif %}
+                            {% if links.followed %}
+                                <li>
+                                    He is following you (
+                                    {% for account in links.followed %}
+                                        {% include "core/accounts/link_no_backend.html" %}
+                                        {% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                    )
+                                </li>
+                            {% endif %}
+                            {% if links.project_following %}
+                                <li>
+                                    You are following
+                                    {% if links.project_following|length > 1 %}some{% else %}one{% endif %}
+                                    of its projects (
+                                    {% for repository in links.project_following %}
+                                        {% include "core/repositories/link_no_owner_no_backend.html" %}
+                                        {% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                    )
+                                </li>
+                            {% endif %}
+                            {% if links.project_followed %}
+                                <li>
+                                    He is following
+                                    {% if links.project_followed|length > 1 %}some{% else %}one{% endif %}
+                                    of your projects (
+                                    {% for repository in links.project_followed %}
+                                        {% include "core/repositories/link_no_backend.html" %}
+                                        {% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                    )
+                                </li>
+                            {% endif %}
+                        {% endif %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endwith %}
+    {% endcache %}
+{% endblock %}
+

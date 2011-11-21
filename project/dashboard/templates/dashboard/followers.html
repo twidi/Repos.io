@@ -1,0 +1,67 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends 'dashboard/base.html' %}
+{% load private_tags utils_tags dashboard_tags %}
+{% block title %}Your followers on {% endblock %}
+
+{% block dashboard_content %}
+
+    {% if page.paginator.count %}
+        {% with user_accounts_by_id=accounts user_followers=page.object_list|distinctify:"current_user_account_id" %}
+            {% prepare_private user_followers %}
+
+            <p>You are followed by {{ page.paginator.count }} people :</p>
+
+            <table class='zebra-striped condensed-table accounts with_extras'>
+                <thead>
+                    <tr>
+                        {% include "core/accounts/sort_th_name.html" %}
+                        <th class="blue">Reciprocity</th>
+                        <th class="green">Links</th>
+                        {% if user_accounts_by_id|length > 1 %}
+                            <th>Your account(s)</th>
+                        {% endif %}
+                        {% include "core/th_extra.html" %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for account in user_followers %}
+                    <tr>
+                        <td>
+                            {% include "core/accounts/main_account_cell.html" %}
+                        </td>
+                        {% if account.id in following_ids %}<td title="You follow {{ account.slug }} too !">&check;</td>{% else %}<td></td>{% endif %}
+                        <td>
+                            {% include "core/accounts/links.html" %}
+                        </td>
+                        {% if user_accounts_by_id|length > 1 %}
+                            <td class="accounts">
+                                {% if account.current_user_account_id_list %}
+                                    {% for user_account_id in account.current_user_account_id_list %}
+                                        {% with account=user_accounts_by_id|dict_get:user_account_id %}
+                                        <div>
+                                            {% include "core/accounts/avatar_small.html" %}
+                                            {% include "core/accounts/link_no_backend.html" %}
+                                        </div>
+                                        {% endwith %}
+                                    {% endfor %}
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                        {% include "core/accounts/list_extra.html" %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if page.has_previous or page.has_next %}
+                <div>{{ page.render }}</div>
+            {% endif %}
+
+        {% endwith %}
+
+    {% else %}
+        <p>You don't have any follower</p>
+    {% endif %}
+
+{% endblock %}
+

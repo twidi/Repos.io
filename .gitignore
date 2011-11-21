@@ -1,0 +1,14 @@
+*.pyc
+*.pyo
+.*.sw?
+.directory
+pip-log.txt
+/bin
+/include
+/lib
+/src
+*.vim
+*.sqlite
+settings_rules.py
+dump*.json
+

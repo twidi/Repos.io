@@ -1,0 +1,59 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends "accounts/base.html" %}
+{% block title %}Your accounts on {% endblock %}
+{% block accounts_content %}
+
+<div class="row">
+
+    {% with accounts=user_accounts %}
+
+        <section class="span5">
+
+            <h2>Your accounts</h2>
+
+            {% if accounts %}
+
+                <p>You are linked to these accounts : </p>
+
+                <table>
+                    <tbody>
+                        {% for account in accounts %}
+                        <tr>
+                            <td>
+                                {% include "core/accounts/minimal_cell.html" %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            {% else %}
+
+                <p>Your account is not linked to any provider, please associate with one <strong style="font-size:larger;">&rarr;</strong></p>
+
+            {% endif %}
+
+        </section>
+
+        <section class="span9 offset2">
+
+            <h2>Associate more accounts</h2>
+
+            <p>You can associate your account with another provider <em>(if you want to assciate many github accounts, you must disconnect from github and reconnect with the other account you want to associate)</em> :</p>
+
+            <p>
+                {% for backend, auth_backend in backends_map.items %}
+                    <a class="btn large" href="{% url socialauth_associate_begin auth_backend %}"><img alt="{{ backend }}" src="{{ STATIC_URL }}img/favicon_{{ backend }}.png" /> {{ backend }}</a>
+                {% endfor %}
+                <span>(more to come)</span>
+            </p>
+
+            {% include "accounts/include_about.html" %}
+
+        </section>
+
+    {% endwith %}
+
+</div>
+
+{% endblock accounts_content %}

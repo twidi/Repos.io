@@ -1,0 +1,8 @@
+{{ object.slug }}
+{{ object.slug }}
+{{ object.slug_sort }}
+{{ object.slug_sort }}
+{% if object.name and object.name != object.slug %}
+    {{ object.name }}
+    {{ object.name }}
+{% endif %}

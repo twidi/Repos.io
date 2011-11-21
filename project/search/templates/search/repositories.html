@@ -1,0 +1,123 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends 'search/base.html' %}
+{% load private_tags %}
+{% block title %}Search for {% if query %}"{{ query }}" in {% endif %}repositories on {% endblock %}
+{% block search_suggestions %}
+    {% if query %}
+        <p>
+            Suggestions :
+            {% for search in most_popular|slice:":5" %}
+                <a href="{{ url_search }}?q={{ search.user_query }}">{{ search.user_query }}</a>
+                {% if not forloop.last %} / {% endif %}
+            {% endfor %}
+            <span> - <a href="{{ url_search }}">En voir plus</a></span>
+        </p>
+    {% endif %}
+{% endblock %}
+
+{% block search_content %}
+
+    {% if query %}
+
+        {% if page.paginator.count %}
+            {% prepare_private page.object_list %}
+            <h2>{{ page.paginator.count }} results for <em>{{ query }}</em></h2>
+            <div id="search-options">
+                {% if show_forks %}
+                    <a href=".?q={{query}}{% if sort.key %}&amp;sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% endif %}" class="btn error active">Hide forks</a>
+                {% else %}
+                    <a href=".?q={{query}}{% if sort.key %}&amp;sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% endif %}&amp;show-forks=y" class="btn success">Show forks</a>
+                {% endif %}
+            </div>
+            <table class='zebra-striped condensed-table repositories with_extras'>
+                <thead>
+                    <tr>
+                        {%  with param1_key="q" param1_value=query param2_key="show-forks" param2_value=show_forks %}
+                            {% include "core/repositories/sort_th_name.html" %}
+                            {% include "core/repositories/sort_th_owner.html" %}
+                            {% include "core/repositories/sort_th_updated.html" %}
+                        {% endwith %}
+                        {% include "core/th_extra.html" %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for repository in page.object_list %}
+                        <tr>
+                            <td>
+                                {{ repository.renderer_main|safe }}
+                                {% with score=repository.internal_score max_score=200 ratio=2 %}{% include "core/repositories/score.html" %}{% endwith %}
+                                {{ repository.renderer_description|safe }}
+                            </td>
+                            <td>
+                                {{ repository.renderer_owner|safe }}
+                            </td>
+                            <td>
+                                {{ repository.renderer_updated|safe }}
+                            </td>
+                            {% include "core/repositories/list_extra.html" %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        {%else %}
+            <h2 class="no-results">No results found for <em>{{ query }}</em></h2>
+        {% endif %}
+
+        {% if page.has_previous or page.has_next %}
+            <div>{{ page.render }}</div>
+        {% endif %}
+    {% else %}
+
+        <div class="row">
+
+            <section class="span-one-third">
+                <h3>Most popular</h3>
+                <ul class="unstyled">
+                {% for search in most_popular %}
+                    <li>
+                        <a href="{{ url_search }}?q={{ search.user_query }}">{{ search.user_query }}</a>
+                        <small>/
+                            {% if forloop.first %}searched {{ search.times_seen }} times{% else %}{{ search.times_seen }}{% endif %}
+                        </small>
+                    </li>
+                {% endfor %}
+                </ul>
+            </section>
+
+                <section class="span-one-third">
+                <h3>Most recent</h3>
+                <ul class="unstyled">
+                {% for search in most_recent %}
+                    <li>
+                        <a href="{{ url_search }}?q={{ search.user_query }}">{{ search.user_query }}</a>
+                        <small>/
+                            {% if forloop.first %}searched {{ search.times_seen }} times{% else %}{{ search.times_seen }}{% endif %}
+                        </small>
+                    </li>
+                {% endfor %}
+                </ul>
+            </section>
+
+                <section class="span-one-third">
+                {% if user.is_authenticated %}
+                <h3>Your most recent</h3>
+                <ul class="unstyled">
+                {% for search in user_most_recent %}
+                    <li>
+                        <a href="{{ url_search }}?q={{ search.user_query }}">{{ search.user_query }}</a>
+                        <small>/
+                            {% if forloop.first %}searched {{ search.times_seen }} times{% else %}{{ search.times_seen }}{% endif %}
+                        </small>
+                    </li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+            </section>
+
+        </div>
+
+    {% endif %}
+
+{% endblock %}
+

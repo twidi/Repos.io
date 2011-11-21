@@ -1,0 +1,4 @@
+{% with account=object STATIC_URL=object.haystack_context.STATIC_URL %}
+    {% include "core/accounts/links.html" %}
+{% endwith %}
+

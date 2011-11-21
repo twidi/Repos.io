@@ -1,0 +1,13 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends "core/accounts/base_repositories.html" %}
+{% block title %}Repositories of {{ block.super }}{% endblock %}
+
+{% block repositories_intro %}Here are {{ page.paginator.count }} repositories {% if owner_only %}<strong>owned</strong>{% else %}followed/owned{% endif %} by {{ account.slug }}: <small>(last fetch on {{ account.repositories_modified }})</small>{% endblock %}
+{% block no_repositories %}
+    {% if account.repositories_modified %}
+        {{ account.slug }} doesn't watch/own any repository
+    {% else %}
+        <p>We don't know if {{ account.slug }} watches/owns some repositories, they need to be fetched{% if not user.is_authenticated %} by an authenticated user{% endif %}</p>
+    {% endif %}
+{% endblock %}
+

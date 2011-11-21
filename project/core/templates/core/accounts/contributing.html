@@ -1,0 +1,7 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends "core/accounts/base_repositories.html" %}
+{% block title %}Contributions of {{ block.super }}{% endblock %}
+
+{% block repositories_intro %}Here are {{ page.paginator.count }} repositories to which {{ account.slug }} contributed (but there may be more):{% endblock %}
+{% block no_repositories %}We found no repositories to which {{ account.slug }} contributed !{% endblock %}
+

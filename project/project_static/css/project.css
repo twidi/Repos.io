@@ -1,0 +1,1114 @@
+/* Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license */
+
+/* Topbar's height and a little more */
+html {
+    background: #111 url(../img/background.jpg) center 40px repeat-y;
+}
+body {
+    padding-top: 40px;
+    background: transparent;
+}
+body.progress {
+    cursor: progress;
+}
+
+#boverlay {
+    background: rgba(0, 0, 0, 0.2);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10500;
+    display: none;
+    cursor: wait;
+}
+
+#content {
+    margin: 20px -20px;
+    padding: 20px;
+    background-color: white;
+    -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+}
+
+#content.with_messages {
+    margin-top: 0;
+}
+
+small {
+    color: #bfbfbf;
+    font-size: smaller;
+}
+
+.reset-button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  color: black;
+  font-size: 12px;
+  line-height: 12px;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}
+
+
+.label {
+    padding-bottom: 1px;
+}
+a.label:hover {
+    color: white;
+}
+ul.tags li {
+    display: inline-block;
+}
+ul.tags li small {
+    color: #444;
+    font-family: serif;
+    font-size: 8px;
+}
+ul.tags li a {
+    color: white;
+}
+ul.tags li form {
+    display: inline-block;
+}
+ul.tags li form input[type=submit] {
+    width: 13px;
+    height: 14px;
+    overflow: hidden;
+    background: white;
+    color: black;
+    display: inline-block;
+    font-size: 10px;
+    padding-left: 2px;
+    -webkit-border-radius: 7px;
+    -moz-border-radius: 7px;
+    border-radius: 7px;
+}
+ul#tags-deletable.tags li form input[type=submit] {
+    padding-left: 0;
+}
+ul.tags.small .label {
+    font-size: 8px;
+    line-height: 13px;
+}
+ul.tags.small li form input[type=submit] {
+    height: 11px;
+    width: 11px;
+    font-size: 8px;
+    margin-left: 1px;
+    margin-right: -1px;
+    padding-left: 1px;
+}
+ul#tags-deletable.tags.small li form input[type=submit] {
+    padding-left: 1px;
+}
+.tags .label.current {
+    border: 2px solid black;
+}
+
+.helptext {
+  font-size: 11px;
+  line-height: 18px;
+  color: #bfbfbf;
+}
+
+.btn img {
+    vertical-align: middle;
+    margin-left: -5px;
+}
+
+.rel_popover div, .rel_popover_extra div {
+    display: none;
+}
+
+ul.messages {
+    margin: 20px -20px 15px;
+}
+ul.messages .alert-message {
+    margin-bottom: 5px;
+}
+
+.pagination ul {
+    display: table;
+    margin: 0 auto;
+    float: none;
+}
+.pagination .active a, .pagination .disabled a {
+    cursor: default;
+}
+
+section.row {
+    margin-bottom: 18px;
+}
+
+.nav .dropdown li img {
+    vertical-align: middle;
+}
+
+.modal .modal-header {
+    background: #222;
+    color: #fff;
+    border: solid black 1px;
+    border-bottom: none;
+    -webkit-border-radius: 5px 5px 0 0;
+    -moz-border-radius: 5px 5px 0 0;
+    border-radius: 5px 5px 0 0;
+    -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+.modal .modal-header h3, .modal .modal-header a {
+    color: #fff;
+}
+
+/* use small color in tables */
+td small a {
+    color: #999;
+}
+td small a:hover {
+    color: #999;
+}
+
+/* Tweak default table style */
+.zebra-striped .headerSortUp, .zebra-striped .headerSortDown {
+    -webkit-border-radius: 3px 3px 0 0;
+    -moz-border-radius: 3px 3px 0 0;
+    border-radius: 3px 3px 0 0;
+}
+table tbody tr:last-child td {
+    border-bottom: 1px solid #DDDDDD;
+}
+
+/* Do not visually "select" elements in topbar's sub-menu when their "parent" is selected */
+.topbar li.active li a {
+    background-color: transparent;
+}
+.topbar li.active li.active a {
+    background-color: rgba(0, 0, 0, 0.5)
+}
+.topbar form {
+    left: 50%;
+    width: 350px;
+    position: absolute;
+    margin-left: -175px;
+    float: none;
+}
+.topbar li a strong {
+    display: inline;
+}
+
+.main_header {
+    background: #f5f5f5;
+    margin: -20px -20px 20px;
+    padding: 20px 20px 10px;
+    border-bottom: 1px solid #DDDDDD;
+    -webkit-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    -moz-box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    -webkit-border-radius: 6px 6px 0 0;
+    -moz-border-radius: 6px 6px 0 0;
+    border-radius: 6px 6px 0 0;
+}
+.main_header h1:last-child {
+    margin-bottom: 10px;
+}
+
+/* first level section */
+#content > section > header {
+    padding-left: 0;
+    padding-right: 0;
+}
+#content > section > header img {
+    vertical-align: middle;
+}
+#content > section > header > div > a > img {
+    float: left;
+    margin-right: 10px;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+}
+#content > section > header .score {
+    margin: 2px 0;
+}
+#content > section > header h1 {
+    margin-bottom: 0;
+    margin-left: 90px;
+}
+#content > section > header h1~h2 {
+    line-height: 16px;
+    margin: 0 0 8px 90px;
+}
+#content > section > header h1~p {
+    margin: 3px 3px 3px 90px;
+}
+#content > section > header .tags {
+    margin-left: 90px;
+}
+
+/* Fetch date information (buttons on the right) */
+.fetch-date {
+    display: block;
+}
+.fetch-form {
+    margin-bottom: 10px;
+}
+.fetch-form button {
+    display: block;
+    width: 100%;
+    text-align: left;
+}
+.fetch-form button em {
+    font-size: smaller;
+}
+.fetch-form button span {
+    display: block;
+    font-size: smaller;
+    text-align: left;
+}
+
+/* Use links in table's header to sort */
+table.zebra-striped th.sortable.header {
+    position: relative;
+    padding: 0;
+    cursor: default;
+}
+table.zebra-striped th.sortable.header a {
+    display: block;
+    color: inherit;
+    margin: 0;
+    padding: 9px 10px;
+}
+table.zebra-striped th.sortable.header:after {
+    border-width: 4px 4px 0;
+    position: relative;
+    top: -15px;
+    right: 10px;
+    margin: -4px 0 0;
+}
+table.zebra-striped th.sortable.header.reverse:after {
+    border-width: 0 4px 4px;
+}
+table.zebra-striped th.sortable.header.headerSortDown:after {
+    border-width: 0 4px 4px;
+}
+
+/* Color arrows in tables */
+table.zebra-striped th.blue.header:after {
+  border-color: #049cdb transparent;
+}
+table.zebra-striped th.green.header:after {
+  border-color: #46a546 transparent;
+}
+table.zebra-striped th.red.header:after {
+  border-color: #9d261d transparent;
+}
+table.zebra-striped th.yellow.header:after {
+  border-color: #ffc40d transparent;
+}
+table.zebra-striped th.orange.header:after {
+  border-color: #f89406 transparent;
+}
+table.zebra-striped th.purple.header:after {
+  border-color: #7a43b6 transparent;
+}
+
+body#search-repositories h2 {
+    float: left;
+}
+body#search-repositories h2.no-results {
+    float: none;
+}
+#search-options {
+    float: right;
+}
+body#search-repositories table.repositories,
+body#search-accounts table.accounts {
+    margin-top: 15px;
+}
+
+/* Tables with an extra div info in the last column */
+table.with_extras th:last-child {
+    text-align: right;
+    min-width: 55px;
+}
+table.with_extras td:last-child {
+    border-left: #ddd dashed 1px;
+}
+table.with_extras td:last-child {
+    opacity: 0.5;
+}
+table.with_extras tr:hover td:last-child {
+    opacity: 1;
+}
+table.with_extras td.full:last-child > div {
+    position: relative;
+}
+table.with_extras td.full:last-child a.btn {
+    font-size: 11px;
+    padding: 2px 6px;
+    display: none;
+    position: absolute;
+    right: -32px;
+    top: -3px;
+}
+table.with_extras tr:hover td.full:last-child a.btn {
+    display: inline-block;
+}
+table.with_extras td.empty:last-child {
+    vertical-align: middle;
+    text-align: center;
+}
+body#dashboard-home table.with_extras td.empty:last-child {
+    width: 19px;
+}
+table.with_extras td.empty:last-child a {
+    opacity: 0.5;
+}
+table.with_extras td.empty:last-child:hover a {
+    opacity: 1;
+}
+body#dashboard-home table.with_extras td.empty:last-child a {
+    padding: 0 5px 1px 6px;
+    font-size: 10px;
+    line-height: 15px;
+    vertical-align: middle;
+}
+table.with_extras div.extra {
+    margin-top: 0;
+}
+table.with_extras div.extra .rel_popover_extra {
+    float: right;
+    margin-left: 5px;
+}
+body#dashboard-home table.with_extras div.extra .rel_popover_extra {
+    float: none;
+    margin-left: 2px;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 13px;
+}
+table.with_extras div.extra img {
+    margin: 0 !important;
+}
+table.with_extras div.extra .special-tags {
+    margin: 0;
+    max-width: 70px;
+}
+table.with_extras div.extra.with_note .special-tags,
+table.with_extras div.extra.with_tags .special-tags {
+    margin-right: 21px;
+}
+table.with_extras div.extra .special-tags .label {
+    font-size: 8px;
+    padding: 1px 2px;
+    line-height: 11px;
+    cursor: default;
+    display: inline-block;
+}
+div.extra_container.with_note.with_tags .tags {
+    padding-bottom: 8px;
+    margin-top: -5px;
+    margin-bottom: 8px;
+    border-bottom: solid #bfbfbf 1px;
+}
+div.extra_container.with_note hr {
+    margin-bottom: 5px;
+}
+div.extra_container.with_note hr+em {
+    font-size: smaller;
+}
+/* Scores */
+.score {
+    background-color: #e0e0e0;
+    height: 1px;
+    overflow: hidden;
+}
+table.repositories .score,
+table.accounts .score {
+    position: relative;
+    margin-left: 36px;
+}
+table.repositories .score {
+    top: 3px;
+    margin-bottom: 10px;
+}
+table.accounts .score {
+    top: -16px;
+}
+
+
+/* Style repositories table */
+table.repositories blockquote {
+    margin: 5px 26px 0 0;
+}
+table.repositories td:first-child img {
+    float: left;
+    margin-right: 5px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+}
+table.repositories td:first-child blockquote {
+    margin-left: 37px;
+}
+table.repositories td:nth-child(2) {
+    white-space: nowrap;
+}
+table.repositories td:nth-child(2) img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
+table.repositories td:nth-child(3) {
+    white-space: nowrap;
+}
+table.repositories tr.subfork td:first-child div {
+    border-left: #ddd dashed 1px;
+    padding-left: 4px;
+}
+table.repositories tr.subfork.level-1 td:first-child {
+    padding-left: 32px;
+}
+table.repositories tr.subfork.level-2 td:first-child {
+    padding-left: 61px;
+}
+table.repositories tr.subfork.level-3 td:first-child {
+    padding-left: 87px;
+}
+table.repositories tr.subfork.level-4 td:first-child {
+    padding-left: 109px;
+}
+table.repositories tr.subfork.level-5 td:first-child {
+    padding-left: 128px;
+}
+table.repositories tr.subfork.level-6 td:first-child {
+    padding-left: 144px;
+}
+table.repositories tr.subfork.level-7 td:first-child {
+    padding-left: 158px;
+}
+table.repositories tr.subfork.level-8 td:first-child {
+    padding-left: 171px;
+}
+table.repositories tr.subfork.level-9 td:first-child {
+    padding-left: 182px;
+}
+table.repositories tr.subfork.level-10 td:first-child {
+    padding-left: 192px;
+}
+table.repositories tr.subfork.level-11 td:first-child {
+    padding-left: 200px;
+}
+table.repositories tr.subfork.level-12 td:first-child {
+    padding-left: 206px;
+}
+table.repositories tr.subfork.level-13 td:first-child {
+    padding-left: 212px;
+}
+table.repositories tr.subfork.level-14 td:first-child {
+    padding-left: 218px;
+}
+table.repositories tr.subfork.level-15 td:first-child {
+    padding-left: 224px;
+}
+table.repositories tr.subfork.level-16 td:first-child {
+    padding-left: 228px;
+}
+table.repositories tr.subfork.level-17 td:first-child {
+    padding-left: 232px;
+}
+table.repositories tr.subfork.level-18 td:first-child {
+    padding-left: 236px;
+}
+table.repositories tr.subfork.level-19 td:first-child {
+    padding-left: 240px;
+}
+table.repositories tr.subfork.level-20 td:first-child {
+    padding-left: 244px;
+}
+table.repositories tr.subfork.level-21 td:first-child {
+    padding-left: 248px;
+}
+table.repositories tr.subfork.level-22 td:first-child {
+    padding-left: 251px;
+}
+table.repositories tr.subfork.level-23 td:first-child {
+    padding-left: 254px;
+}
+table.repositories tr.subfork.level-24 td:first-child {
+    padding-left: 257px;
+}
+table.repositories tr.subfork.level-25 td:first-child {
+    padding-left: 260px;
+}
+table.repositories tr.subfork.level-26 td:first-child {
+    padding-left: 262px;
+}
+table.repositories tr.subfork.level-27 td:first-child {
+    padding-left: 264px;
+}
+table.repositories tr.subfork.level-28 td:first-child {
+    padding-left: 266px;
+}
+table.repositories tr.subfork.level-29 td:first-child {
+    padding-left: 268px;
+}
+table.repositories tr.subfork.level-30 td:first-child {
+    padding-left: 270px;
+}
+
+/* Style accounts table */
+table.accounts {
+    width: auto;
+}
+table.accounts td:nth-child(2),
+table.accounts.with_owner td:nth-child(3) {
+    font-weight: bold;
+    text-align: center;
+    font-size: 24px;
+}
+table.accounts td:first-child {
+    height: 30px;
+}
+table.accounts td:first-child img {
+    vertical-align: text-top;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    margin-top: 2px;
+}
+table.accounts td:first-child .tags {
+    margin-left: 36px;
+    position: relative;
+    top: -16px;
+    margin-bottom: -18px;
+}
+table.accounts td:first-child .tags .label {
+    font-size: 8px;
+}
+
+/* Home */
+body#home .row section:first-child {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background : #f5f5f5;
+}
+body#home .row section:first-child h1 {
+    text-align: center;
+}
+body#home .row section:first-child hr {
+    margin: 10px 0;
+}
+body#home .row section:first-child p {
+    margin-left: 10px;
+    margin-right: 10px;
+    line-height: 15px;
+}
+body#home .row section:first-child table {
+    width: 90%;
+    margin: auto;
+}
+body#home .row section:first-child p.with-btn {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+body#home table tr:first-child td {
+    border-top: 1px solid #DDDDDD;
+}
+body#home table td:first-child img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
+body#home h2 {
+    position: relative;
+}
+body#home h2 a {
+    position: absolute;
+    bottom: 7px;
+    right: 2px;
+    font-style: italic;
+    font-size: 12px;
+    line-height: 12px;
+    font-weight: normal;
+}
+
+/* Login page */
+body#accounts-login section {
+    width: 460px;
+    margin: 50px auto 30px;
+    padding: 30px 50px;
+    border-top: 1px solid #DDDDDD;
+    border-bottom: 1px solid #DDDDDD;
+}
+body#accounts-login p:nth-child(2) {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+body#accounts-login p:last-child {
+    margin-bottom: 0;
+}
+body#accounts-login a.btn {
+    margin-right: 10px;
+}
+
+/* Manage page */
+body#accounts-manage .row:nth-child(2) section:first-child table tr:first-child td {
+    border-top: 1px solid #DDDDDD;
+}
+body#accounts-manage table td:first-child img {
+    vertical-align: middle;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+}
+body#accounts-manage .row:nth-child(2) section:nth-child(2) p:nth-child(3) {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+body#accounts-manage .row:nth-child(2) section:nth-child(2)  a.btn {
+    margin-right: 10px;
+}
+
+/* Account home */
+body#user-home dd {
+    margin-bottom: 20px;
+}
+body#user-home .row:last-child section:last-child {
+    text-align: center;
+}
+
+/* Repository home */
+body#repository-home dd {
+    margin-bottom: 20px;
+}
+body#repository-home #repository-main section:last-child {
+    text-align: center;
+}
+body#repository-home section.readme pre {
+    line-height: 1.1em;
+    font-size: 11px;
+}
+
+/* Account repositories */
+body#user-repositories p.row span:last-child {
+    text-align: right;
+}
+
+/* Notes */
+
+.sticky {
+    -webkit-box-shadow: #DDD 0px 1px 2px;
+    position: relative;
+    background-color: #FFFFB7;
+    border-color: #DEE184;
+    text-align: center;
+    margin: 25px 0px;
+    padding: 15px;
+    -webkit-box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
+    -moz-box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
+    box-shadow: 0px 1px 3px rgba(0,0,0,0.25);
+}
+.sticky.taped:after {
+    display: block;
+    content: "";
+    position: absolute;
+    width: 110px;
+    height: 30px;
+    top: -21px;
+    left: 2400px;
+    border: 1px solid #fff;
+    background: rgba(254, 254, 254, .6);
+    -webkit-box-shadow: 0px 0 3px rgba(0,0,0,0.1);
+    -moz-box-shadow: 0px 0 3px rgba(0,0,0,0.1);
+    box-shadow: 0px 0 3px rgba(0,0,0,0.1);
+    -webkit-transform: rotate(2deg);
+    -moz-transform: rotate(2deg);
+    -o-transform: rotate(2deg);
+    transform: rotate(2deg);
+}
+
+/* Private part */
+#private {
+    margin-top: -14px;
+    margin-bottom: 20px;
+    text-align: left;
+    padding-bottom: 0;
+}
+#private:hover, #private.open {
+    padding-bottom: 15px;
+}
+#private > div {
+    overflow: auto;
+}
+#private > div > div {
+    display: none;
+    float: left;
+    margin-left: 20px;
+}
+#private:hover > div > div, #private.open > div > div {
+    display: block;
+}
+#private.open #note-part > div > div {
+    max-height: 200px;
+    overflow: auto;
+}
+#private.open:hover #note-part > div > div {
+    max-height: none;
+}
+#private > div > div > a, #private > div > div > a small {
+    color: #a28514;
+}
+#private #note-part {
+    margin-left: 0;
+    width: 610px;
+    padding-bottom: 10px;
+    border-right: solid 1px #F8E498;
+}
+#private #note-part > div {
+    margin-right: 15px;
+}
+#private #note-part.with-note > a {
+    position: absolute;
+    top: -2px;
+    left: 4px;
+}
+#private #note-part.with-note > a small {
+    color: #F8E498;
+}
+#private:hover #note-part.with-note > a small {
+    color: #a28514;
+}
+#private #note-part > div:first-child >  p:last-child {
+    margin-bottom: 0;
+}
+#private #tags-part {
+    width: 264px;
+    padding-left: 15px;
+    border-left: solid 1px #F8E498;
+    padding-bottom: 10px;
+    margin-left: -1px;
+}
+#private #tags-part ul {
+    margin-bottom: 0;
+}
+#private #tags-part.with-tags > a {
+    position: absolute;
+    top: -2px;
+    right: 4px;
+}
+#private #tags-part.with-tags > a small {
+    color: #F8E498;
+}
+#private:hover #tags-part.with-tags > a small {
+    color: #a28514;
+}
+#private #specific-part {
+    border-top: solid 1px #F8E498;
+    float: none;
+    margin: 0;
+    padding-top: 10px;
+    clear: both;
+    font-size: smaller;
+}
+#private #specific-part ul {
+    margin-bottom: 0;
+}
+#private #specific-part a  {
+    color: #a28514;
+}
+#private.sticky.taped:after {
+    left: 415px;
+    content: "About you and this page";
+    text-align: center;
+    font-size: smaller;
+    color: #bfbfbf;
+    line-height: 15px;
+}
+#private.sticky.taped.for-user:after {
+    content: "About you and this account";
+}
+#private.sticky.taped.for-repository:after {
+    content: "About you and this project";
+}
+
+/* Extra editor */
+#extra-editor {
+    width: 830px;
+    margin-left: -410px;
+}
+#extra-editor .messages {
+    margin: 0 0 10px;
+}
+#extra-editor .messages .alert-message .close {
+    margin-top: 1px;
+}
+#extra-editor .modal-header h3 a {
+    font-style: italic;
+}
+#extra-editor .modal-body {
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+#extra-editor #note-form {
+    margin-left: 10px;
+    display: inline-block;
+    width: 440px;
+    vertical-align: top;
+    padding-right: 20px;
+    border-right: solid #eee 1px;
+    margin-bottom: -6px;
+    padding-bottom: 10px;
+}
+#extra-editor #tags-form {
+    padding-left: 20px;
+    border-left: solid #eee 1px;
+    display: inline-block;
+    width: 300px;
+    vertical-align: top;
+    margin-left: -1px;
+}
+#extra-editor .modal-body > div > header h3 {
+    display: inline-block;
+    vertical-align: middle;
+}
+#extra-editor .modal-body > div > header form {
+    display: inline-block;
+    margin-left: 10px;
+    font-size: 12px;
+    color: #bfbfbf;
+    vertical-align: middle;
+}
+#extra-editor .modal-body > div > header input[type=submit] {
+    color: #bfbfbf;
+    font-size: 12px;
+    text-decoration: underline;
+    padding: 0 2px;
+}
+#extra-editor #note-form form.form-stacked {
+    padding-left: 0;
+}
+#extra-editor #note-form form.form-stacked label[for=id_content] {
+    display: none;
+}
+#extra-editor #note-form form.form-stacked textarea {
+    width: 100%;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+#extra-editor #note-form form.form-stacked input[type=submit] {
+    float: right;
+    margin-left: 10px;
+    margin-top: -25px;
+}
+#extra-editor #tags-form label {
+    width: 50px;
+    padding-right: 5px;
+}
+#extra-editor #tags-form > div  {
+    max-height: 305px;
+    overflow: auto;
+    margin-bottom: 18px;
+}
+#extra-editor #tags-form > div > p {
+    margin-left: 55px;
+    font-style: italic;
+}
+#extra-editor #tags-form > div label {
+    padding-top: 3px;
+}
+#extra-editor #tags-form > div ul:last-child {
+    margin-bottom: 0;
+}
+#extra-editor #tags-form ul {
+    margin-left: 55px;
+}
+#extra-editor #tags-form ul li.label {
+    margin: 2px 0;
+}
+#extra-editor #tags-form ul {
+    margin-bottom: 0;
+}
+#extra-editor #tags-form ul#tags-special li.label, #extra-editor #tags-form ul#tags-addable li.label{
+    opacity: 0.5;
+}
+#extra-editor #tags-form ul li.label:hover {
+    opacity: 1 !important;
+}
+#extra-editor #tags-form .error {
+    color: #b94a48;
+    margin-left: 55px;
+    display: none;
+}
+#extra-editor.ajaxified {
+    display: none;
+}
+#extra-editor.ajaxified .modal-footer .btn small {
+    display: none;
+}
+#extra-ajax-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  border-radius: 6px;
+  color: white;
+  font-size: 48px;
+  padding-top: 250px;
+  text-align: center;
+  display: none;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 12000;
+}
+
+/* List filter */
+form#list-filter {
+    display: inline-block;
+    margin-right: 15px;
+}
+form#list-filter:last-child {
+    margin-right: 0;
+}
+
+/* dashboard accounts */
+#dashboard-accounts {
+    border-top: solid 1px #ddd;
+    padding-top: 20px;
+    margin-bottom: 10px;
+}
+#dashboard-accounts li {
+    display: inline-block;
+    margin-right: 15px;
+}
+#dashboard-accounts li img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
+#dashboard-accounts li:last-child a {
+    font-style: italic;
+    font-size: smaller;
+    color: #bfbfbf;
+}
+#dashboard-accounts:hover li:last-child a {
+    color: #999
+}
+#dashboard-accounts li:last-child a:hover {
+    color: #00438A
+}
+
+/* dashboard home */
+body#dashboard-home #content > div > section h2 {
+    font-size: 16px;
+}
+body#dashboard-home #content > div > section h3 {
+    font-size: 13px;
+}
+body#dashboard-home #content > div > section > a {
+    display: block;
+    text-align: right;
+    margin-top: -18px;
+    font-style: italic;
+    font-size: smaller;
+    margin-bottom: 8px;
+    color: #bfbfbf;
+}
+body#dashboard-home #content > div > section:hover > a {
+    color: #999
+}
+body#dashboard-home #content > div > section > a:hover {
+    color: #00438A
+}
+#d-tags > a {
+    text-align: left !important;
+    margin-top: -10px !important;
+}
+#d-notes table tr:first-child td {
+    border-top: 1px solid #DDDDDD;
+}
+#d-notes table td:first-child img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
+#d-notes table td:last-child div.rel_popover {
+    height: 16px;
+}
+body#dashboard-home .note_container hr {
+    margin-bottom: 5px;
+}
+body#dashboard-home .note_container hr+em {
+    font-size: smaller;
+}
+#d-people table tr:first-child td,
+#d-repositories table tr:first-child td {
+    border-top: 1px solid #DDDDDD;
+}
+#d-people table td:first-child img,
+#d-repositories table td:first-child img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
+/* Dashboard tags */
+body#dashboard-tags #content > .tags {
+    display: inline-block;
+}
+/* Dashboard notes */
+body#dashboard-notes table.repositories td:nth-child(4) {
+    white-space: nowrap;
+}
+/* Dashboard followers and following */
+body#dashboard-following table.accounts td.accounts {
+    border-left: #ddd dashed 1px;
+}
+body#dashboard-following table.accounts td.accounts > div,
+body#dashboard-followers table.accounts td.accounts > div {
+    white-space: nowrap;
+}
+body#dashboard-following table.accounts td.accounts > div img,
+body#dashboard-followers table.accounts td.accounts > div img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
+/* Dashboard repositories */
+body#dashboard-repositories table.repositories td.accounts {
+    border-left: #ddd dashed 1px;
+}
+body#dashboard-repositories table.repositories td.accounts > div {
+    white-space: nowrap;
+}
+body#dashboard-repositories table.repositories td.accounts > div img {
+    vertical-align: middle;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}

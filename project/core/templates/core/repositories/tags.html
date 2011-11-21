@@ -1,0 +1,2 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% url search as url_search %}{% with tags=repository.all_public_tags tag_link=url_search %}{% include "core/tags.html" %}{% endwith %}

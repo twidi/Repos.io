@@ -1,0 +1,89 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends "core/accounts/base.html" %}
+{% load private_tags %}
+{% load reposio_core %}
+{% block account_content %}
+
+    {% if default_count or page.paginator.count %}
+        {% prepare_private page.object_list %}
+
+        <div>
+            <form id="list-filter" method="get" action=".">
+                <input type="text" name="q" class="medium" value="{{ query }}" />
+                <button class="btn" type="submit">Filter</button>
+                {% if sort.key %}<input type="hidden" name="sort_by" value="{% if sort.reverse %}-{% endif %}{{ sort.key }}" />{% endif %}
+                {% if owner_only %}<input type="hidden" name="owner-only" value="y" />{% endif %}
+                {% if hide_forks %}<input type="hidden" name="hide-forks" value="y" />{% endif %}
+                {% if distinct %}<input type="hidden" name="distinct" value="y" />{% endif %}
+            </form>
+            {% if account.backend|supports:'repository_owner' %}
+                {% if owner_only %}
+                    <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if hide_forks %}&amp;hide-forks=y{% endif %}{% if distinct %}&amp;distinct=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn error active">Show ones from all owners</a>
+                {% else %}
+                    <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}&amp;owner-only=y{% if hide_forks %}&amp;hide-forks=y{% endif %}{% if distinct %}&amp;distinct=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn success">See only ones owned by {{ account.slug }}</a>
+                {% endif %}
+            {% endif %}
+            {% if account.backend|supports:'repository_parent_fork' %}
+                {% if hide_forks %}
+                    <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}{% if distinct %}&amp;distinct=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn error active">Show forks</a>
+                {% else %}
+                    <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}&amp;hide-forks=y{% if distinct %}&amp;distinct=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn success">Hide forks</a>
+                {% endif %}
+            {% endif %}
+            {% if distinct %}
+                <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}{% if hide_forks %}&amp;hide-forks=y{% endif %}{% if query %}&amp;q={{ query }}{% endif %}" class="btn error active">Show duplicates</a>
+            {% else %}
+                <a href=".?sort_by={% if sort.reverse %}-{% endif %}{{ sort.key }}{% if owner_only %}&amp;owner-only=y{% endif %}{% if hide_forks %}&amp;hide-forks=y{% endif %}&amp;distinct=y{% if query %}&amp;q={{ query }}{% endif %}" class="btn success">Hide duplicates</a>
+            {% endif %}
+        </div>
+
+        {% if page.paginator.count %}
+
+            <p>{% block repositories_intro %}{% endblock %}</p>
+
+            <table class='zebra-striped condensed-table repositories{% if user.id %} with_extras{% endif %}'>
+                <thead>
+                    <tr>
+                        {% with param1_key="owner-only" param1_value=owner_only param2_key="hide-forks" param2_value=hide_forks param3_key="distinct" param3_value=distinct param4_key="q" param4_value=query %}
+                            {% include "core/repositories/sort_th_name.html" %}
+                            {% if account.backend|supports:'repository_owner' and not owner_only  %}
+                                {% include "core/repositories/sort_th_owner.html" %}
+                            {% endif %}
+                            {% include "core/repositories/sort_th_updated.html" %}
+                        {% endwith %}
+                        {% include "core/th_extra.html" %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for repository in page.object_list %}
+                    <tr>
+                        <td>
+                            {% include "core/repositories/main_repository_cell.html" %}
+                        </td>
+                        {% if account.backend|supports:'repository_owner' and not owner_only  %}
+                            <td>
+                                {% include "core/accounts/owner_cell.html" %}
+                            </td>
+                        {% endif %}
+                        <td>
+                            {% include "core/repositories/date_modified_cell.html" %}
+                        </td>
+                        {% include "core/repositories/list_extra.html" %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if page.has_previous or page.has_next %}
+                <div>{{ page.render }}</div>
+            {% endif %}
+
+        {% else %}
+            <p>No results found !</p>
+        {% endif %}
+
+    {% else %}
+        <p>{% block no_repositories %}{% endblock %}</p>
+    {% endif %}
+
+{% endblock account_content %}

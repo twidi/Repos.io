@@ -1,0 +1,53 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends "core/repositories/base.html" %}
+{% load private_tags %}
+{% block title %}Contributors of {{ block.super }}{% endblock %}
+{% block repository_content %}
+
+    {% if repository.contributors_modified %}
+
+        {% if page.paginator.count %}
+            {% prepare_private page.object_list %}
+
+            <p>{{ repository.slug }} (by {{ repository.owner.slug }}) has {{ repository.contributors_count }} contributors : <small>(last fetch on {{ repository.contributors_modified }})</small></p>
+
+            <table class='zebra-stripe condensed-tabled accounts{% if user.id %} with_extras{% endif %} with_owner'>
+                <thead>
+                    <tr>
+                        {% include "core/accounts/sort_th_name.html"%}
+                        <th class="blue">Owner</th>
+                        <th class="purple">Follower</th>
+                        <th class="green">Links</th>
+                        {% include "core/th_extra.html" %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for account in page.object_list %}
+                    <tr>
+                        <td>
+                            {% include "core/accounts/main_account_cell.html" %}
+                        </td>
+                        {% if account.id == repository.owner.id %}<td title="{{ contributor.slug }} is the owner of {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
+                        {% if account.id in repository.followers_ids %}<td title="{{ contributor.slug }} follows {{ repository.project }} !">&check;</td>{% else %}<td></td>{% endif %}
+                        <td>
+                            {% include "core/accounts/links.html" %}
+                        </td>
+                        {% include "core/accounts/list_extra.html" %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if page.has_previous or page.has_next %}
+                <div>{{ page.render }}</div>
+            {% endif %}
+
+        {% else %}
+            <p>{{ repository.slug }} doesn't have any contributor, which is weird !</p>
+        {% endif %}
+
+    {% else %}
+    <p>{{ repository.slug }} has {{ repository.official_contributors_count }} contributors, but they need to be fetched{% if not user.is_authenticated %} by an authenticated user{% endif %}</p>
+    {% endif %}
+
+{% endblock repository_content %}

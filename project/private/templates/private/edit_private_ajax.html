@@ -1,0 +1,11 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% load private_tags %}
+<div>
+    {% include "messages.html" %}
+    {% if not want_close %}
+        {# the editor #}
+        {% edit_private edit_extra %}
+    {% else %}
+        {% include "private/edit_private_ajax_onclose.html" %}
+    {% endif %}
+</div>

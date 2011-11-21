@@ -1,0 +1,34 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+<table class='zebra-striped condensed-table repositories with_extras'>
+    <thead>
+        <tr>
+            {% with param1_key="tag" param1_value=tag_filter %}
+                {% include "core/repositories/sort_th_name.html" %}
+                {% include "core/repositories/sort_th_owner.html" %}
+                {% include "core/repositories/sort_th_updated.html" %}
+            {% endwith %}
+            <th>Your tags</th>
+            {% include "core/th_extra.html" %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for repository in page.object_list %}
+        <tr>
+            <td>
+                {% include "core/repositories/main_repository_cell.html" %}
+            </td>
+            <td>
+                {% include "core/accounts/owner_cell.html" %}
+            </td>
+            <td>
+                {% include "core/repositories/date_modified_cell.html" %}
+            </td>
+            <td>
+                {% with obj_type="repositories" tags=repository.current_user_tags with_flags=1 %}{% include "dashboard/include_tags.html" %}{% endwith %}
+            </td>
+            {% include "core/repositories/list_extra.html" %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+

@@ -1,0 +1,80 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends "core/base.html" %}
+{% load reposio_core %}
+{% block title %}"{{ account.slug }}" @{{account.backend }} on {% endblock %}
+{% block core_content %}
+    <section id="user">
+        <header class="row main_header">
+            <div class="span-two-thirds">
+                {% include "core/accounts/avatar_big.html" %}
+                <h1>
+                    {% include "core/accounts/link.html" %}
+                    {% if account.deleted %}{% include "core/deleted.html" with type_object="user" %}{% endif %}
+                </h1>
+                {% with max_score=250 ratio=2 %}{% include "core/accounts/score.html" %}{% endwith %}
+                <p>
+                    {% if account.name and account.name != account.slug %}{{ account.name|default:account.slug }}{% endif %}
+                    {% include "core/accounts/links.html" %}
+                </p>
+                {% if account.last_fetch %}<p>On {{ account.backend }} since {{ account.official_created }}.</p>{% endif %}
+                {% with tag_style="success" %}{% include "core/accounts/tags.html" %}{% endwith %}
+            </div>
+            <div class="span-one-third">
+                {% if not account.deleted %}
+                    {% include "core/accounts/fetch_form.html" %}{% with for_related=1 %}{% include "core/accounts/fetch_form.html" %}{% endwith %}
+                {% endif %}
+            </div>
+        </header>
+
+        {% if request.user and request.user.is_authenticated %}
+            {% include "private/account.html" with object=account %}
+        {% endif %}
+
+        {% if account.last_fetch %}
+            <ul class="tabs">
+                <li{% if subsection == 'home' %} class="active"{% endif %}><a href="{{ account.get_absolute_url }}">Home</a></li>
+
+                {% if not account.deleted %}
+
+                    {% if account.backend|supports:'user_followers' %}
+                        {% if account.followers_modified or subsection == 'followers' %}
+                            <li{% if subsection == 'followers' %} class="active"{% endif %}>
+                                <a href="{{ account.get_followers_url }}">{{ account.followers_count|default:0 }}{% if not account.followers_modified %}?{% endif %} followers</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+
+                    {% if account.backend|supports:'user_following' %}
+                        {% if account.following_modified or subsection == 'following' %}
+                            <li{% if subsection == 'following' %} class="active"{% endif %}>
+                                <a href="{{ account.get_following_url }}">{{ account.following_count|default:0 }}{% if not account.following_modified %}?{% endif %} following</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+
+                    {% if account.backend|supports:'user_repositories' %}
+                        {% if account.repositories_modified or subsection == 'repositories' %}
+                            <li{% if subsection == 'repositories' %} class="active"{% endif %}>
+                                <a href="{{ account.get_repositories_url }}">{% if account.repositories_modified %}{{ account.repositories_count|default:0 }}{% else %}??{% endif %} repositories</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+
+                    {% if account.backend|supports:'repository_contributors' %}
+                        {% if account.contributing_count or account.contributing_count == 0 or subsection == 'contributing' %}
+                            <li{% if subsection == 'contributing' %} class="active"{% endif %}>
+                                <a href="{{ account.get_contributing_url }}">{{ account.contributing_count|default:0 }} contributed repositories</a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+
+                {% endif %}
+
+            </ul>
+
+            {% block account_content %}{% endblock %}
+        {% else %}
+            <div class="alert-message warning"><p>This account needs to be fetched once from {{ account.backend }} before display.</p></div>
+            {% endif %}
+    </section>
+{% endblock %}

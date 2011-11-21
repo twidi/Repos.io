@@ -1,0 +1,88 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% load private_tags %}<!DOCTYPE html>
+    <html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>{% block title %}{% endblock %}Repos.io</title>
+    <meta name="description" content="Organize your owned/watched repositories from github (and soon bitbucked, google code) : https://github.com/twidi/Repos.io/" />
+    <meta name="author" content="Stephane Angel / Twidi" />
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.min.css?1.4" />
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/project.css" />
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.5.2.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.color.js"></script>
+    {#<script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap/bootstrap-modal.js?1.4"></script>#}
+    <script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap/bootstrap-buttons.js?1.4"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap/bootstrap-alerts.js?1.4"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap/bootstrap-dropdown.js?1.4"></script>
+    {#<script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap/bootstrap-scrollspy.js?1.4"></script>#}
+    {#<script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap/bootstrap-tabs.js?1.4"></script>#}
+    <script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap/bootstrap-twipsy.js?1.4"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/bootstrap/bootstrap-popover.js?1.4"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/project.js"></script>
+    {% block form_media %}{% endblock %}
+</head>
+
+<body id="{% block body_id %}{% if section %}{{ section }}{% if subsection %}-{{ subsection }}{% endif %}{% else %}body{% endif %}{% endblock %}">
+
+<div class="topbar">
+    <div class="topbar-inner">
+        <div class="container-fluid">
+
+            <h3><a href="/">Repos.io</a></h3>
+
+            <ul class="nav">
+                <li{% if section == 'home' %} class="active"{% endif %}><a href="/">Home</a></li>
+                <li><a href="http://github.com/twidi/Repos.io/">About</a></li>
+            </ul>
+
+            <form method="get" action="{% url search %}">
+                <input type="text" name="q" value="{{ query }}" />
+                <button class="btn" type="submit">Search</button>
+            </form>
+
+            <ul class="nav secondary-nav">
+
+                {% if user.is_authenticated %}
+                    <li><a href="{% url dashboard_home %}">{{ user.username }} : <strong class="btn primary">your dashboard</strong></a></li>
+                    {% with accounts=user_accounts %}
+                        {% if accounts %}
+                            <li class='dropdown{% if section == 'accounts' %} active{% endif %}' data-dropdown="dropdown">
+                                <a href="{% url accounts_manage %}" class="dropdown-toggle">Your accounts</a>
+                                <ul class="dropdown-menu">
+                                    {% for an_account in accounts %}
+                                    <li{% if section == 'user' and account.id == an_account.id %} class="active"{% endif %}>
+                                        {% with  with_avatar=1 avatar_size=16 account=an_account %}{% include "core/accounts/link.html" %}{% endwith %}
+                                    </li>
+                                    {% endfor %}
+                                    <li class="divider"></li>
+                                    <li{% if section == 'accounts'%} class="active"{% endif %}><a href="{% url accounts_manage %}">Manage</a></li>
+                                </ul>
+                            </li>
+                        {% else %}
+                            <li><a href="{% url accounts_manage %}" class="dropdown-toggle">Your accounts</a></li>
+                        {% endif %}
+                    {% endwith %}
+                    <li><a href="{% url accounts_logout %}?next={{ request.get_full_path|urlencode }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{% url accounts_login %}?next=/">Login / Register</a></li>
+                {% endif %}
+
+            </ul>
+
+        </div>
+    </div>
+</div>
+
+<div id="container" class="container">
+    {% include "messages.html" %}
+
+    <div id="content"{% if messages %} class="with_messages"{% endif %}>
+
+        {% if request.GET.edit_extra %}
+            {% edit_private request.GET.edit_extra %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+</div></body></html>

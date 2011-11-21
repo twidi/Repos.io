@@ -1,0 +1,27 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% extends 'dashboard/base.html' %}
+{% load private_tags %}
+{% block title %}Your notes on {% endblock %}
+
+{% block dashboard_content %}
+
+<ul class="pills">
+    <li{% if obj_type == 'repositories' %} class="active"{% endif %}><a href="{% url dashboard_notes obj_type="repositories" %}">Notes for repositories</a></li>
+    <li{% if obj_type == 'accounts' %} class="active"{% endif %}><a href="{% url dashboard_notes obj_type="accounts" %}">Notes for people</a></li>
+</ul>
+
+{% if page.paginator.count %}
+    {% prepare_private page.object_list "-notes" %}
+    {% if obj_type == "accounts" %}
+        {% include "dashboard/noted_accounts.html" %}
+    {% else %}
+        {% include "dashboard/noted_repositories.html" %}
+    {% endif %}
+    {% if page.has_previous or page.has_next %}
+        <div>{{ page.render }}</div>
+    {% endif %}
+{% else %}
+    <p><em>You haven't set any notes !</em></p>
+{% endif %}
+
+{% endblock %}

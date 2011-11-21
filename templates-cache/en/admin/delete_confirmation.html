@@ -1,0 +1,117 @@
+{% load i18n adminmedia%}<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{LANGUAGE_CODE|default:"en-us"}}" xml:lang="{{LANGUAGE_CODE|default:"en-us"}}" {%if LANGUAGE_BIDI%}dir="rtl"{%endif%}>
+<head>
+<title>{{title}} | Django site admin</title>
+<link rel="stylesheet" type="text/css" href="{%admin_media_prefix %}css/base.css" />
+
+<!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="{%admin_media_prefix %}css/ie.css" /><![endif]-->
+{%if LANGUAGE_BIDI%}<link rel="stylesheet" type="text/css" href="{%admin_media_prefix %}css/rtl.css" />{%endif%}
+<script type="text/javascript">window.__admin_media_prefix__ = "{%filter escapejs %}{%admin_media_prefix %}{%endfilter %}";</script>
+
+<meta name="robots" content="NONE,NOARCHIVE" />
+</head>
+
+
+<body class="{%if is_popup%}popup {%endif%}">
+
+<!-- Container -->
+<div id="container">
+
+    {%if not is_popup%}
+    <!-- Header -->
+    <div id="header">
+        <div id="branding">
+        
+<h1 id="site-name">Django administration</h1>
+
+        </div>
+        {%if user.is_active and user.is_staff%}
+        <div id="user-tools">
+            Welcome,
+            <strong>{%filter force_escape %}{%firstof user.first_name user.username %}{%endfilter %}</strong>.
+            
+                {%url 'django-admindocs-docroot' as docsroot %}
+                {%if docsroot%}
+                    <a href="{{docsroot}}">Documentation</a> /
+                {%endif%}
+                {%url 'admin:password_change' as password_change_url %}
+                {%if password_change_url%}
+                    <a href="{{password_change_url}}">
+                {%else%}
+                    <a href="{{root_path}}password_change/">
+                {%endif%}
+                Change password</a> /
+                {%url 'admin:logout' as logout_url %}
+                {%if logout_url%}
+                    <a href="{{logout_url}}">
+                {%else%}
+                    <a href="{{root_path}}logout/">
+                {%endif%}
+                Log out</a>
+            
+        </div>
+        {%endif%}
+        
+    </div>
+    <!-- END Header -->
+    
+<div class="breadcrumbs">
+     <a href="../../../../">Home</a> &rsaquo;
+     <a href="../../../">{{app_label|capfirst}}</a> &rsaquo; 
+     <a href="../../">{{opts.verbose_name_plural|capfirst}}</a> &rsaquo;
+     <a href="../">{{object|truncatewords:"18"}}</a> &rsaquo;
+     Delete
+</div>
+
+    {%endif%}
+
+        {%if messages%}
+        <ul class="messagelist">{%for message in messages %}
+          <li{%if message.tags%} class="{{message.tags}}"{%endif%}>{{message}}</li>
+	{%endfor %}</ul>
+        {%endif%}
+
+    <!-- Content -->
+    <div id="content" class="colM">
+        
+        {%if title%}<h1>{{title}}</h1>{%endif%}
+        
+{%if perms_lacking or protected%}
+    {%if perms_lacking%}
+        <p>{%with object as escaped_object%}Deleting the {{object_name}} '{{escaped_object}}' would result in deleting related objects, but your account doesn't have permission to delete the following types of objects:{%endwith%}</p>
+        <ul>
+        {%for obj in perms_lacking %}
+            <li>{{obj}}</li>
+        {%endfor %}
+        </ul>
+    {%endif%}
+    {%if protected%}
+        <p>{%with object as escaped_object%}Deleting the {{object_name}} '{{escaped_object}}' would require deleting the following protected related objects:{%endwith%}</p>
+        <ul>
+        {%for obj in protected %}
+            <li>{{obj}}</li>
+        {%endfor %}
+        </ul>
+    {%endif%}
+{%else%}
+    <p>{%with object as escaped_object%}Are you sure you want to delete the {{object_name}} "{{escaped_object}}"? All of the following related items will be deleted:{%endwith%}</p>
+    <ul>{{deleted_objects|unordered_list}}</ul>
+    <form action="" method="post">{%csrf_token %}
+    <div>
+    <input type="hidden" name="post" value="yes" />
+    <input type="submit" value="Yes, I'm sure" />
+    </div>
+    </form>
+{%endif%}
+
+        
+        <br class="clear" />
+    </div>
+    <!-- END Content -->
+
+    <div id="footer"></div>
+</div>
+<!-- END Container -->
+
+</body>
+</html>
