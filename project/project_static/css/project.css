@@ -363,7 +363,7 @@ table.with_extras td.full:last-child a.btn {
     right: -32px;
     top: -3px;
 }
-table.with_extras td.full:last-child:hover a.btn {
+table.with_extras tr:hover td.full:last-child a.btn {
     display: inline-block;
 }
 table.with_extras td.empty:last-child {
