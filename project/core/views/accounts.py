@@ -189,6 +189,6 @@ def contributing(request, backend, slug, account=None):
     """
     queryset = Repository.for_list.filter(contributors=account)
     context = _filter_repositories(request, account, queryset)
-    context.update(dict(default_count = account.contributing_count()))
+    context.update(dict(default_count = account.contributing_count))
     return render(request, 'core/accounts/contributing.html', context)
 
