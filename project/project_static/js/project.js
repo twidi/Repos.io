@@ -21,7 +21,7 @@ $(document).ready(function() {
     var body_overlay = $('<div />').attr('id', 'boverlay'),
         extra_editor = $('#extra-editor');
 
-    $('body').append(body_overlay);
+    $('body').prepend(body_overlay);
 
     function show_body_overlay(cursor) {
         body_overlay.css('cursor', cursor);
