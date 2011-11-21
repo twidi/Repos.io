@@ -12,6 +12,12 @@ from browsecap.browser import is_crawler
 from core.models import Account, Repository
 from utils.sort import prepare_sort
 
+# monkey patch to add simple_str to haystack
+from haystack.models import SearchResult
+def haystack_simple_str(self):
+    return '%s.%s:%s' % (self.app_label, self.model_name, self.pk)
+SearchResult.simple_str = haystack_simple_str
+
 def parse_keywords(query_string):
     """
     Take a query string (think browser) and parse it to have a list of keywords.
