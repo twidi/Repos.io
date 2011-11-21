@@ -1,1 +1,2 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
 {% load reposio_core %}{% if not for_related or account.backend|supports:'user_related' %}{% with fetch_type="account" obj=account %}{% include "core/fetch_form.html" %}{% endwith %}{% endif %}

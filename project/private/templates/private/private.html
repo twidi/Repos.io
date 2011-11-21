@@ -1,3 +1,4 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
 {% load reposio_core cache %}
 {% cache cache_timeout.private_common_part object.simple_str request.user.id object.modified %}
     {% with note_and_tags=object|note_and_tags:request.user %}
