@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 import time
 
 from redisco import models, connection

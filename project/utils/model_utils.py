@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 from django.db.models.sql.query import get_proxied_model
 
 from haystack.models import SearchResult

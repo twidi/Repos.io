@@ -1,3 +1,4 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
 {% if request.user and request.user.is_authenticated %}
     {% if for_related and obj.fetch_related_allowed and obj.last_fetch or not for_related and obj.fetch_allowed %}
         <form class='fetch-form' action="{% url fetch %}" method="post">{% csrf_token %}

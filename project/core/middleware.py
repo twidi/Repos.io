@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 from core.core_utils import get_user_accounts
 
 class FetchFullCurrentAccounts(object):

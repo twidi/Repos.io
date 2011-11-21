@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 from httplib import responses
 
 class CoreException(Exception):

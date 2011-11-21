@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 from django.conf.urls.defaults import *
 
 from private.views import note_save, note_delete, tags_save, tags_delete, ajax_edit, ajax_close

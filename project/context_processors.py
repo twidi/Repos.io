@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 from django.core.urlresolvers import resolve
 from django.conf import settings
 

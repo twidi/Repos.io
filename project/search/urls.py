@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 from django.conf.urls.defaults import *
 from search.views import RepositorySearchView, AccountSearchView
 

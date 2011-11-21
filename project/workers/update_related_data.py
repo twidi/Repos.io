@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 """
 Update related data (score, haystack, tags) for objects (core.models.SyncableModel.update_related_data)
 """

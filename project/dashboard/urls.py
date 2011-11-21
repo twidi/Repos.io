@@ -1,3 +1,5 @@
+# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
+
 from django.conf.urls.defaults import *
 from dashboard.views import home, tags, notes, following, followers, repositories, contributing
 

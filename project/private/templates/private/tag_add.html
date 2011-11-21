@@ -1,3 +1,4 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
 <form action="{% if tags_save_url %}{{ tags_save_url }}{% else %}{% url tags_save %}{% endif %}" method="POST">{% csrf_token %}
     {{ tag_save_form.as_p }}
     <input type="hidden" name="act" value="add" />

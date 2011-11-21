@@ -51,6 +51,10 @@ Some possible functionnalities :
  - rss feeds (with filters !)
  - recommendations on accounts/repositories to follow
 
+License
+-------
+Repos.io / Copyright Stephane Angel / `Creative Commons BY-NC-SA license`_
+
 
 
 
@@ -59,3 +63,4 @@ Some possible functionnalities :
 .. _Twitter boostrap: http://twitter.github.com/bootstrap/
 .. _jQuery: http://www.jquery.com/
 .. _Sass: http://sass-lang.com/
+.. _Creative Commons BY-NC-SA license: http://creativecommons.org/licenses/by-nc-sa/3.0/
