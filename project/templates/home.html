@@ -95,6 +95,9 @@
                     {% include "core/repositories/logo_small.html" %}
                     <span title="{{ repository.description }}">{% include "core/repositories/link_no_owner.html" %}</span>
                     {% if repository.backend|supports:'repository_owner' %}<small>by {% with account=repository.owner %}{% include "core/accounts/link_no_backend.html" %}{% endwith %}</small>{% endif %}
+                    {% if repository.is_fork %}
+                        <a href="{% if repository.parent_fork %}{{ repository.parent_fork.get_absolute_url }}{% else %}{{ repository.get_absolute_url }}{% endif %}" class="label warning" title="{% if repository.parent_fork %}Fork of {{ repository.parent_fork.slug }} by {{ repository.parent_fork.owner.slug }}{% else %}It's a fork{% endif %}">F</a>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
