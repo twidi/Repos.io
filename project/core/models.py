@@ -879,7 +879,15 @@ class Account(SyncableModel):
         if not super(Account, self).fetch(token, log_stderr):
             return False
 
-        self.get_backend().user_fetch(self, token=token)
+        try:
+            self.get_backend().user_fetch(self, token=token)
+        except BackendNotFoundError, e:
+            if self.id:
+                self.fake_delete()
+            raise e
+        else:
+            self.deleted = False
+
         self.last_fetch = datetime.now()
 
         if not self.official_following_count:
