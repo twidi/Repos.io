@@ -238,7 +238,7 @@ class RepositorySearchView(CoreSearchView):
         # check if this user did this search recently
         filter_user = None
         if self.request.user and self.request.user.is_authenticated():
-            filter_user = self.reuqest.user
+            filter_user = self.request.user
         count_recent = SavedSearch.objects.most_recent(
                 user = filter_user,
                 search_key = self.search_key,
