@@ -1278,7 +1278,7 @@ class Account(SyncableModel):
         to_update['repositories_modified'] = now
 
         # manage contributing
-        for Repository in self.contributing.all():
+        for repository in self.contributing.all():
             repository.update(
                 contributors_count = models.F('contributors_count') - 1,
                 raise_if_error = False
