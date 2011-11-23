@@ -6,7 +6,7 @@ import math
 import sys
 import traceback
 
-from django.db import models, transaction, IntegrityError
+from django.db import models, transaction, IntegrityError, DatabaseError
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.utils import simplejson
@@ -107,7 +107,7 @@ class SyncableModel(TimeStampedModel):
         raise_if_error = kwargs.pop('raise_if_error', True)
         try:
             model_update(self, **kwargs)
-        except IntegrityError, e:
+        except (DatabaseError, IntegrityError), e:
             sys.stderr.write('\nError when updating %s with : %s\n' % (self, kwargs))
             sys.stderr.write(' => %s\n' % e)
             sys.stderr.write("====================================================================\n")
@@ -116,6 +116,8 @@ class SyncableModel(TimeStampedModel):
             transaction.rollback()
             if raise_if_error:
                 raise e
+        except:
+            transaction.commit()
         else:
             transaction.commit()
 
