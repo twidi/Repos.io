@@ -95,19 +95,16 @@
                     </fieldset>
                     <fieldset id="search_type">
                         <legend>Type</legend>
-                        <label for="search_type_all">Type of results</label>
+                        <label>Type of results</label>
                         <ul>
                             <li>
-                              <input type="radio" name="type" id="search_type_all" value="1" /><label for="search_type_all">All</label>
-                            </li>
-                            <li>
-                                <input type="radio" name="type" id="search_type_repositories" value="1" /><label for="search_type_repositories">Repositories</label>
+                            <input type="radio" name="type" id="search_type_repositories" value="repository"{% if search_type == 'repository' %} checked="checked"{% endif %} /><label for="search_type_repositories">Repositories</label>
                                 <fieldset id="search_type_repositories">
                                     <input type="checkbox" name="show_forks" value="1" id="search_show_forks" /><label for="search_show_forks">Show forks ?</label>
                                 </fieldset>
                             </li>
                             <li>
-                                <input type="radio" name="type" id="search_type_people" value="2" /><label for="search_type_people">People</label>
+                                <input type="radio" name="type" id="search_type_people" value="account"{% if search_type == 'account' %} checked="checked"{% endif %} /><label for="search_type_people">People</label>
                             </li>
                     </fieldset>
                 </form>

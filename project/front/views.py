@@ -6,14 +6,17 @@ from core.models import Account, Repository
 
 def test(request):
     import random
-    l = 10
-    objects = list(Repository.for_list.order_by('id')[100:100+l]) + list(Account.for_list.order_by('id')[100:100+l])
 
-    with_details = [objects[2].simple_str(), ]
-
+    model = random.choice((Account, Repository))
+    objects = list(model.for_list.order_by('id')[100:110])
     random.shuffle(objects)
+
+    with_details = []
+    if model == Repository:
+        with_details = [objects[2].simple_str(), ]
 
     return render(request, 'front/test.html', dict(
         objects = objects,
+        search_type = 'repository' if model == Repository else 'account',
         with_details = with_details,
     ))

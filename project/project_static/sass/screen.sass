@@ -290,20 +290,6 @@ article.content
   &:last-child
     +border-radius(0 0 $main_radius $main_radius)
 
-  &:before
-    +abs($top:-0.15ex, $left: -0.5ex)
-    display: block
-    width: 0.5ex
-    overflow: hidden
-    text-align: center
-    color: darker(0.1)
-
-  &.repository:before
-    +iconic("w", 600%)
-
-  &.user:before
-    +iconic("u", 600%)
-
   > figure
     width: 10%
     min-width: 20px
