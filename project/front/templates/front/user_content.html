@@ -1,0 +1,41 @@
+<article class="content user github{% if account.simple_str in with_details %} with-details{% endif %}">
+    <figure>
+        <a href="{{ account.get_absolute_url }}" title="Go to the `{{ account.slug }}` page"><img alt="{{ account.slug }}'s avatar" src="{% if account.avatar %}{{ account.avatar }}{% else %}{{ STATIC_URL }}img/avatar_default_{{ repository.backend }}.png{% endif %}" /></a>
+    </figure>
+    <header>
+        <h1><a href="{{ account.get_absolute_url }}" title="Go to the `{{ account.slug }}` page">{{ account.slug }}</a></h1>
+        <h3>@ {{ account.backend }}</h3>
+        <section class="links">
+            <a href="#" title="Link to the user's page on {{ account.backend }}">{{ account.backend }}</a>
+            <a href="#" title="Link to the user's home page">Home</a>
+        </section>
+    </header>
+    <section class='description'>
+        {% if account.name %}
+            <p>{{ account.name }}</p>
+        {% endif %}
+    </section>
+    <footer>
+        {% with tags=account.all_public_tags %}
+            {% if tags %}
+                <ul class="tags">
+                    {% for tag in tags %}
+                        <li><a href="#">{{ tag }}</a></li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        <section>
+            <ul class="status" title="Links between you and this account">
+                <li class="status-followed" title="You are followed by {{ account.slug }}">Followed</li>
+            </ul>
+            <ul class="actions">
+                <li class="action-star{% if forloop.counter == 2 %} selected{% endif %}"><a href="" title="Star it">Star</a></li>
+                <li class="action-check{% if forloop.counter == 3 %} selected{% endif %}"><a href="" title="Check later">Check later</a></li>
+                <li class="action-more"><a href="" title="Show more : tags, notes...">More</a></li>
+            </ul>
+        </section>
+    </footer>
+    {% if account.simple_str in with_details %}{% include "front/repository_details.html" %}{% endif %}
+</article>
+

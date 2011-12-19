@@ -1,0 +1,726 @@
+/*
+  Welcome to Compass.
+  In this file you should write your main styles. (or centralize your imports)
+  Import this file using the following HTML or equivalent:
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" />
+
+@import compass/reset
+@import compass/css3
+
+$background: #eeeff1
+$revbackground: white
+$article: white
+$article2: #f9f9f9
+$border: #eeeeee
+$border2: white
+$link: #3078ca
+$color: black
+$flash: #4f96d7
+$revflash: white
+$color2: #777777
+$background_tags: #e0edf5
+$color_tags: #2f5d92
+
+$main_radius: 6px
+
+@function darker($alpha)
+  @return rgba(black, $alpha)
+
+@function lighter($alpha)
+  @return rgba(white, $alpha)
+
+@mixin ul_reset
+  margin: 0
+  padding: 0
+  list-style: none
+  li
+    margin: 0
+    padding: 0
+    list-style: none
+
+@mixin flag
+  margin: 1px
+  display: inline-block
+  padding: 0 4px
+  +border-radius(4px)
+  line-height: 1.6em
+
+// absolute position
+@mixin abs($top:false, $left:false, $bottom:false, $right: false)
+  position: absolute
+  @if $top or $top == 0
+    top: $top
+  @if $left or $left == 0
+    left: $left
+  @if $bottom or $bottom == 0
+    bottom: $bottom
+  @if $right or $right == 0
+    right: $right
+
+@mixin iconic($icon, $size: 150%)
+  content: $icon
+  font-family: "IconicStroke"
+  //+text-shadow(lighter(0.45) 0 1px 0)
+  @if $size
+    font-size: $size
+
+// To put in a after or before
+@mixin arrow($position, $color, $size, $bgcolor: transparent, $ratio: 1)
+  content: " "
+  width: 0
+  height: 0
+  $size2: $size * $ratio
+  @if $position == "bottom"
+    border-top: $size solid $color
+    border-left: $size2 solid $bgcolor
+    border-right: $size2 solid $bgcolor
+    +abs(100%, 50%)
+    margin-left: -$size2
+  @if $position == "top"
+    border-bottom: $size solid $color
+    border-left: $size2 solid $bgcolor
+    border-right: $size2 solid $bgcolor
+    +abs(-$size, 50%)
+    margin-left: -$size2
+  @if $position == "right"
+    border-left: $size solid $color
+    border-top: $size2 solid $bgcolor
+    border-bottom: $size2 solid $bgcolor
+    +abs(50%, 100%)
+    margin-top: -$size2
+  @if $position == "left"
+    border-right: $size solid $color
+    border-top: $size2 solid $bgcolor
+    border-bottom: $size2 solid $bgcolor
+    +abs(50%, -$size)
+    margin-top: -$size2
+
+@mixin tooltip($width: 10em, $position: "bottom", $arrow_size: 12px)
+  display: none
+  background: black
+  +opacity(0.9)
+  width: $width
+  z-index: 10
+  padding: 0.5ex
+  +box-sizing(border-box)
+  +border-radius(4px)
+  color: white
+  cursor: default
+  border: solid white 2px
+  +box-shadow(black 4px 4px 10px)
+  text-align: center
+
+  @if $position == "top"
+    +abs($bottom: $arrow_size, $left: 50%)
+    margin-left: $width/-2
+    margin-bottom: $arrow_size
+    &:before
+      +arrow("bottom", black, $arrow_size)
+
+  @if $position == "bottom"
+    +abs($top: 100%, $left: 50%)
+    margin-left: $width/-2
+    margin-top: $arrow_size
+    &:before
+      +arrow("top", black, $arrow_size)
+      top: - $arrow_size + 1px
+
+
+/* http://somerandomdude.com/work/iconic/
+@font-face
+  font-family: 'IconicStroke'
+  src: url("font/iconic/iconic_stroke.eot?#iefix") format("embedded-opentype"), url("font/iconic/iconic_stroke.woff") format("woff"), url("font/iconic/iconic_stroke.ttf") format("truetype"), url("font/iconic/iconic_stroke.svg#svgFontName") format("svg")
+
+
+html
+  overflow-y: scroll
+
+html, body
+  margin: 0
+  padding: 0
+  background: $background
+  font-size: 14px
+  font-family: Arial, Helvetica, Sans-serif
+  line-height: 1.2
+  color: $color
+
+body
+
+  > footer, > section
+    width: 90%
+    min-width: 320px
+    max-width: 960px
+    margin: 0 auto
+
+small
+  font-size: smaller
+
+a
+  color: $link
+  text-decoration: none
+
+a:hover
+  text-decoration: underline
+
+h1
+  font-weight: bold
+
+ul.tags
+  +ul_reset
+
+  li
+    +flag
+    background: $background_tags
+    a
+      color: $color_tags
+
+body > header
+  +background(linear-gradient(top, #0a5f95, #00396b), #075385)
+  padding: 20px 10px 0
+  position: relative
+  min-height: 40px
+
+  &:after
+    content: ""
+    +box-shadow(darker(0.5) 0px 3px 2px)
+    height: 10px
+    margin: 0 -10px
+    clear: both
+    display: block
+
+  #main-header
+    float: left
+    margin-top: -15px
+    h1, h2
+      display: inline-block
+      font-weight: bold
+      +text-shadow(rgba(0, 0, 0, 0.5) -1px -1px 0)
+    h1
+      font-size: 200%
+      color: white
+      &:before
+        +iconic('0')
+        font-weight: normal
+        color: $flash
+    h2
+      color: $flash
+      font-size: 120%
+      margin: 0 1ex
+
+  ul
+    +ul_reset
+    display: table
+    min-height: 40px
+    font-weight: bold
+    color: white
+    font-size: 95%
+    margin: 1px 20px 0
+    padding: 1ex
+    float: right
+    text-align: center
+    li
+      margin: 0 0.8ex 5px 0
+      display: inline-block
+      position: relative
+      cursor: help
+      +text-shadow(rgba(0, 0, 0, 0.5) -1px -1px 0)
+      &:before
+        content: "-"
+        padding-right: 0.8ex
+        color: lighter(0.5)
+      &:last-child:after
+        content: "-"
+        color: lighter(0.5)
+      span
+        +tooltip($width: 20em, $position: "bottom")
+        z-index: 11
+        text-align: left
+        font-weight: normal
+        line-height: 1.8em
+        padding: 1ex
+
+        em
+          display: block
+          margin: 0.5ex 0
+          text-align: center
+          font-weight: bold
+          font-size: 110%
+
+      &:hover span, &:focus span
+        display: block
+
+body > footer
+  height: 10px
+
+body > section > section.results
+  margin: auto
+  margin-top: 15px
+  +border-radius($main_radius)
+  +box-shadow(darker(0.5) 2px 2px 2px)
+  position: relative
+  &:before
+    +arrow("top", white, 12px)
+    top: -10px
+    left: 10%
+    z-index: 10
+
+section.results section.results
+  font-size: 95%
+  background: $background
+  article.content
+    &:before
+      display: none
+
+article.content
+  margin: 0 auto
+  padding: 13px 13px 5px
+  background: $article
+  position: relative
+  border-top: solid 1px $border
+  border-bottom: solid 1px $border
+  +box-sizing(border-box)
+
+  &:nth-child(even)
+    background: $article2
+    border-top: solid 1px $border2
+    border-bottom: solid 1px $border2
+
+  &:first-child
+    +border-radius($main_radius $main_radius 0 0)
+  &:last-child
+    +border-radius(0 0 $main_radius $main_radius)
+
+  &:before
+    +abs($top:-0.15ex, $left: -0.5ex)
+    display: block
+    width: 0.5ex
+    overflow: hidden
+    text-align: center
+    color: darker(0.1)
+
+  &.repository:before
+    +iconic("w", 600%)
+
+  &.user:before
+    +iconic("u", 600%)
+
+  > figure
+    width: 10%
+    min-width: 20px
+    max-width: 60px
+    float: left
+    margin: 0 1% 1% 0
+    +opacity(0.75)
+    overflow: hidden
+
+    a
+      position: relative
+      max-width: 100%
+
+      img
+        width: 100%
+        +border-radius(4px)
+        float: left
+
+  &:hover
+    > figure
+      +opacity(1)
+
+  > header
+    margin: 0 0 0.5%
+
+    h1
+      font-size: 120%
+      margin: 0
+      line-height: 100%
+      display: inline-block
+      a
+        +border-radius(4px)
+        background: $link
+        padding: 5px
+        color: white
+        display: inline-block
+
+    h2
+      font-size: 100%
+      margin: 0
+      display: inline-block
+      font-weight: normal
+
+      span
+        color: $color2
+        font-size: 80%
+
+    h3
+      display: inline-block
+      font-size: 80%
+      font-weight: normal
+      margin: 0
+      color: $color2
+
+    > section
+
+      &.flags
+        display: inline-block
+        vertical-align: middle
+        > span
+          +flag
+          color: white
+          font-size: 80%
+          a
+            color: white
+          &.fork
+            background: orange
+
+      &.links
+        display: inline-block
+        height: 16px
+        line-height: 16px
+        vertical-align: middle
+        overflow: hidden
+
+        /* &:before
+         *  content: "-"
+         *  color: $color2
+         *  vertical-align: middle
+
+        a
+          display: inline-block
+
+          &:first-child
+            padding-left: 16px
+            background-repeat: no-repeat
+            background-position: left center
+            width: 16px
+            +box-sizing(border-box)
+            overflow: hidden
+
+          &:nth-child(2)
+            width: 0.9em
+            visibility: hidden
+            text-decoration: none
+            color: $color
+
+            &:before
+              +iconic("!", 16px)
+              visibility: visible
+              font-weight: bold
+              vertical-align: middle
+              position: relative
+              top: -2px
+
+
+  > section.description
+    padding: 0 1% 1%
+    margin-left: 8%
+    margin-top: 1ex
+    > p
+      margin: 0
+      border-left: solid 5px $border
+      padding-left: 5px
+      color: $color2
+
+  > footer
+    clear: both
+    font-size: 90%
+    padding: 0.25% 0 0
+    line-height: 1.8em
+    overflow: auto
+
+    .tags
+      font-size: 90%
+      display: inline-block
+
+    > section
+      float: right
+      vertical-align: middle
+
+      > ul
+        +ul_reset
+        display: inline-block
+        vertical-align: middle
+        overflow: hidden
+
+        > li
+          display: inline-block
+          vertical-align: middle
+
+        &.actions
+
+          li
+            a
+              visibility: hidden
+              width: 1.2em
+              overflow: hidden
+              margin-left: 0.5em
+              float: left
+              vertical-align: middle
+              height: 1.7em
+
+              &:hover
+                text-decoration: none
+
+              &:before
+                visibility: visible
+                color: $flash
+                padding-left: 0.1ex
+
+            &.action-star a:before
+              +iconic("s")
+              +opacity(0.5)
+            &.action-check a:before
+              +iconic("|")
+              +opacity(0.5)
+            &.action-more a:before
+              +iconic("=")
+
+            &.selected a:before
+              +opacity(1)
+            &.selected.action-star a:before
+              color: yellow
+              +text-shadow(black 0 0 1px)
+            &.selected.action-check a:before
+              color: green
+
+        &.status
+
+          a
+            color: $flash
+
+          li
+            &:before
+              content: "/ "
+
+            &:last-child:after
+              content: "|"
+              padding-left: 0.8em
+              color: darker(0.25)
+
+            &:first-child:before
+              +iconic("/")
+              vertical-align: -0.15em
+              line-height: 0.66em
+              padding-right: 0.5ex
+
+article.content.github > header > section.links a:first-child
+  background-image: url(../img/favicon_github.png)
+
+article.content.with-details
+  border: solid $flash 1px
+  border-left-width: 4px
+  +border-radius($main_radius 0 0 $main_radius)
+  padding-left: 9px
+
+  > footer > section > ul.actions li.action-more a:before
+    content: '%'
+
+article.content > section.details
+  background: $background
+  padding: 5px
+  +border-radius(5px)
+  +box-shadow(darker(0.5) 1px 1px 3px inset)
+  margin: 5px -4px 0
+  > header > ul
+    +ul_reset
+    background: $article
+    border: solid 1px darker(0.1)
+    +border-radius(4px)
+    display: inline-block
+    margin-bottom: 1ex
+    width: 100%
+    display: table
+    border-collapse: separate
+    border-spacing: 4px
+
+    li
+      margin: 0 1%
+      padding: 0.2em 2px
+      position: relative
+      text-align: center
+      vertical-align: middle
+      +border-radius(4px)
+      display: table-cell
+
+      a
+        display: block
+        position: relative
+
+        span
+          background: $flash
+          +border-radius(1000px)
+          color: $revflash
+          font-size: 70%
+          display: inline-block
+          font-weight: bold
+          text-align: center
+          margin-left: 1ex
+          position: relative
+          top: -2px
+          padding: 3px 3px 2px
+          min-width: 1.2em
+
+      &:hover
+        background: $border
+
+      &.current
+        background: $flash
+        font-weight: bold
+        vertical-align: bottom
+
+        a
+          color: $revflash
+
+          span
+            background: $revflash
+            color: $flash
+
+          &:after
+            +arrow("bottom", $flash, 12px)
+
+  > section
+    display: none
+    +border-radius($main_radius)
+    &.current
+      display: block
+    &.readme, &.note
+      padding: 0.5em
+    &.readme
+      overflow-x: auto
+
+#search
+  padding: 18px 13px 13px
+  +box-sizing(border-box)
+  background: $article
+  +border-radius(0 0 $main_radius $main_radius)
+  +box-shadow(darker(0.5) 2px 2px 2px)
+
+  > header
+    &:after
+      content: ""
+      height: 0
+      clear: both
+      display: block
+    h1
+      display: inline-block
+      margin: -0.4em 0 0.2ex 0
+      font-size: 150%
+    p
+      float: right
+      margin-right: 3em
+      span
+        position: relative
+        em
+          +tooltip($width: 7em, $position: "top")
+          display: block
+          font-size: 90%
+
+  > form
+    position: relative
+
+    #search_main
+      font-size: 150%
+      display: block
+      position: relative
+      margin-right: 2em
+      +box-sizing(border-box)
+
+      input
+        /* reset
+        border: none
+        background: transparent
+        margin: 0
+        padding: 0
+        +border-radius(0)
+        +box-shadow(none)
+        /* end reset
+        height: 2em
+        font-size: 100%
+        display: inline-block
+
+        &[type=text]
+          padding: 0 0.5ex
+          display: block
+          width: 100%
+          +box-sizing(border-box)
+          +box-shadow(darker(0.5) 1px 1px 3px inset)
+
+        &[type=submit]
+          font-size: 200%
+          height: 1em
+          width: 1em
+          overflow: hidden
+          font-family: "IconicStroke"
+          cursor: pointer
+          +abs($top: 0, $right: -1em)
+
+  #search_filter, #search_type
+    display: inline-block
+    margin: 5px 10px 0 0
+    font-size: 110%
+    legend
+      display: none
+    > label
+      margin-right: 0.5ex
+      &:after
+        content: ":"
+    select
+      font-size: 110%
+
+  #search_type
+    ul
+      display: inline-block
+      li
+        display: inline-block
+    fieldset
+      display: none
+    input[type=radio]:checked
+      + label
+        + fieldset
+          display: block
+          font-size: 80%
+          margin-left: 1em
+    input[type=radio], input[type=checkbox]
+      + label
+        cursor: pointer
+
+@media screen and (max-width: 767px)
+  body
+    > footer, > section
+      width: 98%
+    > header
+      section#main-header
+        float: none
+        h1, h2
+          text-align: center
+          display: inline-block
+  article.content
+    &:before
+      display: none
+    padding: 10px 10px 5px
+    > header
+      h1
+        display: block
+        margin-bottom: 5px
+    > section
+      clear: both
+      margin: 10px 0 5px 10px
+
+    &:nth-child(even)
+      xbackground: darken($article2, 1%)
+
+  #search
+    //padding: 15px 0 10px
+    > header h1
+      font-size: 110%
+
+@media screen and (max-width: 500px)
+  body > header section#main-header
+    text-align: center
+    h1, h2
+      display: block
+  article.content > section.details > header > ul
+    font-size: 80%
+    li a:after
+      color: red
+
+

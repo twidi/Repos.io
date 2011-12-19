@@ -179,6 +179,7 @@ INSTALLED_APPS = (
 
     # ours
     'utils',
+    'front',
     'core',
     'accounts',
     'search',

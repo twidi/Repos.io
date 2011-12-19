@@ -1,0 +1,25 @@
+<section class='details'>
+    <header>
+        <ul>
+            <li><a href='#repository-1-note'>Your note and tags</a></li>
+            <li class="current"><a href='#repository-1-readme'>Readme</a></li>
+            <li><a href='#repository-1-readme'>Followers<span>14</span></a></li>
+            <li><a href='#repository-1-readme'>Contributors<span>4</span></a></li>
+            <li><a href='#repository-1-readme'>Forks<span>5+</span></a></li>
+        </ul>
+    </header>
+    <section class="readme current" id="repository-1-readme">
+        <pre>{{ repository.readme }}</pre>
+    </section>
+    <section class="note" id="repository-1-note">
+        foo
+    </section>
+    <section class="followers" id="repository-1-followers">
+        <section class="results">
+            {% for object in object.followers.all %}
+                {% include "front/user_content.html" with account=object %}
+            {% endfor %}
+        </section>
+    </section>
+</section>
+
