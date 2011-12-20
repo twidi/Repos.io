@@ -637,14 +637,14 @@ article.content > section.details
 
   > form
     position: relative
-    margin-top: -1.4em
+    margin-top: -2em
 
     > input[name=type]
       +opacity(0)
       float: right
       margin-left: -1em
       &:first-of-type
-        margin-right: 4em
+        margin-right: 4.5em
       &:checked
         + label
           font-weight: bold
@@ -656,7 +656,11 @@ article.content > section.details
     label.search_type
       float: right
       text-transform: lowercase
-      +flag
+      +border-radius(4px 4px 0 0)
+      display: inline-block
+      padding: 5px 1em
+      font-size: 120%
+      margin-bottom: -1px
 
     #search_main
       font-size: 150%
@@ -686,8 +690,8 @@ article.content > section.details
           +box-sizing(border-box)
           +box-shadow(darker(0.5) 1px 1px 3px inset)
           +border-radius(4px)
-          // no shadow on iphone !?
-          border: solid 1px #eee
+          // no inset shadow on iphone !?
+          border: solid 1px darker(0.3)
 
         &[type=submit]
           font-size: 200%
@@ -708,6 +712,7 @@ article.content > section.details
     font-size: 110%
     legend
       display: none
+  #search_filter
     > label
       margin-right: 0.5ex
       &:after
@@ -761,9 +766,12 @@ article.content > section.details
       display: block
   #search > form
     margin-top: 0.5em
-  article.content > section.details > header > ul
-    font-size: 80%
-    li a:after
-      color: red
+  article.content
+    > figure, > header h2 img
+      +opacity(1)
+    > section.details > header > ul
+      font-size: 80%
+      li a:after
+        color: red
 
 

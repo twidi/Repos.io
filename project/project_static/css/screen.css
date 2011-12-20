@@ -508,7 +508,8 @@ article.content > header h2 img {
   -khtml-border-radius: 2px;
   border-radius: 2px;
   vertical-align: middle;
-  opacity: 0.5;
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=75);
+  opacity: 0.75;
   display: inline-block;
 }
 /* line 366, ../sass/screen.sass */
@@ -992,7 +993,7 @@ article.content > section.details > section.readme {
 /* line 638, ../sass/screen.sass */
 #search > form {
   position: relative;
-  margin-top: -1.4em;
+  margin-top: -2em;
 }
 /* line 642, ../sass/screen.sass */
 #search > form > input[name=type] {
@@ -1003,7 +1004,7 @@ article.content > section.details > section.readme {
 }
 /* line 646, ../sass/screen.sass */
 #search > form > input[name=type]:first-of-type {
-  margin-right: 4em;
+  margin-right: 4.5em;
 }
 /* line 649, ../sass/screen.sass */
 #search > form > input[name=type]:checked + label {
@@ -1019,18 +1020,18 @@ article.content > section.details > section.readme {
 #search > form label.search_type {
   float: right;
   text-transform: lowercase;
-  margin: 1px;
+  -moz-border-radius: 4px 4px 0 0;
+  -webkit-border-radius: 4px 4px 0 0;
+  -o-border-radius: 4px 4px 0 0;
+  -ms-border-radius: 4px 4px 0 0;
+  -khtml-border-radius: 4px 4px 0 0;
+  border-radius: 4px 4px 0 0;
   display: inline-block;
-  padding: 0 4px;
-  -moz-border-radius: 4px;
-  -webkit-border-radius: 4px;
-  -o-border-radius: 4px;
-  -ms-border-radius: 4px;
-  -khtml-border-radius: 4px;
-  border-radius: 4px;
-  line-height: 1.6em;
+  padding: 5px 1em;
+  font-size: 120%;
+  margin-bottom: -1px;
 }
-/* line 661, ../sass/screen.sass */
+/* line 665, ../sass/screen.sass */
 #search > form #search_main {
   font-size: 150%;
   display: block;
@@ -1042,7 +1043,7 @@ article.content > section.details > section.readme {
   -ms-box-sizing: border-box;
   box-sizing: border-box;
 }
-/* line 669, ../sass/screen.sass */
+/* line 673, ../sass/screen.sass */
 #search > form #search_main input {
   /* reset */
   border: none;
@@ -1064,7 +1065,7 @@ article.content > section.details > section.readme {
   font-size: 100%;
   display: inline-block;
 }
-/* line 682, ../sass/screen.sass */
+/* line 686, ../sass/screen.sass */
 #search > form #search_main input[type=text] {
   padding: 0 0.5ex;
   display: block;
@@ -1083,9 +1084,9 @@ article.content > section.details > section.readme {
   -ms-border-radius: 4px;
   -khtml-border-radius: 4px;
   border-radius: 4px;
-  border: solid 1px #eeeeee;
+  border: solid 1px rgba(0, 0, 0, 0.3);
 }
-/* line 692, ../sass/screen.sass */
+/* line 696, ../sass/screen.sass */
 #search > form #search_main input[type=submit] {
   font-size: 200%;
   height: 1em;
@@ -1097,108 +1098,113 @@ article.content > section.details > section.readme {
   top: 0;
   right: -1em;
 }
-/* line 702, ../sass/screen.sass */
+/* line 706, ../sass/screen.sass */
 #search input[type=radio] + label, #search input[type=checkbox] + label {
   cursor: pointer;
 }
-/* line 705, ../sass/screen.sass */
+/* line 709, ../sass/screen.sass */
 #search #search_filter, #search #search_options_repositories, #search #search_options_people {
   display: inline-block;
   margin: 5px 10px 0 0;
   font-size: 110%;
 }
-/* line 709, ../sass/screen.sass */
+/* line 713, ../sass/screen.sass */
 #search #search_filter legend, #search #search_options_repositories legend, #search #search_options_people legend {
   display: none;
 }
-/* line 711, ../sass/screen.sass */
-#search #search_filter > label, #search #search_options_repositories > label, #search #search_options_people > label {
+/* line 716, ../sass/screen.sass */
+#search #search_filter > label {
   margin-right: 0.5ex;
 }
-/* line 713, ../sass/screen.sass */
-#search #search_filter > label:after, #search #search_options_repositories > label:after, #search #search_options_people > label:after {
+/* line 718, ../sass/screen.sass */
+#search #search_filter > label:after {
   content: ":";
 }
-/* line 715, ../sass/screen.sass */
-#search #search_filter select, #search #search_options_repositories select, #search #search_options_people select {
+/* line 720, ../sass/screen.sass */
+#search #search_filter select {
   font-size: 110%;
 }
-/* line 720, ../sass/screen.sass */
+/* line 725, ../sass/screen.sass */
 #search #search_type_repositories:checked ~ fieldset #search_filter_choice option.people_only {
   display: none;
 }
-/* line 722, ../sass/screen.sass */
+/* line 727, ../sass/screen.sass */
 #search #search_type_repositories:checked ~ fieldset#search_options_people {
   display: none;
 }
-/* line 726, ../sass/screen.sass */
+/* line 731, ../sass/screen.sass */
 #search #search_type_people:checked ~ fieldset #search_filter_choice option.repositories_only {
   display: none;
 }
-/* line 728, ../sass/screen.sass */
+/* line 733, ../sass/screen.sass */
 #search #search_type_people:checked ~ fieldset#search_options_repositories {
   display: none;
 }
 
 @media screen and (max-width: 767px) {
-  /* line 733, ../sass/screen.sass */
+  /* line 738, ../sass/screen.sass */
   body > footer, body > section {
     width: 98%;
   }
-  /* line 736, ../sass/screen.sass */
+  /* line 741, ../sass/screen.sass */
   body > header section#main-header {
     float: none;
   }
-  /* line 738, ../sass/screen.sass */
+  /* line 743, ../sass/screen.sass */
   body > header section#main-header h1, body > header section#main-header h2 {
     text-align: center;
     display: inline-block;
   }
 
-  /* line 741, ../sass/screen.sass */
+  /* line 746, ../sass/screen.sass */
   article.content {
     padding: 10px 10px 5px;
   }
-  /* line 742, ../sass/screen.sass */
+  /* line 747, ../sass/screen.sass */
   article.content:before {
     display: none;
   }
-  /* line 746, ../sass/screen.sass */
+  /* line 751, ../sass/screen.sass */
   article.content > header h1 {
     display: block;
     margin-bottom: 5px;
   }
-  /* line 749, ../sass/screen.sass */
+  /* line 754, ../sass/screen.sass */
   article.content > section {
     clear: both;
     margin: 10px 0 5px 10px;
   }
 
-  /* line 754, ../sass/screen.sass */
+  /* line 759, ../sass/screen.sass */
   #search > header h1 {
     font-size: 110%;
   }
 }
 @media screen and (max-width: 500px) {
-  /* line 758, ../sass/screen.sass */
+  /* line 763, ../sass/screen.sass */
   body > header section#main-header {
     text-align: center;
   }
-  /* line 760, ../sass/screen.sass */
+  /* line 765, ../sass/screen.sass */
   body > header section#main-header h1, body > header section#main-header h2 {
     display: block;
   }
 
-  /* line 762, ../sass/screen.sass */
+  /* line 767, ../sass/screen.sass */
   #search > form {
     margin-top: 0.5em;
   }
 
-  /* line 764, ../sass/screen.sass */
+  /* line 770, ../sass/screen.sass */
+  article.content > figure, article.content > header h2 img {
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
+    opacity: 1;
+  }
+  /* line 772, ../sass/screen.sass */
   article.content > section.details > header > ul {
     font-size: 80%;
   }
-  /* line 766, ../sass/screen.sass */
+  /* line 774, ../sass/screen.sass */
   article.content > section.details > header > ul li a:after {
     color: red;
   }
