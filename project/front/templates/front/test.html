@@ -54,14 +54,14 @@
             <section id="search">
                 <header>
                     <h1>Search on Github, Bitbucket...</h1>
-                    <p>
-                        or list
-                        <span><a href="">last</a></span>
-                        or
-                        <span><a href="">best</a><em>current</em></span>
-                    </p>
                 </header>
                 <form>
+                    <input type="radio" name="type" id="search_type_people" />
+                    <label for="search_type_people" class="search_type">People</label>
+
+                    <input type="radio" name="type" id="search_type_repositories" checked="checked" />
+                    <label for="search_type_repositories" class="search_type">Repositories</label>
+
                     <fieldset id="search_main">
                         <input type="text" />
                         <input type="submit" name="submit" value="f" title="Search !"/>
@@ -91,23 +91,16 @@
                                 <option value="check_later">Check later</option>
                                 <option value="noted">With note</option>
                                 <option value="following">Following</option>
-                                <option value="owned">Owned</option>
+                                <option value="followers" class="people_only">Followers</option>
+                                <option value="owned" class="repositories_only">Owned</option>
+                                <option value="last" selected="selected">Last updated</option>
+                                <option value="best">Best scored</option>
                             </optgroup>
                         </select>
                     </fieldset>
-                    <fieldset id="search_type">
-                        <legend>Type</legend>
-                        <label>Type of results</label>
-                        <ul>
-                            <li>
-                            <input type="radio" name="type" id="search_type_repositories" value="repository"{% if search_type == 'repository' %} checked="checked"{% endif %} /><label for="search_type_repositories">Repositories</label>
-                                <fieldset id="search_type_repositories">
-                                    <input type="checkbox" name="show_forks" value="1" id="search_show_forks" /><label for="search_show_forks">Show forks ?</label>
-                                </fieldset>
-                            </li>
-                            <li>
-                                <input type="radio" name="type" id="search_type_people" value="account"{% if search_type == 'account' %} checked="checked"{% endif %} /><label for="search_type_people">People</label>
-                            </li>
+                    <fieldset id="search_options_repositories">
+                        <legend>Options</legend>
+                        <input type="checkbox" name="show_forks" value="1" id="search_show_forks" /><label for="search_show_forks">Show forks ?</label>
                     </fieldset>
                 </form>
             </section>

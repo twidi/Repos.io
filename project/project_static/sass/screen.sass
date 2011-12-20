@@ -360,7 +360,8 @@ article.content
         overflow: hidden
         +border-radius(2px)
         vertical-align: middle
-        opacity: 0.5
+        +opacity(0.75)
+        display: inline-block
 
     h3
       display: inline-block
@@ -636,12 +637,33 @@ article.content > section.details
 
   > form
     position: relative
+    margin-top: -1.4em
+
+    > input[name=type]
+      +opacity(0)
+      float: right
+      margin-left: -1em
+      &:first-of-type
+        margin-right: 4em
+      &:checked
+        + label
+          font-weight: bold
+          background: $link
+          color: white
+      &:focus
+        + label
+          text-decoration: underline
+    label.search_type
+      float: right
+      text-transform: lowercase
+      +flag
 
     #search_main
       font-size: 150%
       display: block
       position: relative
       margin-right: 2em
+      clear: both
       +box-sizing(border-box)
 
       input
@@ -663,6 +685,9 @@ article.content > section.details
           width: 100%
           +box-sizing(border-box)
           +box-shadow(darker(0.5) 1px 1px 3px inset)
+          +border-radius(4px)
+          // no shadow on iphone !?
+          border: solid 1px #eee
 
         &[type=submit]
           font-size: 200%
@@ -673,7 +698,11 @@ article.content > section.details
           cursor: pointer
           +abs($top: 0, $right: -1em)
 
-  #search_filter, #search_type
+  input[type=radio], input[type=checkbox]
+    + label
+      cursor: pointer
+
+  #search_filter, #search_options_repositories, #search_options_people
     display: inline-block
     margin: 5px 10px 0 0
     font-size: 110%
@@ -686,22 +715,18 @@ article.content > section.details
     select
       font-size: 110%
 
-  #search_type
-    ul
-      display: inline-block
-      li
-        display: inline-block
-    fieldset
+  #search_type_repositories:checked ~ fieldset
+    #search_filter_choice
+      option.people_only
+        display: none
+    &#search_options_people
       display: none
-    input[type=radio]:checked
-      + label
-        + fieldset
-          display: block
-          font-size: 80%
-          margin-left: 1em
-    input[type=radio], input[type=checkbox]
-      + label
-        cursor: pointer
+  #search_type_people:checked ~ fieldset
+    #search_filter_choice
+      option.repositories_only
+        display: none
+    &#search_options_repositories
+      display: none
 
 @media screen and (max-width: 767px)
   body
@@ -725,11 +750,7 @@ article.content > section.details
       clear: both
       margin: 10px 0 5px 10px
 
-    &:nth-child(even)
-      xbackground: darken($article2, 1%)
-
   #search
-    //padding: 15px 0 10px
     > header h1
       font-size: 110%
 
@@ -738,6 +759,8 @@ article.content > section.details
     text-align: center
     h1, h2
       display: block
+  #search > form
+    margin-top: 0.5em
   article.content > section.details > header > ul
     font-size: 80%
     li a:after
