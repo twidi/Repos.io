@@ -7,13 +7,15 @@ from core.models import Account, Repository
 def test(request):
     import random
 
-    model = random.choice((Account, Repository))
-    objects = list(model.for_list.order_by('id')[100:110])
-    random.shuffle(objects)
+    model=Repository
+    #model = random.choice((Account, Repository))
+    #objects = list(model.for_list.order_by('id')[100:120])
+    objects = list(model.for_list.filter(slug='django-critic').order_by('-score'))
+    #random.shuffle(objects)
 
     with_details = []
-    if model == Repository:
-        with_details = [objects[2].simple_str(), ]
+    #if model == Repository:
+    #    with_details = [objects[2].simple_str(), ]
 
     return render(request, 'front/test.html', dict(
         objects = objects,

@@ -1,0 +1,43 @@
+{% with tags=obj.all_public_tags %}
+    {% if tags or obj.current_user_has_tags %}
+        <ul class="tags">
+            {% if tags %}
+                {% for tag in tags %}
+                    <li><a href="#">{{ tag }}</a></li>
+                {% endfor %}
+            {% endif %}
+            {% if obj.current_user_has_tags %}
+                {% if obj.current_user_tags.places %}
+                    <li>
+                        <ul>
+                            <span>Places</span>
+                            {% for tag in obj.current_user_tags.places %}
+                                <li><a href="#">{{ tag.name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endif %}
+                {% if obj.current_user_tags.projects %}
+                    <li>
+                        <ul>
+                            <span>Projects</span>
+                            {% for tag in obj.current_user_tags.projects %}
+                                <li><a href="#">{{ tag.name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endif %}
+                {% if obj.current_user_tags.tags %}
+                    <li>
+                        <ul>
+                            {% for tag in obj.current_user_tags.tags %}
+                                <li><a href="#">{{ tag.name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endif %}
+            {% endif %}
+        </ul>
+    {% endif %}
+{% endwith %}
+

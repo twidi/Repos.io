@@ -1,13 +1,15 @@
-<article class="content user github{% if account.simple_str in with_details %} with-details{% endif %}">
+<article class="content account {{ account.backend }}">
     <figure>
-        <a href="{{ account.get_absolute_url }}" title="Go to the `{{ account.slug }}` page"><img alt="{{ account.slug }}'s avatar" src="{% if account.avatar %}{{ account.avatar }}{% else %}{{ STATIC_URL }}img/avatar_default_{{ repository.backend }}.png{% endif %}" /></a>
+        <a href="{{ account.get_absolute_url }}" title="Go to the `{{ account.slug }}`'s page"><img alt="`{{ account.slug }}`'s avatar" src="{% if account.avatar %}{{ account.avatar }}{% else %}{{ STATIC_URL }}img/avatar_default_{{ repository.backend }}.png{% endif %}" /></a>
     </figure>
     <header>
-        <h1><a href="{{ account.get_absolute_url }}" title="Go to the `{{ account.slug }}` page">{{ account.slug }}</a></h1>
+        <h1><a href="{{ account.get_absolute_url }}" title="Go to the `{{ account.slug }}`'s page">{{ account.slug }}</a></h1>
         <h3>@ {{ account.backend }}</h3>
         <section class="links">
-            <a href="#" title="Link to the user's page on {{ account.backend }}">{{ account.backend }}</a>
-            <a href="#" title="Link to the user's home page">Home</a>
+            <a href="{{ account.url }}" title="Link to the `{{ account.slug }}`'s page on {{ account.backend }}">{{ account.backend }}</a>
+            {% if account.home_page %}
+                <a href="{{ account.home_page }}" title="Link to the `{{ account.slug }}`'s home page">Home</a>
+            {% endif %}
         </section>
     </header>
     <section class='description'>
@@ -16,26 +18,8 @@
         {% endif %}
     </section>
     <footer>
-        {% with tags=account.all_public_tags %}
-            {% if tags %}
-                <ul class="tags">
-                    {% for tag in tags %}
-                        <li><a href="#">{{ tag }}</a></li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
-        <section>
-            <ul class="status" title="Links between you and this account">
-                <li class="status-followed" title="You are followed by {{ account.slug }}">Followed</li>
-            </ul>
-            <ul class="actions">
-                <li class="action-star{% if forloop.counter == 2 %} selected{% endif %}"><a href="" title="Star it">Star</a></li>
-                <li class="action-check{% if forloop.counter == 3 %} selected{% endif %}"><a href="" title="Check later">Check later</a></li>
-                <li class="action-more"><a href="" title="Show more : tags, notes...">More</a></li>
-            </ul>
-        </section>
+        {% include "front/include_tags.html" with obj=account %}
+        {% include "front/include_icons.html" with obj=account %}
     </footer>
-    {% if account.simple_str in with_details %}{% include "front/repository_details.html" %}{% endif %}
 </article>
 

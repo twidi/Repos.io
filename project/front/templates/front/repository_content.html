@@ -1,27 +1,34 @@
-<article class="content repository github{% if repository.simple_str in with_details %} with-details{% endif %}">
+<article class="content repository {{ repository.backend }}">
     <figure>
-        <a href="{{ repository.get_absolute_url }}" title="Go to the `{{ repository.slug }}` page"><img alt="{{ repository.slug }}'s logo" src="{% if repository.logo %}{{ repository.logo }}{% else %}{{ STATIC_URL }}img/avatar_default_{{ repository.backend }}.png{% endif %}" /></a>
+        <a href="{{ repository.get_absolute_url }}" title="Go to the `{{ repository.slug }}`'s page"><img alt="`{{ repository.project }}`'s logo" src="{% if repository.logo %}{{ repository.logo }}{% else %}{{ STATIC_URL }}img/avatar_default_{{ repository.backend }}.png{% endif %}" /></a>
     </figure>
     <header>
-        <h1><a href="{{ repository.get_absolute_url }}" title="Go to the `{{ repository.slug }}` page">{{ repository.slug }}</a></h1>
+        <h1><a href="{{ repository.get_absolute_url }}" title="Go to the `{{ repository.project }}`'s page">{{ repository.slug }}</a></h1>
         {% if repository.owner %}
-        <h2><span>by</span> <a href="{{ repository.owner.get_absolute_url }}" title="Go to the User page">{{ repository.owner.slug }}</a></h2>
+        <h2>
+            <span>by</span>
+            {% if repository.owner.avatar %}
+                <a href="{{ repository.owner.get_absolute_url }}" title="Go to the `{{ repository.owner.slug }}`'s page"><img alt="`{{ repository.owner.slug }}`'s avatar" src="{{ repository.owner.avatar }}" /></a>
+            {% endif %}
+            <a href="{{ repository.owner.get_absolute_url }}" title="Go to the {{ repository.owner.slug }}'s page">{{ repository.owner.slug }}</a></h2>
         {% endif %}
         <h3>@ {{ repository.backend }}</h3>
         {% if repository.is_fork %}
             <section class="flags">
-                <span class="fork" title="It's a fork">
+                <span class="fork" title="It's a fork{% if repository.parent_fork_id %} of {{ repository.parent_fork }}{% endif %}">
                     {% if repository.parent_fork_id %}
                         <a href="{{ repository.parent_fork.get_absolute_url }}">Fork</a>
                     {% else %}
-                    Fork
+                        Fork
                     {% endif %}
                 </span>
             </section>
         {% endif %}
         <section class="links">
-            <a href="#" title="Link to the project page on {{ repository.backend }}">{{ repository.backend }}</a>
-            <a href="#" title="Link to the project home page">Home</a>
+            <a href="{{ repository.url }}" title="Link to the `{{ repository.project }}`'s page on {{ repository.backend }}">{{ repository.backend }}</a>
+            {% if repository.home_page %}
+                <a href="{{ repository.home_page }}" title="Link to the `{{ repository.project }}`'s home page">Home</a>
+            {% endif %}
         </section>
     </header>
     <section class='description'>
@@ -30,25 +37,7 @@
         {% endif %}
     </section>
     <footer>
-        {% with tags=repository.all_public_tags %}
-            {% if tags %}
-                <ul class="tags">
-                    {% for tag in tags %}
-                        <li><a href="#">{{ tag }}</a></li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
-        <section>
-            <ul class="status" title="Links between you and this repository">
-                <li class="status-forked" title="You are the owner of Repository">Yours</li>
-            </ul>
-            <ul class="actions">
-                <li class="action-star{% if forloop.counter == 2 %} selected{% endif %}"><a href="" title="Star it">Star</a></li>
-                <li class="action-check{% if forloop.counter == 3 %} selected{% endif %}"><a href="" title="Check later">Check later</a></li>
-                <li class="action-more"><a href="" title="Show more : tags, notes...">More</a></li>
-            </ul>
-        </section>
+        {% include "front/include_tags.html" with obj=repository %}
+        {% include "front/include_icons.html" with obj=repository %}
     </footer>
-    {% if repository.simple_str in with_details %}{% include "front/repository_details.html" %}{% endif %}
 </article>

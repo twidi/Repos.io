@@ -1,0 +1,38 @@
+{% load utils_tags %}
+<section>
+    {% if obj.current_user_has_extra %}
+        <ul class="status" title="Links between you and this {{ obj }}">
+            {% if obj.current_user_follows %}
+                <li title="You follow {{ obj }}">Following</li>
+            {% endif %}
+            {% if obj.model_name == 'account' %}
+                {% if obj.current_user_followed %}
+                    <li title="{{ obj }} follows you">Followed</li>
+                {% endif %}
+                {% if obj.current_user_is_self %}
+                    <li title="It's you">You</li>
+                {% endif %}
+            {% else %}
+                {% if obj.current_user_has_fork %}
+                    <li title="You have a fork of {{ obj }}">Forked</li>
+                {% endif %}
+                {% if obj.current_user_owns %}
+                    <li title="{{ obj }} is your repository">Yours</li>
+                {% endif %}
+            {% endif %}
+        </ul>
+    {% endif %}
+    <ul class="actions">
+        {% with has_note=obj.current_user_has_note %}
+            <li class="action-note{% if has_note %} selected{% endif %}"><a href="" title="{% if has_note %}You have a note{% else %}You can add a private note{% endif %}">Note</a></li>
+        {% endwith %}
+        {% with is_starred=user_tags|dict_get:"starred" %}
+            <li class="action-star{% if is_starred %} selected{% endif %}"><a href="" title="{% if is_starred %}Starred{% else %}Star it{% endif %}">Star</a></li>
+        {% endwith %}
+        {% with for_later=user_tags|dict_get:"check-later" %}
+            <li class="action-check{% if for_later %} selected{% endif %}"><a href="" title="{% if for_later %}You want to check it later{% else %}Click to check it later{% endif %}">Check later</a></li>
+        {% endwith %}
+        <li class="action-more"><a href="" title="Show details (readme, followers..., and display/add note & tags...">More</a></li>
+    </ul>
+</section>
+

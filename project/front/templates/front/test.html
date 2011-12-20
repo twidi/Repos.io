@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% load private_tags %}<!DOCTYPE html>
 <html>
     <head>
         <title>test</title>
@@ -10,6 +10,7 @@
         <![endif]-->
     </head>
     <body>
+        {% prepare_private objects %}
         <header>
             <section id="main-header">
                 <h1>Repos.io</h1>
@@ -88,6 +89,7 @@
                             <optgroup label="Others">
                                 <option value="starred">Starred</option>
                                 <option value="check_later">Check later</option>
+                                <option value="noted">With note</option>
                                 <option value="following">Following</option>
                                 <option value="owned">Owned</option>
                             </optgroup>

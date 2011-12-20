@@ -152,6 +152,15 @@ body
     max-width: 960px
     margin: 0 auto
 
+// http://snipplr.com/view/47758/
+body
+  -webkit-animation: bugfix infinite 1s
+@-webkit-keyframes bugfix
+  from
+    white-space: default
+  to
+    white-space: normal
+
 small
   font-size: smaller
 
@@ -173,6 +182,19 @@ ul.tags
     background: $background_tags
     a
       color: $color_tags
+
+  ul
+    display: inline-block
+    background: lighten($flash, 10%)
+    color: $revflash
+    padding: 1px
+    margin: 0 -4px
+    +border-radius(4px)
+    font-weight: bold
+    span
+      padding-left: 1ex
+    li
+      font-weight: normal
 
 body > header
   +background(linear-gradient(top, #0a5f95, #00396b), #075385)
@@ -308,10 +330,6 @@ article.content
         +border-radius(4px)
         float: left
 
-  &:hover
-    > figure
-      +opacity(1)
-
   > header
     margin: 0 0 0.5%
 
@@ -336,6 +354,13 @@ article.content
       span
         color: $color2
         font-size: 80%
+      img
+        height: 16px
+        width: 16px
+        overflow: hidden
+        +border-radius(2px)
+        vertical-align: middle
+        opacity: 0.5
 
     h3
       display: inline-block
@@ -395,6 +420,9 @@ article.content
               position: relative
               top: -2px
 
+  &:hover
+    > figure, > header h2 img
+      +opacity(1)
 
   > section.description
     padding: 0 1% 1%
@@ -451,6 +479,9 @@ article.content
                 color: $flash
                 padding-left: 0.1ex
 
+            &.action-note a:before
+              +iconic("d")
+              +opacity(0.5)
             &.action-star a:before
               +iconic("s")
               +opacity(0.5)
@@ -462,6 +493,9 @@ article.content
 
             &.selected a:before
               +opacity(1)
+            &.selected.action-note a:before
+              color: orange
+              //color: #DC6420
             &.selected.action-star a:before
               color: yellow
               +text-shadow(black 0 0 1px)
