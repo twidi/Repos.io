@@ -6,6 +6,7 @@ FLAGS = dict(
     account = ('starred', 'known', 'check later'),
     repository = ('starred', 'used', 'check later')
 )
+#FLAGS['all'] = tuple(set(FLAGS['account']+FLAGS['repository']))
 
 def split_tags_and_flags(tags, obj_type, tags_are_dict=False):
     """

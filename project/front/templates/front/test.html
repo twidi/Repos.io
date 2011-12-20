@@ -1,4 +1,4 @@
-{% load private_tags %}<!DOCTYPE html>
+{% load private_tags utils_tags %}<!DOCTYPE html>
 <html>
     <head>
         <title>test</title>
@@ -63,7 +63,7 @@
                     <label for="search_type_repositories" class="search_type">Repositories</label>
 
                     <fieldset id="search_main">
-                        <input type="text" />
+                        <input type="text" name='q' />
                         <input type="submit" name="submit" value="f" title="Search !"/>
                     </fieldset>
                     <fieldset id="search_filter">
@@ -71,31 +71,46 @@
                         <label for="search_filter_choice">Choose a filter</label>
                         <select name="filter" id="search_filter_choice">
                             <option value="">No filter</option>
-                            <optgroup label="Your places">
-                                <option value="tag:place::liberation">Libération</option>
-                                <option value="tag:place::perso">Perso</option>
-                                <option value="tag:place::semio">Semio</option>
-                            </optgroup>
-                            <optgroup label="Your projects">
-                                <option value="tag:project::liberation">Arteestick</option>
-                                <option value="tag:project::perso">Djaz</option>
-                                <option value="tag:project::semio">Ulule</option>
-                            </optgroup>
-                            <optgroup label="Your tags">
-                                <option value="tag:foo">Foo</option>
-                                <option value="tag:bar">Bar</option>
-                                <option value="tag:baz">Baz</option>
-                            </optgroup>
-                            <optgroup label="Others">
-                                <option value="starred">Starred</option>
-                                <option value="check_later">Check later</option>
-                                <option value="noted">With note</option>
-                                <option value="following">Following</option>
-                                <option value="followers" class="people_only">Followers</option>
-                                <option value="owned" class="repositories_only">Owned</option>
+                            {% if request.user.is_authenticated %}
+                                {% if not tags.no_places %}
+                                    <optgroup label="Your places"{% if tags.places_for_only %} class="{{ tags.places_for_only}}_only"{% endif %}>
+                                        {% for tag in tags.places %}
+                                            <option value="tag:{{ tag.slug }}"{% if tag.for_only %} class="{{ tag.for_only }}_only"{% endif %}>{{ tag.name }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endif %}
+                                {% if not tags.no_projects %}
+                                    <optgroup label="Your projects"{% if tags.projects_for_only %} class="{{ tags.projects_for_only}}_only"{% endif %}>
+                                        {% for tag in tags.projects %}
+                                            <option value="tag:{{ tag.slug }}"{% if tag.for_only %} class="{{ tag.for_only }}_only"{% endif %}>{{ tag.name }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endif %}
+                                {% if not tags.no_tags %}
+                                    <optgroup label="Your tags"{% if tags.tags_for_only %} class="{{ tags.tags_for_only}}_only"{% endif %}>
+                                        {% for tag in tags.tags %}
+                                            <option value="tag:{{ tag.slug }}"{% if tag.for_only %} class="{{ tag.for_only }}_only"{% endif %}>{{ tag.name }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% endif %}
+                                <optgroup label="Others">
+                                    {% if not tags.no_starred %}
+                                        <option value="tag:starred"{% if tags.starred_for_only %} class="{{ tags.starred_for_only}}_only"{% endif %}>Starred</option>
+                                    {% endif %}
+                                    {% if not tags|dict_get:"no_check-later" %}
+                                        <option value="tag:check-later"{% with only=tags.|dict_get:"check-later_for_only" %}{% if only %} class="{{ only}}_only"{% endif %}{% endwith %}>Check later</option>
+                                    {% endif %}
+                                    <option value="noted">With note</option>
+                                    <option value="following">Following</option>
+                                    <option value="followers" class="people_only">Followers</option>
+                                    <option value="owned" class="repositories_only">Owned</option>
+                                    <option value="last" selected="selected">Last updated</option>
+                                    <option value="best">Best scored</option>
+                                </optgroup>
+                            {% else %}
                                 <option value="last" selected="selected">Last updated</option>
                                 <option value="best">Best scored</option>
-                            </optgroup>
+                            {% endif %}
                         </select>
                     </fieldset>
                     <fieldset id="search_options_repositories">

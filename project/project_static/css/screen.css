@@ -1125,7 +1125,7 @@ article.content > section.details > section.readme {
   font-size: 110%;
 }
 /* line 725, ../sass/screen.sass */
-#search #search_type_repositories:checked ~ fieldset #search_filter_choice option.people_only {
+#search #search_type_repositories:checked ~ fieldset #search_filter_choice .people_only {
   display: none;
 }
 /* line 727, ../sass/screen.sass */
@@ -1133,7 +1133,7 @@ article.content > section.details > section.readme {
   display: none;
 }
 /* line 731, ../sass/screen.sass */
-#search #search_type_people:checked ~ fieldset #search_filter_choice option.repositories_only {
+#search #search_type_people:checked ~ fieldset #search_filter_choice .repositories_only {
   display: none;
 }
 /* line 733, ../sass/screen.sass */
