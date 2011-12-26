@@ -10,7 +10,6 @@
         <![endif]-->
     </head>
     <body>
-        {% prepare_private objects %}
         <header>
             <section id="main-header">
                 <h1>Repos.io</h1>
@@ -55,78 +54,83 @@
                 <header>
                     <h1>Search on Github, Bitbucket...</h1>
                 </header>
-                <form>
-                    <input type="radio" name="type" id="search_type_people" />
-                    <label for="search_type_people" class="search_type">People</label>
+                <form method="get">
+                    <input type="radio" name="type" id="search_type_people" value='people'{{ search.model_name|check_if:"account" }} />
+                    <label for="search_type_people" class="search_type" onclick="">People</label>
 
-                    <input type="radio" name="type" id="search_type_repositories" checked="checked" />
-                    <label for="search_type_repositories" class="search_type">Repositories</label>
+                    <input type="radio" name="type" id="search_type_repositories" value='repositories'{{ search.model_name|check_if:"repository" }} />
+                    <label for="search_type_repositories" class="search_type" onclick="">Repositories</label>
 
                     <fieldset id="search_main">
-                        <input type="text" name='q' />
+                        <input type="text" name='q' value="{{ search.query }}" />
                         <input type="submit" name="submit" value="f" title="Search !"/>
                     </fieldset>
                     <fieldset id="search_filter">
                         <legend>Filter</legend>
                         <label for="search_filter_choice">Choose a filter</label>
                         <select name="filter" id="search_filter_choice">
-                            <option value="">No filter</option>
-                            {% if request.user.is_authenticated %}
-                                {% if not tags.no_places %}
-                                    <optgroup label="Your places"{% if tags.places_for_only %} class="{{ tags.places_for_only}}_only"{% endif %}>
-                                        {% for tag in tags.places %}
-                                            <option value="tag:{{ tag.slug }}"{% if tag.for_only %} class="{{ tag.for_only }}_only"{% endif %}>{{ tag.name }}</option>
-                                        {% endfor %}
-                                    </optgroup>
-                                {% endif %}
-                                {% if not tags.no_projects %}
-                                    <optgroup label="Your projects"{% if tags.projects_for_only %} class="{{ tags.projects_for_only}}_only"{% endif %}>
-                                        {% for tag in tags.projects %}
-                                            <option value="tag:{{ tag.slug }}"{% if tag.for_only %} class="{{ tag.for_only }}_only"{% endif %}>{{ tag.name }}</option>
-                                        {% endfor %}
-                                    </optgroup>
-                                {% endif %}
-                                {% if not tags.no_tags %}
-                                    <optgroup label="Your tags"{% if tags.tags_for_only %} class="{{ tags.tags_for_only}}_only"{% endif %}>
-                                        {% for tag in tags.tags %}
-                                            <option value="tag:{{ tag.slug }}"{% if tag.for_only %} class="{{ tag.for_only }}_only"{% endif %}>{{ tag.name }}</option>
-                                        {% endfor %}
-                                    </optgroup>
-                                {% endif %}
-                                <optgroup label="Others">
-                                    {% if not tags.no_starred %}
-                                        <option value="tag:starred"{% if tags.starred_for_only %} class="{{ tags.starred_for_only}}_only"{% endif %}>Starred</option>
+                            {% with current_filter=search.filter.original_filter %}
+                                <option value="">No filter</option>
+                                {% if request.user.is_authenticated %}
+                                    {% if not tags.no_places %}
+                                        <optgroup label="Your places"{% if tags.places_for_only %} class="{{ tags.places_for_only}}_only"{% endif %}>
+                                            {% for tag in tags.places %}
+                                                <option value="tag:{{ tag.slug }}"{% if tag.for_only %} class="{{ tag.for_only }}_only"{% endif %}{{ 'tag:'|add:tag.slug|select_if:current_filter }}>{{ tag.name }}</option>
+                                            {% endfor %}
+                                        </optgroup>
                                     {% endif %}
-                                    {% if not tags|dict_get:"no_check-later" %}
-                                        <option value="tag:check-later"{% with only=tags.|dict_get:"check-later_for_only" %}{% if only %} class="{{ only}}_only"{% endif %}{% endwith %}>Check later</option>
+                                    {% if not tags.no_projects %}
+                                        <optgroup label="Your projects"{% if tags.projects_for_only %} class="{{ tags.projects_for_only}}_only"{% endif %}>
+                                            {% for tag in tags.projects %}
+                                                <option value="tag:{{ tag.slug }}"{% if tag.for_only %} class="{{ tag.for_only }}_only"{% endif %}{{ 'tag:'|add:tag.slug|select_if:current_filter }}>{{ tag.name }}</option>
+                                            {% endfor %}
+                                        </optgroup>
                                     {% endif %}
-                                    <option value="noted">With note</option>
-                                    <option value="following">Following</option>
-                                    <option value="followers" class="people_only">Followers</option>
-                                    <option value="owned" class="repositories_only">Owned</option>
-                                    <option value="last" selected="selected">Last updated</option>
-                                    <option value="best">Best scored</option>
-                                </optgroup>
-                            {% else %}
-                                <option value="last" selected="selected">Last updated</option>
-                                <option value="best">Best scored</option>
-                            {% endif %}
+                                    {% if not tags.no_tags %}
+                                        <optgroup label="Your tags"{% if tags.tags_for_only %} class="{{ tags.tags_for_only}}_only"{% endif %}>
+                                            {% for tag in tags.tags %}
+                                                <option value="tag:{{ tag.slug }}"{% if tag.for_only %} class="{{ tag.for_only }}_only"{% endif %}{{ 'tag:'|add:tag.slug|select_if:current_filter }}>{{ tag.name }}</option>
+                                            {% endfor %}
+                                        </optgroup>
+                                    {% endif %}
+                                    <optgroup label="Others">
+                                        {% if not tags.no_starred %}
+                                            <option value="tag:starred"{% if tags.starred_for_only %} class="{{ tags.starred_for_only}}_only"{% endif %}{{  "tag:starred"|select_if:current_filter }}>Starred</option>
+                                        {% endif %}
+                                        {% if not tags|dict_get:"no_check-later" %}
+                                            <option value="tag:check-later"{% with only=tags.|dict_get:"check-later_for_only" %}{% if only %} class="{{ only}}_only"{% endif %}{% endwith %}{{ "tag:check-later"|select_if:current_filter }}>Check later</option>
+                                        {% endif %}
+                                        <option value="noted"{{ "noted"|select_if:current_filter }}>With note</option>
+                                        <option value="following"{{ "following"|select_if:current_filter }}>Following</option>
+                                        <option value="followers" class="people_only"{{ "followers"|select_if:current_filter }}>Followers</option>
+                                        <option value="owned" class="repositories_only"{{ "owned"|select_if:current_filter }}>Owned</option>
+                                        <option value="last"{{ "last"|select_if:current_filter }}>Last updated</option>
+                                        <option value="best"{{ "best"|select_if:current_filter }}>Best scored</option>
+                                    </optgroup>
+                                {% else %}
+                                    <option value="last"{{ "last"|select_if:current_filter }}>Last updated</option>
+                                    <option value="best"{{ "best"|select_if:current_filter }}>Best scored</option>
+                                {% endif %}
+                            {% endwith %}
                         </select>
                     </fieldset>
                     <fieldset id="search_options_repositories">
                         <legend>Options</legend>
-                        <input type="checkbox" name="show_forks" value="1" id="search_show_forks" /><label for="search_show_forks">Show forks ?</label>
+                        <input type="checkbox" name="show-forks" value="y" id="search_show_forks"{{ search.options.show_forks|check_if:"y" }} /><label for="search_show_forks">Show forks ?</label>
                     </fieldset>
                 </form>
             </section>
             <section class="results">
-                {% for object in objects %}
-                    {% if object.model_name == 'account' %}
-                        {% include "front/user_content.html" with account=object %}
-                    {% else %}
-                        {% include "front/repository_content.html" with repository=object %}
-                    {% endif %}
-                {% endfor %}
+                {% with page=search.get_results %}
+                    {% prepare_private page.object_list %}
+                    {% for object in page.object_list %}
+                        {% if object.model_name == 'account' %}
+                            {% include "front/user_content.html" with account=object %}
+                        {% else %}
+                            {% include "front/repository_content.html" with repository=object %}
+                        {% endif %}
+                    {% endfor %}
+                {% endwith %}
             </section>
         </section>
         <footer>

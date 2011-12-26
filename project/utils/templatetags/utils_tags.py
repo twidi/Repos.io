@@ -32,3 +32,21 @@ def attr_get(obj, attr):
     except:
         return ''
 
+def insert_if(value, test, html):
+    """
+    Return the html if the value is equal to the tests
+    """
+    try:
+        if value == test:
+            return html
+    except:
+        pass
+    return ''
+
+@register.filter
+def check_if(value, test):
+    return insert_if(value, test, ' checked="checked"')
+
+@register.filter
+def select_if(value, test):
+    return insert_if(value, test, ' selected="selected"')

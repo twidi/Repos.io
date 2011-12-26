@@ -240,7 +240,7 @@ CORE_ENABLED_BACKENDS = ('github', )
 # haystack
 HAYSTACK_SITECONF = 'project.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'solr'
-HAYSTACK_SEARCH_RESULTS_PER_PAGE = 50
+HAYSTACK_SEARCH_RESULTS_PER_PAGE = 20
 # solr
 HAYSTACK_SOLR_URL = 'http://url/to/solr'
 

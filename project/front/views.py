@@ -2,10 +2,9 @@
 
 from django.shortcuts import render
 
-from core.models import Account, Repository
-
 from tagging.models import Tag
 from tagging.flags import split_tags_and_flags
+from front.search import Search
 
 def _get_tags(request):
     """
@@ -56,22 +55,10 @@ def _get_tags(request):
     return tags
 
 def test(request):
-    import random
 
-    model=Repository
-    #model = random.choice((Account, Repository))
-    #objects = list(model.for_list.order_by('id')[100:120])
-    objects = list(model.for_list.filter(slug='django-critic').order_by('-score'))
-    #random.shuffle(objects)
-
-    with_details = []
-    #if model == Repository:
-    #    with_details = [objects[2].simple_str(), ]
-
+    search = Search.get_for_request(request)
 
     return render(request, 'front/test.html', dict(
-        objects = objects,
-        search_type = 'repository' if model == Repository else 'account',
-        with_details = with_details,
+        search = search,
         tags = _get_tags(request),
     ))
