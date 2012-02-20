@@ -1,0 +1,34 @@
+{% load reposio_core %}
+{% with account=obj %}
+<section class="details">
+    <header>
+        {% spaceless %}
+        <ul>
+            {% include "front/include_link_to_about_subsection.html" %}
+
+            {% if account.backend|supports:"user_followers" and account.followers_count %}
+                {% include "front/include_link_to_subsection.html" with type="followers" display="Followers" details=account.followers_count %}
+            {% endif %}
+
+            {% if account.backend|supports:"user_following" and account.following_count %}
+                {% include "front/include_link_to_subsection.html" with type="following" display="Following" details=account.following_count %}
+            {% endif %}
+
+            {% if account.backend|supports:"user_repositories" and account.repositories_count %}
+                {% include "front/include_link_to_subsection.html" with type="repositories" display="Repositories" details=account.repositories_count %}
+            {% endif %}
+
+            {% if account.backend|supports:"repository_contributors" and account.contributing_count %}
+                {% include "front/include_link_to_subsection.html" with type="contributing" display="Contributing" details=account.contributing_count|add:"+" %}
+            {% endif %}
+
+        </ul>
+        {% endspaceless %}
+    </header>
+    {# preload about #}
+    {% include "front/include_subsection_about.html" %}
+    {% if account.include_details != 'about' and subsection != 'home' and subsection != 'about' %}
+        {% include "front/include_subsection.html" %}
+    {% endif %}
+</section>
+{% endwith %}

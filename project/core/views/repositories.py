@@ -1,133 +1,182 @@
 # Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
 
-from django.shortcuts import render
-from django.conf import settings
+from django.shortcuts import render, redirect
+from django.http import Http404
 
-from utils.views import paginate
-from core.models import Account, Repository
+from endless_pagination.decorators import page_template
+
 from core.views.decorators import check_repository, check_support
-from core.views.sort import get_account_sort, get_repository_sort
+from core.views import base_object_search
+from front.decorators import ajaxable
+from private.forms import NoteForm
 
 @check_repository
-def home(request, backend, project, repository=None):
+@ajaxable('front/repository_details.html')
+def home(request, backend, project, repository=None, template='front/repository_main.html'):
     """
     Home page of a repository
     """
-    context = dict(repository = repository)
-    return render(request, 'core/repositories/home.html', context)
+    context = dict(obj = repository)
+    return render(request, template, context)
+
+@check_repository
+@ajaxable('front/repository_details.html')
+def edit_tags(request, backend, project, repository=None, template='front/repository_main.html'):
+    """
+    Home page of a repository, in tags-editing mode
+    """
+    context = dict(obj = repository)
+    if not request.is_ajax():
+        context['edit_tags'] = True
+    return render(request, template, context)
+
+@check_repository
+#@ajaxable('front/repository_details.html')
+@ajaxable('front/note_form.html')
+def edit_note(request, backend, project, repository=None, template='front/repository_main.html'):
+    """
+    Home page of a repository, in tags-editing mode
+    """
+    note = repository.get_user_note()
+
+    context = dict(
+        overlay = True,
+        obj = repository,
+        edit_note = True,
+        note = note,
+        note_form = NoteForm(instance=note) if note else NoteForm(noted_object=repository),
+    )
+    return render(request, template, context)
+
+@check_repository
+def owner(request, backend, project, repository=None):
+    """
+    Link to the repository's owner page
+    """
+    if not repository.owner:
+        raise Http404
+    if not request.is_ajax():
+        return redirect(repository.owner)
+
+    repository.owner.include_details = 'about'
+
+    context = dict(obj = repository.owner)
+
+    return render(request, 'front/include_subsection_object.html', context)
+
+@check_repository
+def parent_fork(request, backend, project, repository=None):
+    """
+    Link to the repository's parent-fork page
+    """
+    if not repository.parent_fork:
+        raise Http404
+    if not request.is_ajax():
+        return redirect(repository.parent_fork)
+
+    repository.parent_fork.include_details = 'about'
+
+    context = dict(obj = repository.parent_fork)
+
+    return render(request, 'front/include_subsection_object.html', context)
 
 @check_support('repository_followers')
 @check_repository
-def followers(request, backend, project, repository=None):
+@page_template("front/include_results.html")
+def followers(request, backend, project, repository=None, template="front/repository_main.html", extra_context=None):
     """
     Page listing users following a repository
     """
-
-    sort = get_account_sort(request.GET.get('sort_by', None), default=None)
-
-    sorted_followers = Account.for_list.filter(repositories=repository)
-    if sort['key']:
-        sorted_followers = sorted_followers.order_by(sort['db_sort'])
-
-    page = paginate(request, sorted_followers, settings.ACCOUNTS_PER_PAGE)
-
-    context = dict(
-        repository = repository,
-        page = page,
-        sort = dict(
-            key = sort['key'],
-            reverse = sort['reverse'],
-        ),
-    )
-
-    return render(request, 'core/repositories/followers.html', context)
+    return base_object_search(
+            request,
+            repository,
+            'people',
+            'followers',
+            template = template,
+            search_extra_params = None,
+            extra_context = extra_context,
+        )
 
 @check_support('repository_contributors')
 @check_repository
-def contributors(request, backend, project, repository=None):
+@page_template("front/include_results.html")
+def contributors(request, backend, project, repository=None, template="front/repository_main.html", extra_context=None):
     """
     Page listing users contributing to a repository
     """
+    return base_object_search(
+            request,
+            repository,
+            'people',
+            'contributors',
+            template = template,
+            search_extra_params = None,
+            extra_context = extra_context,
+        )
 
-    sort = get_account_sort(request.GET.get('sort_by', None), default=None)
+@check_support('repository_readme')
+@check_repository
+@ajaxable('front/include_subsection_readme.html')
+def readme(request, backend, project, repository=None, template="front/repository_main.html"):
+    context = dict(obj = repository)
+    return render(request, template, context)
 
-    sorted_contributors = Account.for_list.filter(contributing=repository)
-    if sort['key']:
-        sorted_contributors = sorted_contributors.order_by(sort['db_sort'])
+@check_repository
+def about(request, backend, project, repository=None):
 
-    page = paginate(request, sorted_contributors, settings.ACCOUNTS_PER_PAGE)
+    if not request.is_ajax():
+        return redirect(repository)
 
-    context = dict(
-        repository = repository,
-        page = page,
-        sort = dict(
-            key = sort['key'],
-            reverse = sort['reverse'],
-        ),
-    )
-
-    return render(request, 'core/repositories/contributors.html', context)
+    context = dict(obj = repository)
+    return render(request, 'front/include_subsection_about.html', context)
 
 @check_support('repository_parent_fork')
 @check_repository
-def forks(request, backend, project, repository=None):
+@page_template("front/include_results.html")
+def forks(request, backend, project, repository=None, template="front/repository_main.html", extra_context=None):
     """
     Page listing forks of a repository
     """
+    return base_object_search(
+            request,
+            repository,
+            'repositories',
+            'forks',
+            template = template,
+            search_extra_params = { 'show_forks': 'y' },
+            extra_context = extra_context,
+        )
 
-    mode = request.GET.get('mode')
-    if mode not in ('real_forks', 'same_name',):
-        mode = 'real_forks'
+    #if mode == 'real_forks':
+    #    sorted_forks = Repository.for_list.filter(parent_fork=repository)
+    #else:
+    #    sorted_forks = Repository.for_list.filter(name=repository.name).exclude(is_fork=True)
+    ## check sub forks, one query / level
+    #if mode == 'real_forks':
+    #    current_forks = page.object_list
+    #    while True:
+    #        by_id = dict((obj.id, obj) for obj in current_forks)
+    #        current_forks = Repository.for_list.filter(parent_fork__in=by_id.keys()).order_by('-official_modified')
+    #        if not current_forks:
+    #            break
+    #        for fork in current_forks:
+    #            parent_fork = by_id[fork.parent_fork_id]
+    #            if not hasattr(parent_fork, 'direct_forks'):
+    #                parent_fork.direct_forks = []
+    #            parent_fork.direct_forks.append(fork)
+    #    # make one list for each first level fork, to avoid recursion in templates
+    #    all_forks = []
+    #    def get_all_forks_for(fork, level):
+    #        fork.fork_level = level
+    #        all_subforks = [fork,]
+    #        if hasattr(fork, 'direct_forks'):
+    #            for subfork in fork.direct_forks:
+    #                all_subforks += get_all_forks_for(subfork, level+1)
+    #            delattr(fork, 'direct_forks')
+    #        return all_subforks
+    #    for fork in page.object_list:
+    #        all_forks += get_all_forks_for(fork, 0)
+    #    page.object_list = all_forks
 
-    sort = get_repository_sort(request.GET.get('sort_by', None), default='updated', default_reverse=True)
-
-    if mode == 'real_forks':
-        sorted_forks = Repository.for_list.filter(parent_fork=repository)
-    else:
-        sorted_forks = Repository.for_list.filter(name=repository.name).exclude(is_fork=True)
-
-    if sort['key']:
-        sorted_forks = sorted_forks.order_by(sort['db_sort'])
-
-    page = paginate(request, sorted_forks, settings.REPOSITORIES_PER_PAGE)
-
-    # check sub forks, one query / level
-    if mode == 'real_forks':
-        current_forks = page.object_list
-        while True:
-            by_id = dict((obj.id, obj) for obj in current_forks)
-            current_forks = Repository.for_list.filter(parent_fork__in=by_id.keys()).order_by('-official_modified')
-            if not current_forks:
-                break
-            for fork in current_forks:
-                parent_fork = by_id[fork.parent_fork_id]
-                if not hasattr(parent_fork, 'direct_forks'):
-                    parent_fork.direct_forks = []
-                parent_fork.direct_forks.append(fork)
-        # make one list for each first level fork, to avoid recursion in templates
-        all_forks = []
-        def get_all_forks_for(fork, level):
-            fork.fork_level = level
-            all_subforks = [fork,]
-            if hasattr(fork, 'direct_forks'):
-                for subfork in fork.direct_forks:
-                    all_subforks += get_all_forks_for(subfork, level+1)
-                delattr(fork, 'direct_forks')
-            return all_subforks
-        for fork in page.object_list:
-            all_forks += get_all_forks_for(fork, 0)
-        page.object_list = all_forks
-
-    context = dict(
-        forks_mode = mode,
-        repository = repository,
-        page = page,
-        sort = dict(
-            key = sort['key'],
-            reverse = sort['reverse'],
-        ),
-    )
-
-    return render(request, 'core/repositories/forks.html', context)
 
 

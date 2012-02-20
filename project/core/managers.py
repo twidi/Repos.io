@@ -4,9 +4,11 @@ from copy import copy
 
 from django.db import models
 from django.conf import settings
+from django.template import Context
 
 from redisco import connection
 
+from utils.model_utils import queryset_iterator
 from core import REDIS_KEYS
 from core.backends import get_backend, get_backend_from_auth
 from core.exceptions import OriginalProviderLoginMissing
@@ -43,6 +45,24 @@ class SyncableModelManager(models.Manager):
         Return the `size` objects with the better score
         """
         return self.get_best_in_zset('best_scored', size)
+
+    def update_external(self, print_delta=0, start=0, select_related=None):
+        """
+        Update search index and cached_templates for all objects
+        """
+        qs = self.all()
+        if select_related:
+            qs = qs.select_related(*select_related)
+        if start:
+            qs = qs.filter(pk__gte=start)
+        qs = queryset_iterator(qs)
+        context = Context(dict(STATIC_URL=settings.STATIC_URL))
+        for obj in qs:
+            obj.update_search_index()
+            obj.update_cached_template(context)
+            if print_delta and not obj.id % print_delta:
+                print obj.id
+
 
 
 class AccountManager(SyncableModelManager):
@@ -123,12 +143,13 @@ class AccountManager(SyncableModelManager):
             return None
 
 
+
 class OptimForListAccountManager(AccountManager):
     """
     Default `only` (fetch only some fields) and `select_related`
     """
 
-    list_needed_fields = ('backend', 'status', 'slug', 'name', 'last_fetch', 'avatar', 'score', 'url', 'homepage', 'modified', 'deleted')
+    list_needed_fields = ('backend', 'status', 'slug', 'name', 'last_fetch', 'avatar', 'score', 'url', 'homepage', 'modified', 'deleted', 'official_created')
     list_select_related = ()
 
     def get_query_set(self):
@@ -199,6 +220,11 @@ class RepositoryManager(SyncableModelManager):
         """
         return '/'.join([slugify(part) for part in project.split('/')])
 
+    def update_external(self, print_delta=0, start=0, select_related=None):
+        if select_related is None:
+            select_related = ('owner',)
+        return super(RepositoryManager, self).update_external(print_delta, start, select_related)
+
 
 class OptimForListRepositoryManager(RepositoryManager):
     """
@@ -206,7 +232,7 @@ class OptimForListRepositoryManager(RepositoryManager):
     """
 
     # default fields for wanted repositories
-    list_needed_fields = ['backend', 'status', 'project', 'slug', 'name', 'last_fetch', 'logo', 'score', 'is_fork', 'description', 'official_modified', 'owner', 'parent_fork', 'official_created', 'modified', 'deleted']
+    list_needed_fields = ['backend', 'status', 'project', 'slug', 'name', 'last_fetch', 'logo', 'url', 'homepage', 'score', 'is_fork', 'description', 'official_modified', 'owner', 'parent_fork', 'official_created', 'modified', 'deleted']
     # same for the parent fork
     list_needed_fields += ['parent_fork__%s' % field for field in list_needed_fields if field not in ('is_fork', 'parent_fork', 'description', 'official_created')]
     # and needed ones for owners

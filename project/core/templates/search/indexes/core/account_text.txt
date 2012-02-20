@@ -6,3 +6,6 @@
     {{ object.name }}
     {{ object.name }}
 {% endif %}
+{% for tag in obj.all_public_tags %}
+    {{ tag.slug }}
+{% endfor %}

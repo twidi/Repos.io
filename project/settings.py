@@ -176,6 +176,8 @@ INSTALLED_APPS = (
     'taggit',
     'template_preprocessor',
     'redisession',
+    'endless_pagination',
+    'adv_cache_tag',
 
     # ours
     'utils',
@@ -213,6 +215,12 @@ LOGGING = {
 
 DATE_FORMAT = "Y-m-d H:i"
 
+# core
+CONTENT_TYPES = dict(
+    account = 17,
+    repository = 18
+)
+
 # social_auth
 AUTHENTICATION_BACKENDS = (
     'social_auth.backends.contrib.github.GithubBackend',
@@ -241,12 +249,15 @@ CORE_ENABLED_BACKENDS = ('github', )
 HAYSTACK_SITECONF = 'project.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'solr'
 HAYSTACK_SEARCH_RESULTS_PER_PAGE = 20
+HAYSTACK_INCLUDE_SPELLING = True
 # solr
 HAYSTACK_SOLR_URL = 'http://url/to/solr'
+SOLR_MAX_IN = 1900
 
 # pagination
 ACCOUNTS_PER_PAGE = 50
 REPOSITORIES_PER_PAGE = 50
+ENDLESS_PAGINATION_ORPHANS = 5
 
 # notes
 NOTES_ALLOWED_MODELS = ('core.account', 'core.repository',)
@@ -285,6 +296,11 @@ REDIS_SESSION_CONFIG = {
     'COMPRESS_LIB': None,
 }
 
+# adv cache
+ADV_CACHE_INCLUDE_PK = True
+ADV_CACHE_VERSIONING = True
+ADV_CACHE_COMPRESS = True
+ADV_CACHE_COMPRESS_SPACES = True
 
 # asynchronous
 WORKER_FETCH_FULL_KEY = 'fetch_full:%d'

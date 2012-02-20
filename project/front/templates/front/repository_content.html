@@ -1,4 +1,7 @@
-<article class="content repository {{ repository.backend }}">
+{% load reposio_core %}
+{% with repository=obj %}
+{% corecache 0 repository_content repository.pk repository.modified %}
+<article class="content repository {{ repository.backend }}{% if repository.deleted %} deleted{% endif %}">
     <figure>
         <a href="{{ repository.get_absolute_url }}" title="Go to the `{{ repository.slug }}`'s page"><img alt="`{{ repository.project }}`'s logo" src="{% if repository.logo %}{{ repository.logo }}{% else %}{{ STATIC_URL }}img/avatar_default_{{ repository.backend }}.png{% endif %}" /></a>
     </figure>
@@ -8,16 +11,16 @@
         <h2>
             <span>by</span>
             {% if repository.owner.avatar %}
-                <a href="{{ repository.owner.get_absolute_url }}" title="Go to the `{{ repository.owner.slug }}`'s page"><img alt="`{{ repository.owner.slug }}`'s avatar" src="{{ repository.owner.avatar }}" /></a>
+                <a class="owner" href="{{ repository.owner.get_absolute_url }}" title="Go to the `{{ repository.owner.slug }}`'s page"><img alt="`{{ repository.owner.slug }}`'s avatar" src="{{ repository.owner.avatar }}" /></a>
             {% endif %}
-            <a href="{{ repository.owner.get_absolute_url }}" title="Go to the {{ repository.owner.slug }}'s page">{{ repository.owner.slug }}</a></h2>
+            <a class="owner" href="{{ repository.owner.get_absolute_url }}" title="Go to the `{{ repository.owner.slug }}`'s page">{{ repository.owner.slug }}</a></h2>
         {% endif %}
-        <h3>@ {{ repository.backend }}</h3>
+        <h3><a href="{{ repository.url }}" title="Link to the `{{ repository.project }}`'s page on {{ repository.backend }}">@ {{ repository.backend }}</a></h3>
         {% if repository.is_fork %}
             <section class="flags">
                 <span class="fork" title="It's a fork{% if repository.parent_fork_id %} of {{ repository.parent_fork }}{% endif %}">
                     {% if repository.parent_fork_id %}
-                        <a href="{{ repository.parent_fork.get_absolute_url }}">Fork</a>
+                        <a class="parent-fork" href="{{ repository.parent_fork.get_absolute_url }}">Fork</a>
                     {% else %}
                         Fork
                     {% endif %}
@@ -26,18 +29,39 @@
         {% endif %}
         <section class="links">
             <a href="{{ repository.url }}" title="Link to the `{{ repository.project }}`'s page on {{ repository.backend }}">{{ repository.backend }}</a>
-            {% if repository.home_page %}
-                <a href="{{ repository.home_page }}" title="Link to the `{{ repository.project }}`'s home page">Home</a>
+            {% if repository.homepage %}
+                <a href="{{ repository.homepage }}" title="Link to the `{{ repository.project }}`'s home page">Home</a>
             {% endif %}
         </section>
     </header>
     <section class='description'>
+        {% if repository.deleted %}
+            <strong>Repository deleted</strong>
+        {% endif %}
         {% if repository.description %}
             <p>{{ repository.description }}</p>
         {% endif %}
     </section>
+    <section class='date-score'>
+        <ul>
+            <li title="Updated date on {{ repository.backend }}">{{ repository.official_modified|date:"Y-m-d" }}</li>
+            <li title="Score">{{ repository.score|default:"-" }}</li>
+        </ul>
+    </section>
     <footer>
         {% include "front/include_tags.html" with obj=repository %}
-        {% include "front/include_icons.html" with obj=repository %}
+        {% nocache %}
+            {% with obj=repository obj_url=repository.get_absolute_url %}
+                {% include "front/include_user_tags.html" %}
+                {% include "front/include_icons.html" %}
+            {% endwith %}
+        {% endnocache %}
     </footer>
+    {% nocache %}
+        {% if repository.include_details %}
+            {% include "front/repository_details.html" with obj=repository obj_url=repository.get_absolute_url %}
+        {% endif %}
+    {% endnocache %}
 </article>
+{% endcorecache %}
+{% endwith %}

@@ -1,0 +1,104 @@
+{% load reposio_core %}
+
+{% if request.user.is_authenticated and links %}
+{% with nb_accounts=user_accounts|length %}
+<ul class="links">
+    <h1>You and {{ obj.slug }}</h1>
+
+    {% if obj.user.id == request.user.id %}
+        <li>It's you !</li>
+    {% else %}
+        {% if links.following %}
+            <li>
+                You
+                {% if nb_accounts > 1 %}
+                    (
+                    {% for account in links.following %}
+                        {% include "core/accounts/link_no_backend.html" %}
+                        {% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                    )
+                {% endif %}
+                follow him
+            </li>
+        {% endif %}
+        {% if links.followed %}
+            <li>
+                He follows you
+                {% if nb_accounts > 1 %}
+                    (
+                    {% for account in links.followed %}
+                        {% include "core/accounts/link_no_backend.html" %}
+                        {% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                    )
+                {% endif %}
+            </li>
+        {% endif %}
+        {% if links.project_following %}
+            <li>
+                You follow
+                {% if links.project_following|length > 1 %}some{% else %}one{% endif %}
+                of its projects (
+                {% for repository in links.project_following %}
+                    {% include "core/repositories/link_no_owner_no_backend.html" %}
+                    {% if not forloop.last %}, {% endif %}
+                {% endfor %}
+                )
+            </li>
+        {% endif %}
+        {% if links.project_followed %}
+            <li>
+                He follows
+                {% if links.project_followed|length > 1 %}some{% else %}one{% endif %}
+                of your projects (
+                {% for repository in links.project_followed %}
+                    {% include "core/repositories/link_no_backend.html" %}
+                    {% if not forloop.last %}, {% endif %}
+                {% endfor %}
+                )
+            </li>
+        {% endif %}
+    {% endif %}
+
+</ul>
+{% endwith %}
+{% endif %}
+
+<dl class="infos">
+    <h1>Informations</h1>
+
+    <dt>Name</dt>
+    <dd>{{ obj.name }}</dd>
+
+    <dt>Source</dt>
+    <dd><a href="{{ obj.url }}">{{ obj.backend }}</a></dd>
+
+    {% if obj.official_created %}
+        <dt>Since</dt>
+        <dd>{{ obj.official_created }}</dd>
+    {% endif %}
+
+    {% if obj.homepage %}
+        <dt>Homepage</dt>
+        <dd>{{ obj.homepage|urlizetrunc:30 }}</dd>
+    {% endif %}
+</dl>
+
+<dl class="usage">
+    <h1>Person</h1>
+
+    <dt>Score</dt>
+    <dd>{{ obj.score }}</dd>
+
+    <dt>Popularity</dt>
+    <dd>Starred {{ obj|count_tags:'starred' }} times</dd>
+    <dd>Tagged by {{ obj.count_taggers }} people</dd>
+
+    <dt>Places</dt>
+    <dd>Mentioned {{ obj|count_tags:'places' }} times</dd>
+
+    <dt>Projects</dt>
+    <dd>Mentioned {{ obj|count_tags:'projects' }} times</dd>
+</dl>
+

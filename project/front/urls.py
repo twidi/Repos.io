@@ -1,8 +1,8 @@
 # Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
 
 from django.conf.urls.defaults import *
-from front.views import test
+from front.views import main
 
 urlpatterns = patterns('',
-    url(r'^$', test, name='front_test'),
+    url(r'^$', main, name='front_main'),
 )

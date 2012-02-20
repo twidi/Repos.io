@@ -1,0 +1,32 @@
+{% load utils_tags tagging_tags %}<li class="tags-type-{{ type }}" data-type="{{ type }}">
+    <label>{{ name }}s</label>
+    <ul class="tags">
+        <li class="add-form">
+            <form method="post" action="/private/tag/save/">{% csrf_token %}
+                <input type="hidden" name="content_type" value="{{ obj.content_type }}" />
+                <input type="hidden" name="object_id" value="{{ obj.pk }}" />
+                <input type="hidden" name="act" value="create" />
+                <input type="text" name="tag" placeholder="New {{ name|lower }}" />
+                <input type="submit" name="submit" value="=" title="Add" />
+            </form>
+        </li>
+        {% if all_user_tags.has|dict_get:type %}
+            {% with current_user_tags=obj.current_user_tags|dict_get:type %}
+                {% for tag in all_tags %}
+                    {% with is_official=tag|tag_is_in:obj_tags is_selected=tag|tag_is_in:current_user_tags %}
+                        <li class="{% if only and tag.for_only %}{{ tag.for_only }}_only {% endif %}{% if is_official %}official{% if is_selected %}-used{% endif %} {% endif %}{% if is_selected %}selected{% endif %}" data-slug="{{ tag.slug }}">
+                            <form method="post" action="{{ tags_save_url }}">{% csrf_token %}
+                                <input type="hidden" name="content_type" value="{{ obj.content_type }}" />
+                                <input type="hidden" name="object_id" value="{{ obj.pk }}" />
+                                <input type="hidden" name="tag" value="{{ tag.name }}" />
+                                <input type="hidden" name="act" value="{% if is_selected %}remove{% else %}add{% endif %}" />
+                                <button title="{% if is_selected %}Remove{% else %}Add{% endif %}">{{ tag.name }}<span>{% if is_selected %}_{% else %}={% endif %}</span></button>
+                            </form>
+                        </li>
+                    {% endwith %}
+                {% endfor %}
+            {% endwith %}
+        {% endif %}
+    </ul>
+</li>
+

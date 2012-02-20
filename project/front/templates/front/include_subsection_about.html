@@ -1,0 +1,11 @@
+{% load reposio_core %}{% spaceless %}
+{% with links=obj|links_with_user:request.user %}
+<section rel="about" class="about{% if obj.include_details == 'about' or subsection == 'about' or subsection == 'home' %} current{% endif %} {{ obj.model_name }}">
+    {% if obj.model_name == 'repository' %}
+        {% include "front/include_subsection_about_repository.html" %}
+    {% else %}
+        {% include "front/include_subsection_about_account.html" %}
+        {% endif %}
+</section>
+{% endwith %}
+{% endspaceless %}

@@ -1,0 +1,13 @@
+{% load private_tags tagging_tags %}{% spaceless %}
+{% prepare_all_user_tags %}
+{% url tags_save as tags_save_url %}
+{% with obj_tags=obj.all_public_tags %}
+<div id="tags-popin" class="{{ obj.search_type }} from-html">
+    <ul>
+        {% include "front/tag_form_part.html" with type="tags" name="Tag" only=1 all_tags=all_user_tags.tags|add_tags:obj_tags %}
+        {% include "front/tag_form_part.html" with type="places" name="Place" only=0 all_tags=all_user_tags.places %}
+        {% include "front/tag_form_part.html" with type="projects" name="Project" only=0 all_tags=all_user_tags.projects %}
+    </ul>
+</div>
+{% endwith %}
+{% endspaceless %}

@@ -1,0 +1,39 @@
+{% load utils_tags %}{% spaceless %}
+{% if obj.current_user_has_tags %}
+    {% uuid uuid %}
+    <a class="show-user-tags" href="#user-tags-{{ uuid}}">Show your tags</a>
+    <ul class="tags user-tags" id="user-tags-{{ uuid }}">
+        {% if obj.current_user_tags.places %}
+            <li class="tags-type-places">
+                <ul>
+                    <span>Places</span>
+                    {% for tag in obj.current_user_tags.places %}
+                        <li data-slug="{{ tag.slug }}"><a href="/v2/?type={{ obj.search_type }}&amp;filter=tag:{{ tag.slug }}">{{ tag.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endif %}
+        {% if obj.current_user_tags.projects %}
+            <li class="tags-type-projects">
+                <ul>
+                    <span>Projects</span>
+                    {% for tag in obj.current_user_tags.projects %}
+                        <li data-slug="{{ tag.slug }}"><a href="/v2/?type={{ obj.search_type }}&amp;filter=tag:{{ tag.slug }}">{{ tag.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endif %}
+        {% if obj.current_user_tags.tags %}
+            <li class="tags-type-tags">
+                <ul>
+                    {% for tag in obj.current_user_tags.tags %}
+                        <li data-slug="{{ tag.slug }}"><a href="/v2/?type={{ obj.search_type }}&amp;filter=tag:{{ tag.slug }}">{{ tag.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endif %}
+    </ul>
+{% endif %}
+<a class="more-tags{% if obj.current_user_has_tags %} user-has-tags{% endif %}{% if edit_tags %} selected{% endif %}" href="{{ obj_url }}{% if not edit_tags %}edit-tags/{% endif %}" title="Edit your tags" data-content-type="{{ obj.content_type }}" data-object-id="{{ obj.pk }}">More</a>
+{% if edit_tags %}{% include "front/tag_form.html" %}{% endif %}
+{% endspaceless %}

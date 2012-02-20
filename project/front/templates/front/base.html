@@ -1,0 +1,99 @@
+{% load private_tags %}<!DOCTYPE html>
+<html>
+    <head>
+        <title>{% block title %}Home{% endblock %} - Repos.io</title>
+        <link href="{{ STATIC_URL }}css/jquery.jgrowl-1.2.5.css" media="screen, projection" rel="stylesheet" type="text/css" />
+        <link href="{{ STATIC_URL }}css/screen.css" media="screen, projection" rel="stylesheet" type="text/css" />
+        <link href="{{ STATIC_URL }}css/print.css" media="print" rel="stylesheet" type="text/css" />
+        <meta name="viewport" content="width=device-width" />
+        <!--[if IE]>
+            <link href="{{ STATIC_URL }}/css/ie.css" media="screen, projection" rel="stylesheet" type="text/css" />
+        <![endif]-->
+        {% block css %}{% endblock %}
+        <script src="{{ STATIC_URL }}js/jquery-1.7.1.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="{{ STATIC_URL }}js/jquery.history.js" type="text/javascript" charset="utf-8"></script>
+        <script src="{{ STATIC_URL }}js/jquery.unserialize.js" type="text/javascript" charset="utf-8"></script>
+        <script src="{{ STATIC_URL }}js/jquery.tinysort.js" type="text/javascript" charset="utf-8"></script>
+        <script src="{{ STATIC_URL }}js/jquery.jgrowl.min-1.2.5.js" type="text/javascript" charset="utf-8"></script>
+        <script src="{{ STATIC_URL }}js/classy.js" type="text/javascript" charset="utf-8"></script>
+        <script src="{{ STATIC_URL }}js/crc32.js" type="text/javascript" charset="utf-8"></script>
+        <script src="{{ STATIC_URL }}js/reposio.js" type="text/javascript" charset="utf-8"></script>
+        {% if user and user.is_authenticated %}
+        <script type="text/javascript" charset="utf-8">
+            window.Reposio = window.Reposio || {};
+            Reposio.UserTags = {% all_user_tags_json %};
+            Reposio.Token = "{{ csrf_token }}";
+            Reposio.section = "{{ section|default:'' }}";
+            Reposio.subsection = "{{ subsection|default:'' }}";
+        </script>
+        {% endif %}
+        {% block js %}{% endblock %}
+    </head>
+    <body>
+        <header>
+            <section id="main-header">
+                <h1><a href="/v2/">Repos.io</a></h1>
+                <h2>Manage your repositories, the right way</h2>
+            </section>
+            <ul>
+                <li>Full search
+                    <span>
+                        <em>Need something ?</em>
+                        You can search repositories and people on many providers (github, bitbucket...) via a full text index
+                    </span>
+                </li><li>Regroup by project &amp; place
+                    <span>
+                        <em>Lot of work ?</em>
+                        Projects and places (simple labels) are here to kept you organizez by regrouping repositories and people
+                    </span>
+                </li><li>Add private tags &amp; notes
+                    <span>
+                        <em>Keep traces ?</em>
+                        You can add as private tags as wanted to keep your stuff organized. And you can add a note on every project or user to keep trace of why it's interesting
+                    </span>
+                </li><li>Follow/unfollow
+                    <span>
+                        <em>Stop losing time</em>
+                        You can follow or unfollow project or people on a provider (github, bitbucket...) directly on Repos.io
+                    </span>
+                </li><li>Discover stuff
+                    <span>
+                        <em>Want more ?</em>
+                        Repos.io help you find interesting stuff with it's "more like this" functionnality. Click on these links to discover more !
+                    </span>
+                </li><li>More soon !
+                    <span>
+                        <em>We're working</em>
+                        We are currently working on adding functionnalities and supported backend. Stay tuned !
+                    </span>
+                </li>
+            </ul>
+        </header>
+        <section>
+            {% block main_content %}{% endblock %}
+        </section>
+        <footer>
+        </footer>
+        {% if messages %}
+            <script type="text/javascript">
+                $(document).ready(function() {
+                    {% for message in messages %}
+                        Reposio.Page.message("{{ message|escapejs }}"{% if message.tags != 'success' %}, true{% endif %});
+                    {% endfor %}
+                });
+            </script>
+            <noscript>
+                <div id="jGrowl" class="top-right jGrowl">
+                    <div class="jGrowl-notification"></div>
+                    {% for message in messages %}
+                        <div class="jGrowl-notification highlight ui-corner-all {{ message.tags }}" style="display: block; opacity: 1;">
+                            <div class="jGrowl-message">{{ message }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+        </noscript>
+        {% endif %}
+        <div id="overlay"{% if overlay %} style="display: block"{% endif %}></div>
+    </body>
+</html>
+

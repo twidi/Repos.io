@@ -24,15 +24,33 @@
     {% endif %}
     <ul class="actions">
         {% with has_note=obj.current_user_has_note %}
-            <li class="action-note{% if has_note %} selected{% endif %}"><a href="" title="{% if has_note %}You have a note{% else %}You can add a private note{% endif %}">Note</a></li>
+            <li class="action-note{% if has_note %} selected{% endif %}{% if edit_note %} edit{% endif %}">
+                <a href="{{ obj_url }}{% if not edit_tags %}edit-note/{% endif %}" title="{% if has_note %}Edit your{% else %}Add a{% endif %} private note">Note</a>
+                {% if edit_note %}
+                    {% include "front/note_form.html" %}
+                {% else %}
+                    {% if has_note %}<blockquote>{{ obj.current_user_rendered_note|safe }}</blockquote>{% endif %}
+                {% endif %}
+            </li>
         {% endwith %}
         {% with is_starred=obj.current_user_tags|dict_get:"starred" %}
-            <li class="action-star{% if is_starred %} selected{% endif %}"><a href="" title="{% if is_starred %}Starred{% else %}Star it{% endif %}">Star</a></li>
+            <li class="action-star{% if is_starred %} selected{% endif %}">
+                <form method="post" action="/private/toggle/star/">{% csrf_token %}
+                    <input type="hidden" name="content_type" value="{{ obj.content_type }}" />
+                    <input type="hidden" name="object_id" value="{{ obj.pk }}" />
+                    <button title="{% if is_starred %}Starred{% else %}Star it{% endif %}"><span>Star</span></button>
+                </form>
+            </li>
         {% endwith %}
         {% with for_later=obj.current_user_tags|dict_get:"check-later" %}
-            <li class="action-check{% if for_later %} selected{% endif %}"><a href="" title="{% if for_later %}You want to check it later{% else %}Click to check it later{% endif %}">Check later</a></li>
+            <li class="action-check{% if for_later %} selected{% endif %}">
+                <form method="post" action="/private/toggle/check-later/">{% csrf_token %}
+                    <input type="hidden" name="content_type" value="{{ obj.content_type }}" />
+                    <input type="hidden" name="object_id" value="{{ obj.pk }}" />
+                    <button  title="{% if for_later %}You want to check it later{% else %}Click to check it later{% endif %}"><span>Check later</span></button>
+                </form>
+            </li>
         {% endwith %}
-        <li class="action-more"><a href="" title="Show details (readme, followers..., and display/add note & tags...">More</a></li>
+        <li class="action-more"><a href="{{ obj_url }}" title="Show details (readme, followers...)">More</a></li>
     </ul>
 </section>
-

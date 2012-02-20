@@ -1,0 +1,37 @@
+{% load utils_tags reposio_core %}
+<section class='search'>
+    {% uuid uuid %}
+    <form method="get" action="{{ obj|url:subsection }}">
+        <fieldset class="search_main">
+            <input type="text" name='q' value="{{ search.query|default:"" }}" placeholder='Filter...' />
+            <input type="submit" name="submit" value="f" title="Filter !"/>
+        </fieldset>
+        {% if search.model_name == 'repository' %}
+            <fieldset class="search_options">
+                <legend>Options</legend>
+                <ul>
+                    {% include "front/include_search_param.html" with type="checkbox" param="show_forks" current=search.options.show_forks id="show_forks" value="y" display="Show forks ?" %}
+                    {% if obj.model_name == 'account' %}
+                        {% include "front/include_search_param.html" with type="checkbox" param="is_owner" current=search.options.is_owner id="is_owner" value="y" display="Owned by "|add:obj.slug|add:" ?" %}
+                    {% endif %}
+                </ul>
+            </fieldset>
+        {% endif %}
+        <fieldset class="search_order">
+            {% with param="order" current=search.order.key %}
+                <legend>Sort order</legend>
+                <ul>
+                    {% include "front/include_search_param.html" with id="none" value="" display="Default" %}
+                    {% include "front/include_search_param.html" with id="name" value="name" display="Name" %}
+                    {% include "front/include_search_param.html" with id="score" value="score" display="Score" %}
+                    {% if search.model_name == 'repository' %}
+                        {% include "front/include_search_param.html" with id="updated" value="updated" display="Updated date" %}
+                        {% include "front/include_search_param.html" with id="owner" value="owner" display="Owner" %}
+                        {% include "front/include_search_param.html" with id="owner_score" value="owner_score" display="Owner's score" %}
+                    {% endif %}
+                </ul>
+            {% endwith %}
+        </fieldset>
+    </form>
+</section>
+

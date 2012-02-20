@@ -1,25 +1,44 @@
-<section class='details'>
+{% load reposio_core %}
+{% with repository=obj %}
+<section class="details">
     <header>
+        {% spaceless %}
         <ul>
-            <li><a href='#repository-1-note'>Your note and tags</a></li>
-            <li class="current"><a href='#repository-1-readme'>Readme</a></li>
-            <li><a href='#repository-1-readme'>Followers<span>14</span></a></li>
-            <li><a href='#repository-1-readme'>Contributors<span>4</span></a></li>
-            <li><a href='#repository-1-readme'>Forks<span>5+</span></a></li>
-        </ul>
-    </header>
-    <section class="readme current" id="repository-1-readme">
-        <pre>{{ repository.readme }}</pre>
-    </section>
-    <section class="note" id="repository-1-note">
-        foo
-    </section>
-    <section class="followers" id="repository-1-followers">
-        <section class="results">
-            {% for object in object.followers.all %}
-                {% include "front/user_content.html" with account=object %}
-            {% endfor %}
-        </section>
-    </section>
-</section>
+            {% include "front/include_link_to_about_subsection.html" %}
 
+            {% if repository.backend|supports:"repository_readme" and repository.readme %}
+                {% include "front/include_link_to_subsection.html" with type="readme" display="Readme" %}
+            {% endif %}
+
+            {% if repository.backend|supports:"repository_owner" and repository.owner %}
+                {% include "front/include_link_to_subsection.html" with type="owner" display="Owner" %}
+            {% endif %}
+
+            {% if repository.backend|supports:"repository_followers" and repository.followers_count %}
+                {% include "front/include_link_to_subsection.html" with type="followers" display="Followers" details=repository.followers_count %}
+            {% endif %}
+
+            {% if repository.backend|supports:"repository_contributors" and repository.contributors_count %}
+                {% include "front/include_link_to_subsection.html" with type="contributors" display="Contributors" details=repository.contributors_count %}
+            {% endif %}
+
+            {% if repository.backend|supports:"repository_parent_fork" %}
+                {% if repository.forks_count %}
+                    {% include "front/include_link_to_subsection.html" with type="forks" display="Forks" details=repository.forks_count|add:"+" %}
+                {% endif %}
+                {% if repository.parent_fork %}
+                    {% include "front/include_link_to_subsection.html" with type="parent_fork" display="Parent" %}
+                {% endif %}
+            {% endif %}
+
+        </ul>
+        {% endspaceless %}
+    </header>
+    {# preload about and readme #}
+    {% include "front/include_subsection_about.html" %}
+    {% include "front/include_subsection_readme.html" %}
+    {% if repository.include_details != 'about' and subsection != 'home' and subsection != 'about' and subsection != 'readme' %}
+        {% include "front/include_subsection.html" %}
+    {% endif %}
+</section>
+{% endwith %}

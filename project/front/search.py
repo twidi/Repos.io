@@ -1,21 +1,39 @@
 # Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
 
-from django.http import Http404
 from django.db.models import Q
+from django.conf import settings
 
 from haystack.query import SQ, SearchQuerySet, EmptySearchQuerySet
-from haystack.views import RESULTS_PER_PAGE
-from pure_pagination import Paginator, InvalidPage
+from haystack.models import SearchResult
 
 from core.models import Repository, Account
+from utils.sort import prepare_sort
 
 class CannotHandleException(Exception):
     pass
+
+class CoreSearchResult(SearchResult):
+    pass
+
+class RepositoryResult(CoreSearchResult):
+    model_name_plural = Repository.model_name_plural
+    content_type = Repository.content_type
+    search_type = Repository.search_type
+
+class AccountResult(CoreSearchResult):
+    model_name_plural = Account.model_name_plural
+    content_type = Account.content_type
+    search_type = Account.search_type
 
 class _Filter(object):
     """
     An abstract default filter for all
     """
+    only = dict(
+        account = ('id', 'backend', 'status', 'slug', 'modified'),
+        repository = ('id', 'backend', 'status', 'slug', 'project', 'modified'),
+    )
+    default_sort = None
 
     def __init__(self, query_filter, search):
         """
@@ -24,7 +42,9 @@ class _Filter(object):
         super(_Filter, self).__init__()
         self.query_filter = query_filter
         self.search = search
-        self.request = search.request
+        # if the search has a query, the default sort is the solr one
+        if search.query:
+            self.default_sort = None
 
     def original_filter(self):
         """
@@ -63,7 +83,7 @@ class _Filter(object):
         if isinstance(queryset, EmptySearchQuerySet):
             return self.get_objects()
         else:
-            ids = list(self.get_ids())
+            ids = list(self.get_ids()[:settings.SOLR_MAX_IN])
             return queryset.filter(django_id__in=ids)
 
     def get_queryset_filter(self):
@@ -78,9 +98,9 @@ class _Filter(object):
         If the user is authenticated, use the manager including deleted objects
         """
         if self.search.check_user():
-            return self.search.model.for_user_list
+            return self.search.model.objects
         else:
-            return self.search.model.for_user
+            return self.search.model.objects.exclude(deleted=True)
 
     def get_queryset(self):
         """
@@ -99,8 +119,10 @@ class _Filter(object):
     def get_objects(self):
         """
         Get the filtered queryset and return the objects (a queryset, in fact)
+        We only need the id (status is required by core/models) because we
+        directly load a cached template
         """
-        return self.get_queryset()
+        return self.get_queryset().only(*self.only[self.search.model_name])
 
 
 class NoFilter(_Filter):
@@ -135,6 +157,7 @@ class _TagFilter(_Filter):
     """
     An abstract filter for all tags
     """
+    default_sort = 'name'
 
     def original_filter(self):
         return 'tag:' + self.query_filter
@@ -144,13 +167,15 @@ class _TagFilter(_Filter):
         """
         Test if the filter is a tag and return it
         """
+        if not search.check_user():
+            raise CannotHandleException
         if not query_filter.startswith('tag:'):
             raise CannotHandleException
         return query_filter[4:]
 
     def get_queryset_filter(self):
         return Q(**{
-            'privatetagged%s__owner' % self.search.model_name: self.request.user,
+            'privatetagged%s__owner' % self.search.model_name: self.search.user,
             'privatetagged%s__tag__slug' % self.search.model_name: self.query_filter,
         })
 
@@ -217,22 +242,32 @@ class NotedFilter(_Filter):
     """
     A filter for noted objects
     """
+    default_sort = 'name'
 
     @classmethod
     def parse_filter(cls, query_filter, search):
         """
         Test if the filter is exactly "noted"
         """
+        if not search.check_user():
+            raise CannotHandleException
         query_filter = super(NotedFilter, cls).parse_filter(query_filter, search)
         if query_filter != 'noted':
             raise CannotHandleException
         return query_filter
+
+    def get_queryset_filter(self):
+        """
+        Return only objects with a note
+        """
+        return Q(note__author=self.search.user)
 
 
 class UserObjectListFilter(_Filter):
     """
     A filter for list of a loggued user
     """
+    default_sort = 'name'
 
     # all allowed filters for each model, with the matching queryset main part
     allowed = dict(
@@ -243,6 +278,7 @@ class UserObjectListFilter(_Filter):
         repository = dict(
             following = 'followers',
             owned = 'owner',
+            contributed = 'contributors',
         )
     )
 
@@ -263,58 +299,128 @@ class UserObjectListFilter(_Filter):
         Return a filter on a list for the current user
         """
         part = self.allowed[self.search.model_name][self.query_filter]
-        return Q(**{'%s__user' % part: self.request.user})
+        return Q(**{'%s__user' % part: self.search.user})
 
+class ObjectRelativesFilter(_Filter):
+    """
+    A filter for a list of objects relatives to an object
+    """
+    default_sort = 'score'
+
+    allowed = dict(
+        account = ('following', 'followers', 'repositories', 'contributing'),
+        repository = ('followers', 'contributors', 'forks')
+    )
+
+    @classmethod
+    def parse_filter(cls, query_filter, search):
+        """
+        Test if the filter is an allowed one
+        """
+        if not search.base:
+            raise CannotHandleException
+        query_filter = super(ObjectRelativesFilter, cls).parse_filter(query_filter, search)
+        if query_filter not in cls.allowed[search.base.model_name]:
+            raise CannotHandleException
+        return query_filter
+
+    def get_queryset(self):
+        """
+        Return a filter of on a list for the current base object
+        """
+        queryset = getattr(self.search.base, self.query_filter).all()
+        #if self.search.base.model_name == 'account' and self.search.model_name == 'repository'
+        return queryset
 
 # all valid filter, ordered
-FILTERS = (UserObjectListFilter, FlagFilter, ProjectFilter, PlaceFilter, SimpleTagFilter, NoFilter)
+FILTERS = (ObjectRelativesFilter, UserObjectListFilter, NotedFilter, FlagFilter, ProjectFilter, PlaceFilter, SimpleTagFilter, NoFilter)
 DEFAULT_FILTER = NoFilter
 
 
 class Search(object):
     model = None
+    model_name = None
     search_key = None
     search_fields = None
+    search_params = ('q', 'filter', 'order')
+    allowed_options = ()
 
-    def __init__(self, request, results_per_page=None):
+    order_map = dict(db={}, solr={})
+
+    def __init__(self, params, user=None):
         """
-        Create the search object, getting parameters from request
+        Create the search object
         """
         super(Search, self).__init__()
 
         # init fields
-        self.request = request
-        self.query = self.request.REQUEST.get('q', None)
-        self.query_filter = self.request.REQUEST.get('filter', None)
+        self.params = params
+        self.user = user
+
+        self.query = self.get_param('q')
+        self.query_filter = self.get_param('filter')
+        self.query_order = self.get_param('order')
 
         self.model_name = self.model.model_name
-        self.results_per_page = results_per_page or RESULTS_PER_PAGE
 
         self.results = None
 
-        # get options and filter
+        # get search parameters
+        self.base = self.get_base()
         self.filter = self.get_filter()
         self.options = self.get_options()
+        self.order = self.get_order()
 
+    @staticmethod
+    def get_class(search_type):
+        """
+        Return the correct search class for the given type
+        """
+        if search_type == 'people':
+            return AccountSearch
+        elif search_type == 'repositories':
+            return RepositorySearch
 
-    @classmethod
-    def get_for_request(cls, request):
+    @staticmethod
+    def get_for_params(params, user=None):
         """
         Return either a RepositorySearch or AccountSearch
         """
-        if request.REQUEST.get('type', 'repositories') == 'people':
-            return AccountSearch(request)
-        else:
-            return RepositorySearch(request)
+        cls = Search.get_class(params.get('type', 'repositories'))
+        return cls(params, user)
 
-    def _request_param(self, name, default=None, post_first=True):
+    @staticmethod
+    def get_params_from_request(request, search_type, ignore=None):
         """
-        Try to retrieve a parameter from the request
+        Get some params from the request, if they are not already defined (in ignore)
         """
-        first_dict, second_dict = self.request.POST, self.request.GET
-        if not post_first:
-            first_dict, second_dict = second_dict, first_dict
-        return first_dict.get(name, second_dict.get(name, default))
+        cls = Search.get_class(search_type)
+
+        all_params = list(cls.search_params + cls.allowed_options)
+        all_params += ['direct-%s' % param for param in all_params]
+
+        params = {}
+        for param in all_params:
+            if ignore and param in ignore:
+                continue
+            if param not in request.REQUEST:
+                continue
+            params[param] = request.REQUEST[param]
+        return params
+
+    def get_param(self, name, default=''):
+        """
+        Return the value of the `name` field in the parameters of the current
+        search, stripped. If we have a value for the same parameter but with a
+        name prefixed with 'direct-', use it
+        """
+        return self.params.get(
+            'direct-%s' % name,
+            self.params.get(
+                name,
+                default
+            )
+        ).strip()
 
     def get_filter(self):
         """
@@ -337,7 +443,34 @@ class Search(object):
         """
         Return a dict with all options
         """
-        return {}
+        options = {}
+        for option in self.allowed_options:
+            options[option] = 'y' if self.get_param(option, 'n') == 'y' else False
+        return options
+
+    def get_base(self):
+        """
+        Verify and save the base object if we have one
+        """
+        base = self.params.get('base', None)
+        if base and isinstance(base, (Account, Repository)):
+            return base
+        return None
+
+    def get_order(self):
+        """
+        Get the correct order for the current search
+        """
+        order_map_type = 'solr' if self.query else 'db'
+        result = prepare_sort(
+            self.query_order,
+            self.order_map[order_map_type],
+            self.filter.default_sort,
+            False
+        )
+        if not result['key']:
+            result['key'] = ''
+        return result
 
     def parse_keywords(self, query_string):
         """
@@ -384,30 +517,42 @@ class Search(object):
             queryset = SearchQuerySet()
 
         q = None
-        for field in fields:
-            q_field = None
-            for keyword in keywords:
-                exclude = False
-                if keyword.startswith('-') and len(keyword) > 1:
-                    exclude = True
-                    keyword = keyword[1:]
+        only_exclude = True
 
-                q_tmp = SQ(**{field: queryset.query.clean(keyword)})
+        for keyword in keywords:
+            exclude = False
+            if keyword.startswith('-') and len(keyword) > 1:
+                exclude = True
+                keyword = keyword[1:]
+            else:
+                only_exclude = False
 
-                if exclude:
-                    q_tmp = ~ q_tmp
+            keyword = queryset.query.clean(keyword)
 
-                if q_field:
-                    q_field = q_field & q_tmp
+            q_keyword = None
+
+            for field in fields:
+
+                q_field = SQ(**{ field: keyword })
+
+                if q_keyword:
+                    q_keyword = q_keyword | q_field
                 else:
-                    q_field = q_tmp
+                    q_keyword = q_field
+
+            if exclude:
+                q_keyword = ~ q_keyword
 
             if q:
-                q = q | q_field
+                q = q & q_keyword
             else:
-                q = q_field
+                q = q_keyword
 
         if q:
+            if only_exclude and len(keywords) > 1:
+                # it seems that solr cannot manage only exclude when we have many of them
+                # so we AND a query that we not match : the same as for ".models(self.model)"
+                q = SQ(django_ct = 'core.%s' % self.model_name) & q
             return queryset.filter(q)
         else:
             return queryset
@@ -415,21 +560,22 @@ class Search(object):
     def get_search_queryset(self):
         """
         Return the results for this search
+        We only need the id because we
+        directly load a cached template
         """
         if self.query:
             keywords = self.parse_keywords(self.query)
             queryset = self.make_query(self.search_fields, keywords)
 
-            queryset = queryset.models(self.model)
+            queryset = queryset.models(self.model).only('id', 'get_absolute_url', 'modified')
 
-            return queryset
+            return queryset.result_class(self.result_class)
         else:
             return EmptySearchQuerySet()
 
     def apply_filter(self, queryset):
         """
         Apply the current filter to the queryset
-        TODO : really do something !
         """
         if self.filter:
             return self.filter.apply(queryset)
@@ -442,24 +588,19 @@ class Search(object):
         """
         return queryset
 
-    def paginate(self, results):
+    def apply_order(self, queryset):
         """
-        Use django-pure-pagination to return the wanted page only
+        Apply the current order to the query set
         """
-        paginator = Paginator(results, self.results_per_page, request=self.request)
-
-        try:
-            page = paginator.page(self.request.REQUEST.get('page', 1))
-        except InvalidPage:
-            raise Http404
-
-        return page
+        if self.order['db_sort']:
+            return queryset.order_by(self.order['db_sort'])
+        return queryset
 
     def update_results(self):
         """
         Calculate te results
         """
-        self.results = self.paginate(
+        self.results = self.apply_order(
             self.apply_options(
                 self.apply_filter(
                     self.get_search_queryset()
@@ -481,11 +622,16 @@ class Search(object):
         """
         if not hasattr(self, '_check_user_cache'):
             try:
-                self._check_user_cache = self.request.user.is_authenticated() and self.request.user.is_active
+                self._check_user_cache = self.user and self.user.is_authenticated() and self.user.is_active
             except:
                 self._check_user_cache = False
         return self._check_user_cache
 
+    def content_template(self):
+        """
+        Return the template to use for this search's results
+        """
+        return 'front/%s_content.html' % self.model_name
 
 
 class RepositorySearch(Search):
@@ -495,17 +641,26 @@ class RepositorySearch(Search):
     model = Repository
     model_name = 'repository'
     search_key = 'repositories'
-    search_fields = ('slug', 'slug_sort', 'name', )
+    search_fields = ('project', 'slug', 'slug_sort', 'name', 'description', 'readme',)
+    allowed_options = ('show_forks', 'is_owner',)
+    result_class = RepositoryResult
 
-    def get_options(self):
-        """
-        Get the "show forks" option
-        """
-        options = super(RepositorySearch, self).get_options()
-        options.update(dict(
-            show_forks = 'y' if self.request.REQUEST.get('show-forks', 'n') == 'y' else False,
-        ))
-        return options
+    order_map = dict(
+        db = dict(
+            name = 'slug_sort',
+            score = '-score',
+            owner = 'owner__slug_sort',
+            updated = '-official_modified',
+            owner_score = '-owner__score',
+        ),
+        solr = dict(
+            name = 'slug_sort',
+            score = '-internal_score',
+            owner = 'owner_slug_sort',
+            updated = '-official_modified_sort',
+            owner_score = '-owner_internal_score',
+        ),
+    )
 
     def apply_options(self, queryset):
         """
@@ -519,8 +674,10 @@ class RepositorySearch(Search):
         if not self.options.get('show_forks', False):
             queryset = queryset.exclude(is_fork=True)
 
-        return queryset
+        if self.base and self.base.model_name == 'account' and self.options.get('is_owner', False):
+            queryset = queryset.filter(owner=self.base.pk)
 
+        return queryset
 
 
 class AccountSearch(Search):
@@ -530,4 +687,16 @@ class AccountSearch(Search):
     model = Account
     model_name = 'account'
     search_key = 'accounts'
-    search_fields = ('project', 'slug', 'slug_sort', 'name', 'description', 'readme',)
+    search_fields = ('slug', 'slug_sort', 'name', 'all_public_tags')
+    result_class = AccountResult
+
+    order_map = dict(
+        db = dict(
+            name = 'slug_sort',
+            score = '-score',
+        ),
+        solr = dict(
+            name = 'slug_sort',
+            score = '-internal_score',
+        ),
+    )
