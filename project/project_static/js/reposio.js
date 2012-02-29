@@ -381,9 +381,9 @@ $(document).ready(function() {
         },
 
         _ajax: function(callback, querystring) {
-            var self = this;
+            var that = this;
             AjaxCache.ajax(this.url, querystring, function(data, ajax_params) {
-                $.proxy(callback, self)(data, ajax_params);
+                $.proxy(callback, that)(data, ajax_params);
             });
         },
 
@@ -525,8 +525,7 @@ $(document).ready(function() {
                         .data('type', group_code)
                         .addClass('tags-type-' + group_code),
                     $list = $('<ul />').addClass('tags'),
-                    $datalist = (TagManager.supports_datalist ? $('<datalist />').attr('id', 'datalist-' + group_code) : null),
-                    self = this;
+                    $datalist = (TagManager.supports_datalist ? $('<datalist />').attr('id', 'datalist-' + group_code) : null);
 
 
                 var add_tags = function(tags) {
@@ -579,6 +578,7 @@ $(document).ready(function() {
 
                 lines.append($line.append($list));
             } // for group_code
+
             p.append(lines);
             this.popin = p;
 
@@ -662,7 +662,7 @@ $(document).ready(function() {
         },
 
         _prepare_popin: function(article) {
-            var self = this;
+            var that = this;
 
             if (!this.popin) { this._create_popin(); }
 
@@ -672,32 +672,31 @@ $(document).ready(function() {
             // add article official tags
             this.popin.find('ul.tags li.official').remove();
             this.popin.find('ul.tags li.official-used').removeClass('official-used');
-            var officials = article.$node.find('> footer ul.official-tags li'),
-                self = this;
+            var officials = article.$node.find('> footer ul.official-tags li');
 
             officials.each(function() {
                 var $official = $(this),
                     tag = {name: $official.text(), slug: $official.data('slug') },
-                    found = self._find_tag('tags', tag.slug);
+                    found = that._find_tag('tags', tag.slug);
                     if (found) {
                         found.addClass('official-used');
                         return;
                     }
 
-                self._add_tag(tag, false, true, self.search_type);
+                that._add_tag(tag, false, true, that.search_type);
             });
 
             // change selected/unselected tags
             var tags = this.popin.find('ul.tags li:not(.add-form)');
             tags.each(function() {
-                self._change_tag_status($(this));
+                that._change_tag_status($(this));
             });
             article.$node.find('> footer ul.user-tags li li').each(function() {
                 var slug = $(this).data('slug');
                 tags.each(function() {
                     var $label = $(this);
                     if ($label.data('slug') == slug) {
-                        self._change_tag_status($label, 'selected');
+                        that._change_tag_status($label, 'selected');
                     }
                 });
             });
@@ -807,7 +806,7 @@ $(document).ready(function() {
                     csrfmiddlewaretoken: Reposio.Token
                 },
                 current_article = this.article,
-                self = this,
+                that = this,
                 is_now_set = false;
 
             $.post('/private/tag/save/', post_data)
@@ -816,7 +815,7 @@ $(document).ready(function() {
                         Page.error(data.error);
                     } else {
                         is_now_set = data.is_set;
-                        self._on_post_success(current_article, tag, is_new, data);
+                        that._on_post_success(current_article, tag, is_new, data);
                     }
                 })
                 .error(function(xhr) {
@@ -824,8 +823,8 @@ $(document).ready(function() {
                     Page.error(xhr.responseText);
                 })
                 .complete(function() {
-                    if (self.popin.is(':visible') && !is_new && self.article == current_article) {
-                        self._change_tag_status($li, is_now_set ? 'selected' : '');
+                    if (that.popin.is(':visible') && !is_new && that.article == current_article) {
+                        that._change_tag_status($li, is_now_set ? 'selected' : '');
                     }
                 });
 
@@ -1735,11 +1734,11 @@ $(document).ready(function() {
             var selector = '> footer > section > ul.actions > li.action-' + flag,
                 $form = this.$node.find(selector).children('form');
             if (!$form.length) { return; }
-            var self =this;
+            var that =this;
             $form.closest('li').addClass('loading');
             $.post($form.attr('action'), $form.serialize())
                 .success(function(data) {
-                    self.run_for_all_nodes(function() {
+                    that.run_for_all_nodes(function() {
                         $(this).find(selector)
                             .toggleClass('selected', data.is_set)
                             .removeClass('loading')
@@ -1749,7 +1748,7 @@ $(document).ready(function() {
                     AjaxCache.clear(true);
                 })
                 .error(function() {
-                    self.run_for_all_nodes(function() {
+                    that.run_for_all_nodes(function() {
                         $(this).find(selector).removeClass('loading');
                     });
                 });
@@ -1819,7 +1818,7 @@ $(document).ready(function() {
         save_note: function() {
             var $li = this.$node.find('> footer > section > ul.actions > li.action-note'),
                 $form = $li.children('form'),
-                self = this;
+                that = this;
             $li.addClass('loading');
             $.post($form.attr('action'), $form.serialize())
                 .success(function(data) {
@@ -1827,11 +1826,11 @@ $(document).ready(function() {
                         Page.error(data.error);
                     } else {
                         var rendered_note = typeof(data.note_rendered) == 'undefined' ? '' : data.note_rendered;
-                        self.run_for_all_nodes(function() {
+                        that.run_for_all_nodes(function() {
                             Article.get_by_node($(this)).update_note(rendered_note);
                         });
                         Page.message(data.message);
-                        self.stop_edit_note();
+                        that.stop_edit_note();
                     }
                 })
                 .error(function(xhr) {
