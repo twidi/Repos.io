@@ -202,6 +202,12 @@ body
   to
     white-space: normal
 
+body > section > :first-child
+  +border-radius(0 0 $main_radius $main_radius)
+body > section > *
+  +box-shadow(darker(0.5) 3px 3px 2px)
+  position: relative
+
 small
   font-size: smaller
 
@@ -367,14 +373,31 @@ body > section > section.results
   margin: auto
   margin-top: 12px
   +border-radius($main_radius)
-  position: relative
   &:before
     +arrow("top", white, 12px)
     left: 10%
     z-index: 10
 
+  > div.return
+    background: #eee
+    +border-radius(6px)
+    +box-shadow(darker(0.5) 0 0 5px 4px)
+    color: #666
+    font-weight: bold
+    height: 9ex
+    padding: 13px
+    display: none
+    font-size: 120%
+    cursor: pointer
+
+  &.with-opened
+    &:before
+      border-bottom-color: #eee
+    > div.return
+      display: block
+
+
 section.results
-  position: relative
   &:empty
     display: none
   > p
@@ -412,7 +435,7 @@ article.content
   border-bottom: solid 1px $border
   +box-sizing(border-box)
 
-  &:nth-child(even)
+  &:nth-of-type(even)
     background: $article2
     border-top: solid 1px $border2
     border-bottom: solid 1px $border2
@@ -426,7 +449,6 @@ article.content
     max-width: 60px
     float: left
     margin: 0 1% 1% 0
-    +opacity(0.75)
     overflow: hidden
 
     a
@@ -468,7 +490,6 @@ article.content
         overflow: hidden
         +border-radius(2px)
         vertical-align: middle
-        +opacity(0.75)
         display: inline-block
 
     h3
@@ -525,10 +546,6 @@ article.content
               vertical-align: middle
               position: relative
               top: -2px
-
-  &:hover
-    > figure, > header h2 img
-      +opacity(1)
 
   > section.description
     padding: 0 1% 1%
@@ -1019,10 +1036,17 @@ body > section > article.content
     border-bottom: solid $border 1px
 
 section.results article.content.with-details
-  border: solid $flash 1px
-  border-left-width: 4px
+  //border: solid $flash 1px
+  //border-left-width: 4px
   //+border-radius($main_radius 0 0 $main_radius)
-  padding-left: 9px
+  //padding-left: 9px
+  position: absolute
+  left: 1ex
+  top: 6ex
+  right: -1ex
+  z-index: 10
+  +box-shadow(darker(0.5) 0 0 5px 4px)
+  +border-radius(6px !important)
 
 article.content.with-details
 
@@ -1209,6 +1233,32 @@ article.content > section.details
     padding: 1em
     font-size: 90%
 
+article.with-opened
+  background: #eee !important
+  > section.description, > section.date-score, > footer, > .close
+    display: none !important
+  > section.details
+    > header
+      display: none
+    > section
+      > section.search
+        display: none
+      > section.results
+        > article.content
+          display: none
+          &.with-details
+            display: block
+        > .endless_container
+          display: none
+
+section.results.with-opened
+  > article.content
+    display: none
+    &.with-details
+      display: block
+  > .endless_container
+    display: none
+
 #main_search
   padding: 18px 13px 13px
   +box-sizing(border-box)
@@ -1339,11 +1389,6 @@ article.content > section.details
       display: none
     &#search_options_repositories
       display: none
-
-body > section > :first-child
-  +border-radius(0 0 $main_radius $main_radius)
-body > section > *
-  +box-shadow(darker(0.5) 3px 3px 2px)
 
 @media screen and (max-width: 767px)
   body
