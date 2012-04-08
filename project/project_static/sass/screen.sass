@@ -241,6 +241,9 @@ body > section > *
 small
   font-size: smaller
 
+pre
+  white-space: pre-line
+
 a
   color: $link
   text-decoration: none
@@ -1354,9 +1357,11 @@ section.results.with-opened
     h1
       display: inline-block
       font-size: 150%
+      padding-right: 11em
       +simple_text_shadow
       small
         font-weight: normal
+        display: inline-block
     p
       float: right
       margin-right: 3em
@@ -1369,13 +1374,14 @@ section.results.with-opened
 
   > form
     padding: 13px
+    position: relative
 
     > input[name=type]
       +opacity(0)
       float: right
       font-size: 120%
       position: absolute
-      top: 16px
+      top: -2em
       &#search_type_repositories
         right: 6em
       &#search_type_people
@@ -1396,7 +1402,7 @@ section.results.with-opened
       padding: 5px 1em
       font-size: 120%
       position: absolute
-      top: 10px
+      top: -2.5em
       +simple_text_shadow
       &[for=search_type_repositories]
         right: 6em
@@ -1476,25 +1482,21 @@ section.results.with-opened
 
 @media screen and (max-width: 767px)
   body
-    > footer, > section
+    > header, > footer, > section
       width: 98%
-    > header
-      section#main-header
-        float: none
-        h1, h2
-          text-align: center
-          display: inline-block
   article.content
-    &:before
-      display: none
-    padding: 10px 10px 5px
     > header
       h1
         display: block
         margin-bottom: 5px
+      h2
+        margin-left: 7px
     > section
       clear: both
       margin: 10px 0 5px 10px
+      &.description
+        margin-top: 1.5ex
+        margin-bottom: 0.5ex
       &.date-score
         top: 0
         right: 10px
@@ -1504,12 +1506,24 @@ section.results.with-opened
           width: 29em
           left: -29em
 
-  section.details > section > section.search
-    padding: 10px 10px 5px
+    section.details > section > section.search
+      padding: 10px
+
+  section.results article.content.with-details
+    left: 5px
+    right: 0
+    > header
+      h2
+        margin-left: 26px
 
   #main_search
     > header h1
-      font-size: 110%
+      font-size: 130%
+    > form
+      > input[name=type]
+        top: -1.9em
+      label.search_type
+        top: -2.2em
     #search_filter
       p.help
         clear: both
@@ -1519,13 +1533,35 @@ section.results.with-opened
         margin-top: 10px
 
 @media screen and (max-width: 500px)
-  body > header section#main-header
-    text-align: center
-    h1, h2
-      display: block
+  body > header
+    section#main-header
+      text-align: center
+      margin-bottom: 20px
+      h1, h2
+        display: block
+        width: auto
+    ul
+      margin-bottom: 20px
   #main_search
+    > header h1
+      padding-right: 8em
     > form
       margin-top: 0.5em
+      label.search_type
+        right: 10px !important
+        width: 6em
+        text-align: center
+        &[for=search_type_people]
+          top: -2.6em
+        &[for=search_type_repositories]
+          top: -4.7em
+      > input[name=type]
+        right: 10px !important
+        &#search_type_repositories
+          top: -4.3em
+        &#search_type_people
+          top: -2.2em
+
     #search_filter
       > legend
         width: 8em
@@ -1535,24 +1571,27 @@ section.results.with-opened
         padding-left: 1em
       ul
         margin-left: 8em
+
+    .search_options, .search_order
+      ul
+        margin-left: 8em
+
   article.content
-    > figure, > header h2 img
-      +opacity(1)
     > section.details
       > header > ul
         font-size: 80%
       > section.about
         > dl.infos, > dl.usage
           width: auto
-          margin-right: -0.5em
           display: block
           height: auto
+          margin-bottom: 1em
     > footer
       > section > ul.actions > li.action-note
         position: inherit
         blockquote, form
           width: auto
-          top: 1.5em
+          top: 90%
           left: 0
           right: 0
           &:before

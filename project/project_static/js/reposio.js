@@ -1937,9 +1937,10 @@ $(document).ready(function() {
             if (rendered_note) {
                 if (!$blockquote.length) {
                     $blockquote = $('<blockquote/>');
+                    $blockquote.append('<div />');
                     $li.append($blockquote);
                 }
-                $blockquote.html(rendered_note);
+                $blockquote.children('div').html(rendered_note);
                 $li.addClass('selected');
             } else {
                 $li.removeClass('selected');
