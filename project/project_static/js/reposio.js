@@ -283,7 +283,7 @@ $(document).ready(function() {
             if (Page._scroll.working) { return; }
             Page._scroll.working = true;
             if (Page.doc.height() - Page.win.height() - Page.win.scrollTop() <= Page._scroll.margin) {
-                Page._scroll.section.find("> section.results:not(.with-opened), > article.content:not(.with-opened) > section.details > section.current > section.results")
+                Page._scroll.section.find("section.results:not(.with-opened), article.content:not(.with-opened) > section.details > section.current > section.results")
                 .find("> nav a.endless_more:visible").click();
             }
             Page._scroll.working = false;
@@ -764,7 +764,7 @@ $(document).ready(function() {
             // position to have the link at the center if possible
             var link_left = $link.position().left,
                 popin_left = this.popin.position().left,
-                arrow_left = Math.min(Math.max(link_left - popin_left + 8, 13), this.popin.width()-15);
+                arrow_left = Math.min(Math.max(link_left - popin_left + 10, 13), this.popin.width()-15);
             if (this._stylesheet) { this._stylesheet.remove(); }
             this._stylesheet = $('<style type="text/css">#tags-popin:before { left: ' + arrow_left + 'px !important}</style>');
             this._stylesheet.appendTo('head');
@@ -926,9 +926,7 @@ $(document).ready(function() {
                     if (!add) { return; }
                     attach_type = true;
                     var $ul = $('<ul />');
-                    if (type != 'tags') {
-                        $ul.append($('<span/>').text(TagManager.groups[type]));
-                    }
+                    $ul.append($('<span/>').text('Your ' + TagManager.groups[type].toLowerCase()));
                     $type_container = $('<li/>')
                         .addClass('tags-type-' + type)
                         .append($ul);
@@ -1185,7 +1183,12 @@ $(document).ready(function() {
 
         _on_results_loaded: function(results, ajax_params) {
             this._set_loading(false);
-            this.$results.append(results);
+            if (results) {
+                this.$results.append(results);
+                this.$results.show();
+            } else {
+                this.$results.hide();
+            }
             this._set_last_page(1);
             this._add_to_history(ajax_params.querystring);
         },
@@ -1665,7 +1668,7 @@ $(document).ready(function() {
             this.set_parent_with_opened(false);
             this.$node.removeClass('with-details');
             this._remove_details();
-            Node.scroll_to(this.$node);
+            Node.scroll_to(this.$node, true);
             return false;
         },
 
@@ -1684,7 +1687,7 @@ $(document).ready(function() {
             this._add_to_history();
             this._add_close_button();
             this._find_existing_sections(true);
-            Node.scroll_to(this.$node);
+            Node.scroll_to(this.$node, true);
         },
 
         _add_close_button: function() {
@@ -1718,6 +1721,7 @@ $(document).ready(function() {
             this.$node.children('section.details').remove();
             this.$details = null;
             this.set_current_section(null);
+            this.set_with_opened(false, true);
         },
 
         _compute_title: function() {
@@ -2040,11 +2044,7 @@ $(document).ready(function() {
         _get_link_title: function() {
             var link = this._get_link();
             if (!link) { return null; }
-            var title = link.html(),
-                span_pos = title.indexOf('<span');
-            if (span_pos != -1) {
-                title = title.substr(0, span_pos);
-            }
+            var title = link.children('span').text();
             return title.trim();
         },
 
@@ -2110,7 +2110,7 @@ $(document).ready(function() {
             this.article.$details.append(content);
             this._set_node();
             this.set_current();
-            Node.scroll_to(this.article.$node);
+            Node.scroll_to(this.article.$node, true);
             this._set_last_page(1);
             this._add_to_history(ajax_params.querystring);
             if (!ajax_params.from_cache && !ajax_params.querystring) {

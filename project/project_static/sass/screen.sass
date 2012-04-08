@@ -9,23 +9,32 @@
 
 
 $fontsize: 14px
-//#eeeff1
-$background: #78bd40
+$background: #3a3a3a
 $revbackground: white
-$article: white
-$article2: #f9f9f9
-$border: #eeeeee
-$border2: white
-$link: #3078ca
-$color: black
-$flash: #4f96d7
+$article: #f9f9f9
+$article_off: #ebe8e8
+$border: white
+$border2: #d7d7d7
+$link: #0277AD
+$color: #3a3a3a
+$flash: #666
 $revflash: white
+$flash2: #921911
+$revflash2: white
 $color2: #777777
-$background_tags: #e0edf5
-$color_tags: #2f5d92
+$background_tags: #f2f2f2
+$color_tags: #333
 $loading: red
+$popin: #ebe8e8
 
 $main_radius: 6px
+
+@mixin main_shadow
+  +box-shadow(0 0 6px 0 rgba(0, 0, 0, 0.3))
+
+@mixin article_border
+  +border-radius($main_radius)
+  +main_shadow
 
 @function darker($alpha)
   @return rgba(black, $alpha)
@@ -62,12 +71,33 @@ $main_radius: 6px
   +border-radius(0)
   +box-shadow(none)
 
+@mixin simple_text_shadow
+  +text-shadow(0 1px white)
+
+@mixin main_content_background
+  background: url("../img/texture.png") repeat $article
+
 @mixin flag
+  background: $background_tags
+  +background-image(linear-gradient(center top, #fff, #e0e0e0))
+  color: $color_tags
+  border: solid 1px #d0d0d0
   margin: 1px
   display: inline-block
-  padding: 0 4px
+  padding: 0 3px 1px 4px
   +border-radius(4px)
-  line-height: 1.6em
+  line-height: 1.5em
+  a
+    color: $color_tags
+  &:hover
+    +background-image(linear-gradient(center top, #fff, #f0f0f0))
+@mixin flag_set
+  padding-top: 1px
+  padding-bottom: 0
+  +background-image(linear-gradient(center top, #e0e0e0, #fff))
+  +box-shadow(1px 1px 0 rgba(0,0, 0, 0.5) inset)
+  &:hover
+    +background-image(linear-gradient(center top, #f0f0f0, #fff))
 
 // absolute position
 @mixin abs($top:false, $left:false, $bottom:false, $right: false)
@@ -175,7 +205,7 @@ $main_radius: 6px
 
 html
   overflow-y: scroll
-  background: url(../img/bg.jpg) no-repeat center top fixed $background
+  background: url("../img/body-background.png") repeat scroll 0 0 $background
 
 html, body
   margin: 0
@@ -187,7 +217,7 @@ html, body
 
 body
 
-  > footer, > section
+  > header, > footer, > section
     width: 90%
     min-width: 320px
     max-width: 960px
@@ -202,11 +232,11 @@ body
   to
     white-space: normal
 
-body > section > :first-child
-  +border-radius(0 0 $main_radius $main_radius)
 body > section > *
-  +box-shadow(darker(0.5) 3px 3px 2px)
+  +main_shadow
   position: relative
+  &:first-child
+    +border-radius($main_radius)
 
 small
   font-size: smaller
@@ -234,9 +264,14 @@ div.jGrowl.top-right
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25)
     border-style: solid
     border-width: 1px
-    +text-shadow(0 -1px 0 rgba(0, 0, 0, 0.25))
     +box-shadow(black 5px 5px 9px 1px)
     font-weight: bold
+    padding: 4px
+    .jGrowl-message
+      background: white
+      padding: 4px
+      +border-radius(4px)
+      color: #3a3a3a
   .error
     background: #C43C35
     +background-image(linear-gradient(center top, #EE5F5B, #C43C35))
@@ -264,38 +299,35 @@ ul.tags
 
   li
     +flag
-    background: $background_tags
-    a
-      color: $color_tags
 
-  ul
-    display: inline-block
-    background: lighten($flash, 10%)
-    color: $revflash
-    padding: 1px
-    margin: 0 -4px
-    +border-radius(4px)
-    font-weight: bold
-    span
-      padding: 0 0.5ex 0 1ex
-    li
-      font-weight: normal
+  &.user-tags
+    margin-left: 1ex
+    &:before
+      content: "Your tags:"
+      font-weight: bold
+      margin-right: 4px
+    > li
+      background: none
+      border: none
+      padding: 0
+      margin-right: 4px
+    ul
+      display: inline-block
+      span
+        font-weight: bold
+        padding-right: 0.5ex
+        display: none
+        &:after
+          content: ":"
+      li
+        font-weight: normal
 
 body > header
-  +background(linear-gradient(top, #0a5f95, #00396b), #075385)
   padding: 20px 10px 0
   position: relative
   min-height: 40px
-
-  &:before
-    content: ""
-    +box-shadow(darker(0.5) 0px 3px 2px)
-    height: 10px
-    position: absolute
-    left: 0
-    right: 0
-    bottom: 0
-    z-index: 10
+  margin-bottom: 20px
+  +box-sizing(border-box)
 
   &:after
     content: ""
@@ -303,58 +335,61 @@ body > header
     display: block
 
   #main-header
-    float: left
     margin-top: -15px
     h1, h2
       display: inline-block
       font-weight: bold
-      +text-shadow(rgba(0, 0, 0, 0.5) -1px -1px 0)
+      +text-shadow(rgba(0, 0, 0, 0.9) -1px -1px 0)
     h1
-      font-size: 200%
-      color: white
+      font-size: 400%
+      color: #eee
       a
-        color: white
+        color: inherit
         text-decoration: none
         &:before
           +iconic('0')
           font-weight: normal
-          color: $flash
+          color: #aaa
     h2
-      color: $flash
+      color: #aaa
       font-size: 120%
       margin: 0 1ex
+      width: 11em
+      line-height: 1em
+
 
   ul
     +ul_reset
-    display: table
-    min-height: 40px
+    display: block
     font-weight: bold
-    color: white
+    color: #ccc
     font-size: 95%
-    margin: 1px 20px 0
-    padding: 1ex
-    float: right
     text-align: center
+    margin-bottom: 30px
     li
-      margin: 0 0.8ex 5px 0
+      margin: 0 1ex 5px 0
       display: inline-block
       position: relative
       cursor: help
-      //+text-shadow(rgba(0, 0, 0, 0.5) -1px -1px 0)
+      +text-shadow(rgba(0, 0, 0, 0.9) -1px -1px 0)
+      letter-spacing: 0.2px
+      word-spacing: 2px
+      &:before, &:last-child:after
+        content: "·"
+        position: relative
+        top: 2px
       &:before
-        content: "-"
-        padding-right: 0.8ex
-        color: lighter(0.5)
-      &:last-child:after
-        content: "-"
-        color: lighter(0.5)
+        padding-right: 1ex
       span
         +tooltip($width: 20em, $position: "bottom")
+        +text-shadow(none)
         z-index: 13
         text-align: left
         font-weight: normal
         line-height: 1.8em
         padding: 1ex
+        letter-spacing: 0
+        word-spacing: 0
 
         em
           display: block
@@ -374,14 +409,13 @@ body > section > section.results
   margin-top: 12px
   +border-radius($main_radius)
   &:before
-    +arrow("top", white, 12px)
+    +arrow("top", $article, 12px)
     left: 10%
     z-index: 10
 
   > div.return
-    background: #eee
-    +border-radius(6px)
-    +box-shadow(darker(0.5) 0 0 5px 4px)
+    background: $article_off
+    +article_border
     color: #666
     font-weight: bold
     height: 9ex
@@ -392,7 +426,7 @@ body > section > section.results
 
   &.with-opened
     &:before
-      border-bottom-color: #eee
+      border-bottom-color: $article_off
     > div.return
       display: block
 
@@ -410,7 +444,7 @@ section.results
 
 
 article.content section.results
-  font-size: 95%
+  //font-size: 95%
   article.content
     &:before
       display: none
@@ -429,16 +463,11 @@ nav.endless_container
 article.content
   margin: 0 auto
   padding: 13px 13px 5px
-  background: $article
+  +main_content_background
   position: relative
   border-top: solid 1px $border
-  border-bottom: solid 1px $border
+  border-bottom: solid 1px $border2
   +box-sizing(border-box)
-
-  &:nth-of-type(even)
-    background: $article2
-    border-top: solid 1px $border2
-    border-bottom: solid 1px $border2
 
   > .loading, > .close
     display: none
@@ -450,6 +479,8 @@ article.content
     float: left
     margin: 0 1% 1% 0
     overflow: hidden
+    +border-radius(4px)
+    +box-shadow(4px 4px 3px -3px rgba(0, 0, 0, 0.2))
 
     a
       position: relative
@@ -469,21 +500,25 @@ article.content
       line-height: 100%
       display: inline-block
       a
-        +border-radius(4px)
-        background: $link
         padding: 5px
-        color: white
+        color: #3a3a3a
         display: inline-block
+        +simple_text_shadow
+        font-variant: small-caps
 
     h2
       font-size: 100%
       margin: 0
       display: inline-block
-      font-weight: normal
-
+      font-variant: small-caps
+      font-weight: bold
+      a
+        color: $color
       span
         color: $color2
         font-size: 80%
+        font-weight: normal
+        font-variant: normal
       img
         height: 16px
         width: 16px
@@ -508,12 +543,7 @@ article.content
         vertical-align: middle
         > span
           +flag
-          color: white
           font-size: 80%
-          a
-            color: white
-          &.fork
-            background: orange
 
       &.links
         display: inline-block
@@ -549,10 +579,10 @@ article.content
 
   > section.description
     padding: 0 1% 1%
-    margin: 1ex 5.5em 0 8%
+    margin: 1ex 5.5em 0 75px
     > p, > strong
       margin: 0
-      border-left: solid 5px $border
+      border-left: solid 5px $article_off
       padding-left: 5px
       color: $color2
     > strong
@@ -566,20 +596,22 @@ article.content
     display: inline-block
     text-align: center
     font-weight: bold
+    +border-radius(4px)
+    +box-shadow(4px 4px 3px -3px rgba(0, 0, 0, 0.2))
     ul
       li
         padding: 4px
         &:first-child
           font-size: 80%
           +border-radius(4px 4px 0 0)
-          background: $flash
-          color: $revflash
+          background: $flash2
+          color: $revflash2
         &:last-child
-          background: $background_tags
-          color: $color_tags
+          background: white
+          color: #666
+          border: solid 1px #999
+          border-top: none
           +border-radius(0 0 4px 4px)
-          //+box-shadow(darker(0.5) 1px 1px 3px inset)
-          //padding-top: 6px
 
   > footer
     clear: both
@@ -602,7 +634,7 @@ article.content
       height: 1.8em
       line-height: 1.8em
       position: relative
-      top: 2px
+      top: 3px
       margin-left: 0.5ex
       text-decoration: none
       &:before
@@ -638,17 +670,14 @@ article.content
       +abs($left: 0, $top: 100%)
       +overbox
       border-width: 1px
-      background: black
+      background: $popin
       z-index: 11
       padding: 0
-      margin-top: 6px
+      margin-top: 8px
       font-size: 0.8 * $fontsize
       &:before
-        +arrow("top", white, 12px)
-        top: -10px
+        +arrow("top", $popin, 12px)
         z-index: 13
-      &.left-arrow:before
-        +arrow("top", black, 12px)
       &.repositories
         li.people_only
           display: none
@@ -656,6 +685,7 @@ article.content
         li.repositories_only
           display: none
       > ul
+        padding: 2px
         > li
           margin: 0
           position: relative
@@ -668,8 +698,6 @@ article.content
             text-align: right
             padding: 3px 1ex 0
             font-weight: bold
-            background: black
-            color: white
             &:after
               content: ":"
           ul.tags
@@ -679,9 +707,10 @@ article.content
             margin-left: 10ex
             background: $article
             display: block
-            border: solid black 2px
+            border: solid $popin 2px
             border-top-width: 0
             border-bottom-width: 0
+            +box-shadow(inset 1px 0 rgba(0, 0, 0, 0.5), inset -1px 0 rgba(0, 0, 0, 0.3))
             li
               color: $color_tags
               cursor: pointer
@@ -717,6 +746,7 @@ article.content
 
               &.add-form
                 padding: 1px
+                background: transparent
 
                 form
                   display: inline-block
@@ -740,11 +770,13 @@ article.content
               +border-radius(4px 4px 0 0)
               border-top-width: 2px
               padding-top: 8px
+              +box-shadow(inset 1px 1px rgba(0, 0, 0, 0.5), inset -1px 0 rgba(0, 0, 0, 0.3))
           &:last-child
             ul.tags
               +border-radius(0 0 4px 4px)
               border-bottom-width: 2px
               padding-bottom: 8px
+              +box-shadow(inset 1px 0px rgba(0, 0, 0, 0.5), inset -1px -1px rgba(0, 0, 0, 0.3))
 
 
 
@@ -782,8 +814,8 @@ article.content
               overflow: hidden
               float: left
               vertical-align: middle
-              height: 1.7em
-              line-height: 1.7em
+              height: 1.5em
+              line-height: 1.6em
 
               &:hover
                 text-decoration: none
@@ -799,29 +831,43 @@ article.content
               > a:before
                 +iconic("d")
                 +opacity(0.5)
-              blockquote, form
+              > blockquote, > form
                 +tooltip($width: 40em, $position: "left")
                 display: none
                 text-align: left
-                padding: 0.5ex 1ex
                 z-index: 13
+                border-width: 1px
+                background: $popin
+                text-align: left
+                margin-left: -12px
+                &:before
+                  border-left-color: $popin
+              > blockquote
+                padding: 4px
+                p:last-child
+                  margin-bottom: 0
+                textarea
+                  +box-shadow(inset 1px 1px rgba(0, 0, 0, 0.5), inset -1px -1px rgba(0, 0, 0, 0.3))
+              > form
+                padding: 1ex
+                textarea
+                  +box-shadow(inset 1px 1px rgba(0, 0, 0, 0.3), inset -1px -1px rgba(0, 0, 0, 0.1))
+              > blockquote > div, > form textarea
+                background: white
+                border: none
+                +border-radius(4px)
+                padding: 1ex
+
               &:hover, &:focus
-                blockquote
+                > blockquote
                   display: block
-                  text-align: left
-                  padding: 1ex
-                  p:last-child
-                    margin-bottom: 0
               &.edit
-                blockquote
+                > blockquote
                   display: none !important
-                form
+                > form
                   display: block
-                  padding: 1ex
-                  text-align: left
                   textarea
                     width: 100%
-                    padding: 0.5ex
                     +box-sizing(border-box)
                   //> p, > ul
                   //  display: none
@@ -918,10 +964,8 @@ section.results article.content
     border-bottom: none
   &:first-of-type:last-child
     +border-radius($main_radius)
-
-body > section > article.content
-  > figure, > header h2 img
-    +opacity(1)
+  &.with-details
+    +border-radius($main_radius !important)
 
 .search
 
@@ -929,7 +973,7 @@ body > section > article.content
     font-size: 150%
     display: block
     position: relative
-    margin-right: 2em
+    margin: 1ex 2em 1.5ex 0
     clear: both
     +box-sizing(border-box)
 
@@ -980,6 +1024,7 @@ body > section > article.content
         padding-left: 1.6em
 
   .search_options, #search_filter, .search_order
+    margin: 0
     legend
       height: 1.6em
       line-height: 1.6em
@@ -994,35 +1039,39 @@ body > section > article.content
         position: relative
         label
           +flag
-          background: $background_tags
-          color: $color_tags
-          padding-left: 1.5em
-          padding-right: 2em
-        input
-          position: absolute
-          top: 3px
-          &:checked
-            + label
-              background: $color_tags
-              color: white
-              +box-shadow(darker(0.5) 1px 1px 2px inset)
+          padding-top: 1px
+          padding-left: 22px
+          padding-right: 25px
+          vertical-align: top
+          margin: 2px
         button
           +input_reset
           font-family: "IconicStroke"
-          font-size: 150%
-          color: lighten($flash, 10%)
+          font-size: 120%
+          color: #666
           position: absolute
-          right: 2px
-          top: 2px
           line-height: 1em
+          top: 7px
+          right: 5px
+          +simple_text_shadow
         input
+          position: absolute
+          top: 4px
+          left: 2px
           &:checked
-            ~ button
-              color: $background_tags
+            top: 5px
+            left: 3px
+            + label
+              +flag_set
+              padding-top: 2px
+              padding-left: 23px
+              padding-right: 24px
+              + button
+                top: 8px
+                right: 4px
 
   .search_options, .search_order
     display: inline-block
-    margin: 0 10px 0 0
     padding-top: 5px
     width: 100%
     +box-sizing(border-box)
@@ -1033,22 +1082,36 @@ body > section > article.content
 
   .search_options, #search_filter
     padding-bottom: 5px
-    border-bottom: solid $border 1px
+    border-bottom: solid rgba(0, 0, 0, 0.05) 1px
 
 section.results article.content.with-details
   //border: solid $flash 1px
   //border-left-width: 4px
   //+border-radius($main_radius 0 0 $main_radius)
   //padding-left: 9px
+  background: $article
   position: absolute
   left: 1ex
-  top: 6ex
+  top: 5ex
   right: -1ex
   z-index: 10
-  +box-shadow(darker(0.5) 0 0 5px 4px)
-  +border-radius(6px !important)
+  +article_border
 
 article.content.with-details
+
+  > header > h1 a
+    font-size: 130%
+    &:before
+      +opacity(0.5)
+      font-variant: normal
+      width: 20px
+      display: inline-block
+  &.account
+    > header > h1 a:before
+      +iconic("u", 85%)
+  &.repository
+    > header > h1 a:before
+      +iconic("w", 85%)
 
   > footer
     > .tags.user-tags
@@ -1072,84 +1135,83 @@ article.content.with-details
     font-family: IconicStroke
     cursor: pointer
     z-index: 10
+    // disabled it for now :
+    display: none !important
+    visibility: hidden
 
   > .loading
-    background: $background
+    background: $article
     padding: 5px
-    +border-radius(5px)
-    +box-shadow(darker(0.5) 1px 1px 3px inset)
-    margin: 5px -4px 0
+    +border-radius(0 0 $main_radius $main_radius)
+    margin: 5px -13px 0
     text-align: center
     font-style: italic
     padding: 1em
+    +box-shadow(0 4px 3px -2px rgba(0, 0, 0, 0.2) inset)
 
 article.content > section.details
-  background: $background
-  padding: 5px
-  +border-radius(5px)
-  +box-shadow(darker(0.5) 1px 1px 3px inset)
-  margin: 5px -4px 0
+  margin: 5px -13px 0
+  border-top: solid 1px $border2
   > header > ul
     +ul_reset
-    background: $article
-    border: solid 1px darker(0.1)
-    +border-radius(4px)
+    //border-top: solid 1px $border
     display: inline-block
-    margin-bottom: 5px
     width: 100%
+    height: 3em
     +box-sizing(border-box)
     display: table
     border-collapse: separate
-    border-spacing: 4px
+    border-spacing: 5px
+    background: url("../img/navigation.png") repeat scroll 0 0 transparent
 
     li
-      margin: 0 1%
-      padding: 0.2em 2px
+      padding: 2px
       position: relative
       text-align: center
       vertical-align: middle
-      +border-radius(4px)
       display: table-cell
+      +border-radius(3px)
 
       a
         display: block
         position: relative
+        color: white
 
-        span
-          background: $flash
-          +border-radius(1000px)
-          color: $revflash
-          font-size: 70%
+        sup
+          color: #eee
+          font-size: 80%
           display: inline-block
           font-weight: bold
           text-align: center
           margin-left: 1ex
-          position: relative
-          top: -2px
-          padding: 3px 3px 2px
           min-width: 1.2em
-
-      &:hover
-        background: $border
+          vertical-align: top
+          background: $flash2
+          color: $revflash2
+          +border-radius(4px)
+          position: relative
+          top: -3px
+          padding: 1px 3px
+          +box-shadow(1px 1px 2px rgba(0, 0, 0, 0.5))
 
       &.current
-        background: $flash
-        font-weight: bold
-        vertical-align: bottom
+        background: rgba(255, 255, 255, 0.2)
+        //font-weight: bold
+        +box-shadow(4px 4px 3px -3px rgba(0, 0, 0, 0.2) inset)
+        padding-top: 5px
 
+      &:hover
+        background: rgba(255, 255, 255, 0.1)
         a
-          color: $revflash
-
+          text-decoration: none
           span
-            background: $revflash
-            color: $flash
-
-          &:after
-            +arrow("bottom", $flash, 12px)
+            text-decoration: underline
 
   > section
+    +box-shadow(0 4px 3px -2px rgba(0, 0, 0, 0.2) inset)
+    //border-top: solid 1px white
+    background: white
     display: none
-    +border-radius($main_radius)
 
     &.current
       display: block
@@ -1162,43 +1224,49 @@ article.content > section.details
 
     > section.search
       font-size: 95%
-      background: $article2
-      +border-radius($main_radius $main_radius 0 0)
-      border: solid 1px $flash
-      padding: 13px 13px 5px
-      margin: 0 -1px
+      padding: 23px 13px
+      border-bottom: solid 1px $border
+      +box-shadow(0 -4px 3px -2px rgba(0, 0, 0, 0.2) inset)
       .search_main
         font-size: 120%
 
     &.about
       padding: 0
       vertical-align: top
-      margin-right: 0.5em
+      +main_content_background
 
       h1
-        border-bottom: solid lighten($color, 50%) 1px
-        padding-bottom: 0.3em
+        background: #dad9d9
+        +background-image(linear-gradient(center top, #e3e3e3, #dad9d9))
+        border-bottom: 1px solid #aaa
+        line-height: 2em
+        padding-left: 2em
+        +simple_text_shadow
         margin-bottom: 1em
+        border-top: none
+        +box-shadow(0 4px 3px -2px rgba(0, 0, 0, 0.2) inset)
 
       > ul, > dl
         +box-sizing(border-box)
-        padding: 1em
-        background: $article
-        +border-radius($main_radius)
 
       > dl
         width: 50%
         display: inline-block
         vertical-align: top
+
         &.infos
-          margin-right: 0.5em
+          border-right: solid 1px #ccc
         &.usage
-          margin-right: -0.5em
+          border-left: solid 1px white
+          h1
+            margin-left: -1px
+            border-left: solid 1px #e3e3e3
 
         dt
           font-weight: bold
           margin-left: 2em
           margin-top: 0.5ex
+          +simple_text_shadow
           &:first-of-type
             margin-top: 0
 
@@ -1206,10 +1274,16 @@ article.content > section.details
           margin-left: 4em
 
       > ul
-        margin-right: -0.5em
-        margin-bottom: 0.5em
+        margin-bottom: 1em
+        &.links
+          h1
         li
           margin-left: 2em
+
+      &.with-links
+        dl h1
+          border-top: 1px solid #ccc
+          +box-shadow(none)
 
       &.repository
         > dl
@@ -1225,16 +1299,17 @@ article.content > section.details
 
   > .loading
     display: none
-    +border-radius($main_radius)
+    +border-radius(0 0 $main_radius $main_radius)
     background: $article
     text-align: center
     font-style: italic
     margin: 0
     padding: 1em
     font-size: 90%
+    +box-shadow(0 4px 3px -2px rgba(0, 0, 0, 0.2) inset)
 
 article.with-opened
-  background: #eee !important
+  background: $article_off !important
   > section.description, > section.date-score, > footer, > .close
     display: none !important
   > section.details
@@ -1260,11 +1335,17 @@ section.results.with-opened
     display: none
 
 #main_search
-  padding: 18px 13px 13px
   +box-sizing(border-box)
-  background: $article
+  background: url("../img//texture.png") repeat $article
 
   > header
+    background: #dad9d9
+    +background-image(linear-gradient(center top, #e3e3e3, #dad9d9))
+    border-bottom: 1px solid #aaa
+    border-top: 1px solid #ccc
+    padding: 1.5ex
+    +main_shadow
+    +border-radius($main_radius $main_radius 0 0)
     &:after
       content: ""
       height: 0
@@ -1272,8 +1353,10 @@ section.results.with-opened
       display: block
     h1
       display: inline-block
-      margin: -0.4em 0 0.2ex 0
       font-size: 150%
+      +simple_text_shadow
+      small
+        font-weight: normal
     p
       float: right
       margin-right: 3em
@@ -1285,34 +1368,46 @@ section.results.with-opened
           font-size: 90%
 
   > form
-    position: relative
-    margin-top: -2em
+    padding: 13px
 
     > input[name=type]
       +opacity(0)
       float: right
-      margin-left: -1em
-      &:first-of-type
-        margin-right: 4.5em
+      font-size: 120%
+      position: absolute
+      top: 16px
+      &#search_type_repositories
+        right: 6em
+      &#search_type_people
+        right: 10px
       &:checked
         + label
           font-weight: bold
           background: $link
-          color: white
+          +box-shadow(1px 1px 1px rgba(0, 0, 0, 0.2) inset)
+          background: rgba(255, 255, 255, 0.4)
       &:focus
         + label
           text-decoration: underline
     label.search_type
-      float: right
       text-transform: lowercase
-      +border-radius(4px 4px 0 0)
+      +border-radius(4px 4px)
       display: inline-block
       padding: 5px 1em
       font-size: 120%
-      margin-bottom: -1px
+      position: absolute
+      top: 10px
+      +simple_text_shadow
+      &[for=search_type_repositories]
+        right: 6em
+      &[for=search_type_people]
+        right: 10px
+      &:hover
+        background: rgba(255, 255, 255, 0.2)
 
   #search_filter
-    margin: 5px 10px 0 0
+    margin-top: 5px
+    padding-bottom: 0
     p.help
       float: left
       color: #666
@@ -1352,32 +1447,21 @@ section.results.with-opened
       margin-left: 1em
 
     &:target, &.opened
+      padding-bottom: 5px
       > fieldset, > p.help
         display: block
       > a#show_filters
         display: none
     ul
       margin-left: 9em
-      li
-        label
-          padding-right: 2em
-        button
-          +input_reset
-          font-family: "IconicStroke"
-          font-size: 150%
-          color: lighten($flash, 10%)
-          position: absolute
-          right: 2px
-          top: 2px
-          line-height: 1em
-        input
-          &:checked
-            ~ button
-              color: $background_tags
     > ul
-      margin-bottom: 10px
+      margin-bottom: 5px
       float: left
       margin-left: 0
+
+  .search_options, .search_order
+    ul
+      margin-left: 9em
 
   #search_type_repositories:checked ~ fieldset
     .people_only
@@ -1473,6 +1557,5 @@ section.results.with-opened
           right: 0
           &:before
             display: none
-
 
 @import markup

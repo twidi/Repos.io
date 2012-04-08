@@ -11,7 +11,7 @@
         <h2>
             <span>by</span>
             {% if repository.owner.avatar %}
-                <a class="owner" href="{{ repository.owner.get_absolute_url }}" title="Go to the `{{ repository.owner.slug }}`'s page"><img alt="`{{ repository.owner.slug }}`'s avatar" src="{{ repository.owner.avatar }}" /></a>
+            <a class="owner" href="{{ repository.owner.get_absolute_url }}" title="Go to the `{{ repository.owner.slug }}`'s page"><img alt="`{{ repository.owner.slug }}`'s avatar" src="{{ repository.owner.avatar }}{% if "gravatar.com" in repository.owner.avatar %}?s=16{% endif %}" /></a>
             {% endif %}
             <a class="owner" href="{{ repository.owner.get_absolute_url }}" title="Go to the `{{ repository.owner.slug }}`'s page">{{ repository.owner.slug }}</a></h2>
         {% endif %}

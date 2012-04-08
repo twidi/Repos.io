@@ -2,7 +2,7 @@
 {% spaceless %}
 <section id="main_search" class="search">
     <header>
-        <h1>Search on Github, Bitbucket...</h1>
+    <h1>Search on Github <small>and soon also on Bitbucket, Google code and more</small></h1>
     </header>
     <form method="get">
         <input type="radio" name="type" id="search_type_people" value='people'{{ search.model_name|check_if:"account" }} />
@@ -23,7 +23,7 @@
                         {% include "front/include_search_param.html" with id="none" value="" display="No filter" %}
                     </ul>
                     <a id="show_filters" href="#search_filter">Show your filters</a>
-                    <p class="help">Click on the <span>$</span> icon next to a filter to quickly submit the form with this filter</p>
+                    <p class="help">Click on the <span>4</span> icon next to a filter to quickly submit the form with this filter</p>
                     {% if tags.has.places %}
                         <fieldset class='tags-type-places'>
                             <legend>Your places</legend>

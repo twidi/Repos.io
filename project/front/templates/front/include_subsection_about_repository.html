@@ -1,4 +1,4 @@
-{% load reposio_core %}
+{% load reposio_core include_strip %}
 
 {% if request.user.is_authenticated and links %}
 {% with nb_accounts=user_accounts|length %}
@@ -9,9 +9,7 @@
         <li>
             You
             {% if nb_accounts > 1 %}
-                (
-                {% with account=links.owning %}{% include "core/accounts/link_no_backend.html" %}{% endwith %}
-                )
+                ({% with account=links.owning %}{% include_strip "core/accounts/link_no_backend.html" %}{% endwith %})
             {% endif %}
             are the owner
         </li>
@@ -21,12 +19,7 @@
             {% if links.following %}
                 You
                 {% if nb_accounts > 1 %}
-                    (
-                    {% for account in links.following %}
-                        {% include "core/accounts/link_no_backend.html" %}
-                        {% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                    )
+                    ({% for account in links.following %}{% include_strip "core/accounts/link_no_backend.html" %}{% if not forloop.last %}, {% endif %}{% endfor %})
                 {% endif %}
                 follow this project
             {% endif %}
@@ -38,12 +31,7 @@
                     You follow
                     {% if links.project_following|length > 1 %}some related projects{% else %}a related project{% endif %}
                 {% endif %}
-                (
-                {% for repository in links.project_following %}
-                        {% include "core/repositories/link.html" %}
-                    {% if not forloop.last %}, {% endif %}
-                {% endfor %}
-                )
+                ({% for repository in links.project_following %}{% include_strip "core/repositories/link.html" %}{% if not forloop.last %}, {% endif %}{% endfor %})
             {% endif %}
         </li>
     {% endif %}
@@ -51,12 +39,7 @@
         <li>
             You
             {% if nb_accounts > 1 %}
-                (
-                {% for account in links.contributing %}
-                    {% include "core/accounts/link_no_backend.html" %}
-                    {% if not forloop.last %}, {% endif %}
-                {% endfor %}
-                )
+                ({% for account in links.contributing %}{% include_strip "core/accounts/link_no_backend.html" %}{% if not forloop.last %}, {% endif %}{% endfor %})
             {% endif %}
             made some contributions to this project.
         </li>
@@ -65,21 +48,13 @@
         <li>
             You have
             {% if links.forks %}
-                {% if links.forks|length > 1 %}forks{% else %} a fork{% endif %} (
-                {% for repository in links.forks %}
-                    {% include "core/repositories/link_no_backend.html" %}
-                    {% if not forloop.last %}, {% endif %}
-                {% endfor %}
-                )
+                {% if links.forks|length > 1 %}forks{% else %} a fork{% endif %}
+                ({% for repository in links.forks %}{% include_strip "core/repositories/link_no_owner_no_backend.html" %}{% if not forloop.last %}, {% endif %}{% endfor %})
             {% endif %}
             {% if links.project_forks %}
                 {% if links.forks %} and {% endif %}
-                {% if links.project_forks|length > 1 %}indirect forks{% else %} an indirect fork{% endif %} (
-                {% for repository in links.project_forks %}
-                    {% include "core/repositories/link.html" %}
-                    {% if not forloop.last %}, {% endif %}
-                {% endfor %}
-                )
+                {% if links.project_forks|length > 1 %}indirect forks{% else %} an indirect fork{% endif %}
+                ({% for repository in links.project_forks %}{% include_strip "core/repositories/link.html" %}{% if not forloop.last %}, {% endif %}{% endfor %})
             {% endif %}
         </li>
     {% endif %}

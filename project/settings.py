@@ -178,6 +178,7 @@ INSTALLED_APPS = (
     'redisession',
     'endless_pagination',
     'adv_cache_tag',
+    'include_strip_tag',
 
     # ours
     'utils',

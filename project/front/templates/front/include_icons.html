@@ -25,11 +25,11 @@
     <ul class="actions">
         {% with has_note=obj.current_user_has_note %}
             <li class="action-note{% if has_note %} selected{% endif %}{% if edit_note %} edit{% endif %}">
-                <a href="{{ obj_url }}{% if not edit_tags %}edit-note/{% endif %}" title="{% if has_note %}Edit your{% else %}Add a{% endif %} private note">Note</a>
+                <a href="{{ obj_url }}edit-note/" title="{% if has_note %}Edit your{% else %}Add a{% endif %} private note">Note</a>
                 {% if edit_note %}
                     {% include "front/note_form.html" %}
                 {% else %}
-                    {% if has_note %}<blockquote>{{ obj.current_user_rendered_note|safe }}</blockquote>{% endif %}
+                    {% if has_note %}<blockquote><div>{{ obj.current_user_rendered_note|safe }}</div></blockquote>{% endif %}
                 {% endif %}
             </li>
         {% endwith %}
