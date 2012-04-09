@@ -1313,6 +1313,8 @@ article.content > section.details
 
 article.with-opened
   background: $article_off !important
+  > header
+    margin-right: 0
   > section.description, > section.date-score, > footer, > .close
     display: none !important
   > section.details
@@ -1495,8 +1497,7 @@ section.results.with-opened
       clear: both
       margin: 10px 0 5px 10px
       &.description
-        margin-top: 1.5ex
-        margin-bottom: 0.5ex
+        margin: 1.5ex 0 0.5ex 2em
       &.date-score
         top: 0
         right: 10px
@@ -1577,9 +1578,15 @@ section.results.with-opened
         margin-left: 8em
 
   article.content
+    > header h1
+      margin-left: 32px
+    > figure
+      margin-bottom: 1ex
     > section.details
       > header > ul
         font-size: 80%
+        li a sup
+          top: 0
       > section.about
         > dl.infos, > dl.usage
           width: auto

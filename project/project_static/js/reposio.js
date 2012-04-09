@@ -1,4 +1,7 @@
 /* Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license */
+window.onerror = function(message, url, linenumber) {
+      alert("Alpha mode, please send this to s,angel@twidi.com: JS error: " + message + " on line " + linenumber + " for " + url);
+}
 
 $(document).ready(function() {
 
@@ -1494,7 +1497,7 @@ $(document).ready(function() {
             _on_details_header_click: function(node, ev) {
                 // only handle click on links
                 var tag = ev.target.tagName.toUpperCase();
-                if (tag != 'A' && tag != 'LI' && tag != 'SPAN') {
+                if (tag != 'A' && tag != 'LI' && tag != 'SPAN' && tag != 'SUP') {
                     return;
                 }
 
