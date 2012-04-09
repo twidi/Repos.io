@@ -1,10 +1,11 @@
 {% load utils_tags reposio_core %}
-<section class='search'>
-    {% uuid uuid %}
+{% uuid uuid %}
+<section class='search' id="search-{{ uuid }}">
     <form method="get" action="{{ obj|url:subsection }}">
         <fieldset class="search_main">
             <input type="text" name='q' value="{{ search.query|default:"" }}" placeholder='Filter...' />
             <input type="submit" name="submit" value="f" title="Filter !"/>
+            <a class="show_search_options" href="#search-{{ uuid }}">Show options</a>
         </fieldset>
         {% if search.model_name == 'repository' %}
             <fieldset class="search_options">

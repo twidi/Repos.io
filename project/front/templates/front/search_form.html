@@ -14,6 +14,7 @@
         <fieldset class="search_main">
             <input type="text" name='q' value="{{ search.query|default:"" }}" autofocus />
             <input type="submit" name="submit" value="f" title="Search !"/>
+            <a class="show_search_options" href="#main_search">Show filters and options</a>
         </fieldset>
         {% if request.user.is_authenticated %}
             {% with param="filter" current=search.filter.original_filter %}

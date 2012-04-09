@@ -199,6 +199,11 @@ $(document).ready(function() {
                 return Page._on_more_click(this, ev);
             });
 
+            Page.doc.delegate('.show_search_options', 'click', function(ev) {
+                $(this).parents('.search').addClass('opened');
+                return false;
+            });
+
             Page.win.scroll(Page._on_window_scroll);
 
         },

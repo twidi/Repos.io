@@ -1087,6 +1087,21 @@ section.results article.content
     padding-bottom: 5px
     border-bottom: solid rgba(0, 0, 0, 0.05) 1px
 
+  .show_search_options
+    position: absolute
+    right: 0
+    margin-top: 5px
+    font-size: 70%
+
+  > form > fieldset:not(.search_main)
+    display: none
+
+  &:target, &.opened
+    > form > fieldset
+      display: block
+    .show_search_options
+      display: none
+
 section.results article.content.with-details
   //border: solid $flash 1px
   //border-left-width: 4px
@@ -1481,6 +1496,9 @@ section.results.with-opened
       display: none
     &#search_options_repositories
       display: none
+
+  .show_search_options
+    font-size: 50%
 
 @media screen and (max-width: 767px)
   body
