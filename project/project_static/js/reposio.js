@@ -94,7 +94,7 @@ $(document).ready(function() {
                 callback_params.from_cache = false;
                 // we had ajax=1 to the querystring to avoid the browser cache the base url with partial content
                 var aj = 'ajax=1';
-                if (!querystring || querystring.indexOf(aj) == -1) {
+                if (url.indexOf(aj) == -1 && (!querystring || querystring.indexOf(aj) == -1)) {
                     if (querystring) {
                         querystring += '&' + aj;
                     } else {
