@@ -9,6 +9,7 @@ from core.views.decorators import check_repository, check_support
 from core.views import base_object_search
 from front.decorators import ajaxable
 from private.forms import NoteForm
+from utils.views import ajax_login_required
 
 @check_repository
 @ajaxable('front/repository_details.html')
@@ -31,6 +32,7 @@ def edit_tags(request, backend, project, repository=None, template='front/reposi
     return render(request, template, context)
 
 @check_repository
+@ajax_login_required
 #@ajaxable('front/repository_details.html')
 @ajaxable('front/note_form.html')
 def edit_note(request, backend, project, repository=None, template='front/repository_main.html'):

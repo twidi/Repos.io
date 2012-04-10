@@ -297,11 +297,15 @@ $(document).ready(function() {
             Page._scroll.working = false;
         },
 
-        error: function(message) {
+        error: function(message, login_required) {
             if (!message || message.length > 200) {
                 message = "An error occurred, preventing us to accomplish you request :(";
             }
-            Page.message(message, true);
+            var options = {};
+            Page.message(message, true, options);
+            if (login_required) {
+                alert(message);
+            }
         },
 
         message: function(message, is_error, options) {
@@ -474,6 +478,11 @@ $(document).ready(function() {
                                 TagManager.obj.close();
                             }
                         }
+                    });
+                } else {
+                    Page.doc.delegate('a.more-tags', 'click', function(ev) {
+                        Page.error('You need to be logged for this', true);
+                        return false;
                     });
                 }
             },
@@ -849,7 +858,7 @@ $(document).ready(function() {
             $.post('/private/tag/save/', post_data)
                 .success(function(data) {
                     if (data.error) {
-                        Page.error(data.error);
+                        Page.error(data.error, data.login_required);
                     } else {
                         is_now_set = data.is_set;
                         that._on_post_success(current_article, tag, is_new, data);
@@ -1832,21 +1841,28 @@ $(document).ready(function() {
             if (!$form.length) { return; }
             var that =this;
             $form.closest('li').addClass('loading');
+            var reset = function() {
+                $(this).find(selector).removeClass('loading');
+            }
             $.post($form.attr('action'), $form.serialize())
                 .success(function(data) {
-                    that.run_for_all_nodes(function() {
-                        $(this).find(selector)
-                            .toggleClass('selected', data.is_set)
-                            .removeClass('loading')
-                            .children('form')
-                                .children('button').attr('title', data.title);
-                    });
+                    if (data.error) {
+                        Page.error(data.error, data.login_required);
+                        that.run_for_all_nodes(reset);
+                    } else {
+                        that.run_for_all_nodes(function() {
+                            $(this).find(selector)
+                                .toggleClass('selected', data.is_set)
+                                .removeClass('loading')
+                                .children('form')
+                                    .children('button').attr('title', data.title);
+                        });
+                    }
                     AjaxCache.clear(true);
                 })
                 .error(function() {
-                    that.run_for_all_nodes(function() {
-                        $(this).find(selector).removeClass('loading');
-                    });
+                    Page.error(xhr.responseText);
+                    that.run_for_all_nodes(reset);
                 });
             return false;
         },
@@ -1873,7 +1889,8 @@ $(document).ready(function() {
             $.get(url)
                 .success(function(data) {
                     if (data.error) {
-                        Page.error(data.error);
+                        Page.$overlay.hide();
+                        Page.error(data.error, data.login_required);
                     } else {
                         $li.append(data).addClass('edit');
                         $li.children('form').find('textarea').focus();
@@ -1881,6 +1898,7 @@ $(document).ready(function() {
                 })
                 .error(function(xhr) {
                     Page.error(xhr.responseText);
+                    Page.$overlay.hide();
                 })
                 .complete(function() {
                     $li.removeClass('loading');
@@ -1919,7 +1937,7 @@ $(document).ready(function() {
             $.post($form.attr('action'), $form.serialize())
                 .success(function(data) {
                     if (data.error) {
-                        Page.error(data.error);
+                        Page.error(data.error, data.login_required);
                     } else {
                         var rendered_note = typeof(data.note_rendered) == 'undefined' ? '' : data.note_rendered;
                         that.run_for_all_nodes(function() {

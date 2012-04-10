@@ -16,6 +16,7 @@ from private.forms import (NoteForm, NoteDeleteForm,
 from utils.model_utils import get_app_and_model
 from core.models import get_object_from_str
 from utils.djson.response import JSONResponse
+from utils.views import ajax_login_required
 from tagging.models import Tag
 from tagging.flags import split_tags_and_flags
 
@@ -80,6 +81,7 @@ def ajax_close(request, object_key):
 
 
 @require_POST
+@ajax_login_required
 @login_required
 def note_save(request):
     """
@@ -120,6 +122,7 @@ def note_save(request):
 
 
 @require_POST
+@ajax_login_required
 @login_required
 def note_delete(request):
     """
@@ -165,6 +168,7 @@ def get_user_tags_for_object(obj, user=None):
 
 
 @require_POST
+@ajax_login_required
 @login_required
 def tags_save(request):
     """
@@ -210,6 +214,7 @@ def tags_save(request):
 
 
 @require_POST
+@ajax_login_required
 @login_required
 def tags_delete(request):
     """
@@ -303,6 +308,7 @@ TOGGLABLE = {
 }
 
 @require_POST
+@ajax_login_required
 @login_required
 def toggle(request, key, template=None):
 
@@ -348,6 +354,7 @@ def _get_tag_type(tag):
         return tag
 
 @require_POST
+@ajax_login_required
 @login_required
 def tag_save(request):
 
