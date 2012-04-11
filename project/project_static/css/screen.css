@@ -2721,6 +2721,19 @@ section.results.with-opened > .endless_container {
     display: none;
   }
 }
+@media screen and (max-width: 399px) {
+  /* line 1671, ../sass/screen.sass */
+  #iframe_container {
+    margin-left: -160px;
+    width: 320px;
+  }
+}
+@media screen and (max-height: 320px) {
+  /* line 1676, ../sass/screen.sass */
+  #iframe_container {
+    top: 20px;
+  }
+}
 /* line 3, ../sass/_markup.sass */
 .markup {
   font-family: helvetica, arial, freesans, clean, sans-serif;

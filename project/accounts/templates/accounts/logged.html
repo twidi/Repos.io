@@ -16,27 +16,49 @@
             p {
                 text-align: center;
             }
-            p:first-child {
+            p.redirect:first-child, p.close {
                 margin: 3em 0;
             }
+            p.close {
+                display: none;
+            }
+            body.close p.redirect {
+                display: none;
+            }
+            body.close p.close {
+                display: block;
+            }
         </style>
+        <noscript>
+            <meta id="meta_refresh" http-equiv="refresh" content="2; url={{ url_manage }}" />
+        </noscript>
+    </head>
+    <body>
+
+        <p class="redirect">{% if user and user.is_authenticated %}You are now logged in.{% else %}YOU ARE NOT LOGGED IN !{% endif %}</p>
+        <p class="redirect"><a href="{{ url_manage }}">Click here if you are not automatically redirected.</a></p>
         {% if user and user.is_authenticated %}
-            <script type="text/javascript">
-                if (window.opener && window.opener.parent && window.opener.parent.Reposio) {
+            <p class="close"><a href="#" onclick="window.self.close()">You can close this window/tab, you are now logged in the original Repos.io window/tab</a></p>
+        {% endif %}
+
+        <script type="text/javascript">
+            if (window.opener && window.opener.parent && window.opener.parent.Reposio) {
+                {% if user and user.is_authenticated %}
                     window.opener.parent.Reposio.Page.on_logged({
                         Token: "{{ csrf_token }}",
                         UserTags: {% all_user_tags_json %}
                     });
-                    window.close();
-                }
-            </script>
-        {% endif %}
-        <zmeta http-equiv="refresh" content="2; url={{ url_manage }}" />
-    </head>
-    <body>
-
-        <p>{% if user and user.is_authenticated %}You are now logged in.{% else %}YOU ARE NOT LOGGED IN !{% endif %}</p>
-        <p><a href="{{ url_manage }}">Click here if you are not automatically redirected.</a></p>
-
+                {% else %}
+                    window.opener.parent.Reposio.Page.on_not_logged();
+                {% endif %}
+                var body = document.getElementsByTagName('body')[0];
+                body.className = 'close';
+                window.self.close(); // some mobiles dont allow this
+            } else {
+                setTimout(function() {
+                    window.location.href = "{{ url_manage }";
+                }, 2000);
+            }
+        </script>
     </body>
 </html>

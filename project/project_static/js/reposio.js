@@ -303,10 +303,10 @@ $(document).ready(function() {
             if (!message || message.length > 200) {
                 message = "An error occurred, preventing us to accomplish you request :(";
             }
-            var options = {};
-            Page.message(message, true, options);
             if (login_required) {
                 Page.ask_for_login();
+            } else {
+                Page.message(message, true);
             }
         },
 
@@ -338,7 +338,12 @@ $(document).ready(function() {
             Page.close_iframe();
             Reposio.Token = data.Token;
             Reposio.UserTags = data.UserTags;
-            Page.success('You are now logged in !');
+            Page.message('You are now logged in !');
+        },
+
+        on_not_logged: function() {
+            Page.close_iframe();
+            Page.error('We were unable to log you in :(');
         },
 
         open_iframe: function(url) {
