@@ -1,0 +1,42 @@
+{% load private_tags %}<!DOCTYPE html>
+<html>{% url accounts_manage as url_manage %}
+    <head>
+        <style type="text/css">
+            html {
+                background: url("{{ STATIC_URL }}img/body-background.png") repeat scroll 0 0 #3a3a3a;
+                color: white;
+            }
+            a, a:visited {
+                color: white;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            p {
+                text-align: center;
+            }
+            p:first-child {
+                margin: 3em 0;
+            }
+        </style>
+        {% if user and user.is_authenticated %}
+            <script type="text/javascript">
+                if (window.opener && window.opener.parent && window.opener.parent.Reposio) {
+                    window.opener.parent.Reposio.Page.on_logged({
+                        Token: "{{ csrf_token }}",
+                        UserTags: {% all_user_tags_json %}
+                    });
+                    window.close();
+                }
+            </script>
+        {% endif %}
+        <zmeta http-equiv="refresh" content="2; url={{ url_manage }}" />
+    </head>
+    <body>
+
+        <p>{% if user and user.is_authenticated %}You are now logged in.{% else %}YOU ARE NOT LOGGED IN !{% endif %}</p>
+        <p><a href="{{ url_manage }}">Click here if you are not automatically redirected.</a></p>
+
+    </body>
+</html>

@@ -1,10 +1,10 @@
 {% load utils_tags %}
 {% spaceless %}
-<section id="main_search" class="search">
+<section id="main_search" class="main_box search">
     <header>
     <h1>Search on Github <small>and soon also on Bitbucket, Google code and more</small></h1>
     </header>
-    <form method="get">
+    <form method="get" class="content_box">
         <input type="radio" name="type" id="search_type_people" value='people'{{ search.model_name|check_if:"account" }} />
         <label for="search_type_people" class="search_type" onclick="">People</label>
 

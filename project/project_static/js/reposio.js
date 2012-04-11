@@ -151,6 +151,7 @@ $(document).ready(function() {
         $overlay: $('#overlay'),
         section: '',
         subsection: '',
+        login_url: '',
         title: '',
         url: document.location.pathname,
         history: window.History,
@@ -166,6 +167,7 @@ $(document).ready(function() {
         init: function() {
             Page.section = Reposio.section;
             Page.subsection = Reposio.subsection;
+            Page.login_url = Reposio.login_url;
             Page.title = Page.doc.find('head').children('title').text();
             Page.body.addClass('js');
             Page.classes = { Article: Article, Section: Section, MainSearch: MainSearch };
@@ -304,7 +306,7 @@ $(document).ready(function() {
             var options = {};
             Page.message(message, true, options);
             if (login_required) {
-                alert(message);
+                Page.ask_for_login();
             }
         },
 
@@ -325,6 +327,41 @@ $(document).ready(function() {
             $.jGrowl.defaults.afterOpen = function(element) {
                 element.fadeTo(150, 1);
             };
+        },
+
+        ask_for_login: function() {
+            Reposio.UserTags = null;
+            Page.open_iframe(Page.login_url + '?iframe=1');
+        },
+
+        on_logged: function(data) {
+            Page.close_iframe();
+            Reposio.Token = data.Token;
+            Reposio.UserTags = data.UserTags;
+            Page.success('You are now logged in !');
+        },
+
+        open_iframe: function(url) {
+            Page.close_iframe();
+            var container = $('<div />').attr('id', 'iframe_container'),
+                closer = $('<span />').addClass('close').text('X'),
+                iframe = $('<iframe id="iframe_content" allowTransparency="true" scrolling="no" frameborder="0" />').attr('src', url);
+            container.append(closer);
+            container.append(iframe);
+            Page.$overlay.show();
+            Page.body.append(container);
+            iframe.iframeAutoHeight({
+                minHeight: 240,
+                callback: function(callbackObject) {
+                    iframe.unbind('load');
+                }
+            });
+            closer.click(Page.close_iframe);
+        },
+
+        close_iframe: function() {
+            $('#iframe_container').remove();
+            Page.$overlay.hide();
         },
 
     _void: null}; // Page
@@ -467,24 +504,17 @@ $(document).ready(function() {
             },
 
             _manage_events: function() {
-                if (Reposio.UserTags) {
-                    Page.doc.delegate('a.more-tags', 'click', function(ev) {
-                        TagManager.obj._on_more_tags_click(this, ev);
-                    });
-                    Page.doc.mousedown(function(ev) {
-                        if (TagManager.obj.opened) {
-                            var $target = $(ev.target);
-                            if (!$target.hasClass('more-tags') && !$target.parents('#tags-popin').length) {
-                                TagManager.obj.close();
-                            }
+                Page.doc.delegate('a.more-tags', 'click', function(ev) {
+                    TagManager.obj._on_more_tags_click(this, ev);
+                });
+                Page.doc.mousedown(function(ev) {
+                    if (TagManager.obj.opened) {
+                        var $target = $(ev.target);
+                        if (!$target.hasClass('more-tags') && !$target.parents('#tags-popin').length) {
+                            TagManager.obj.close();
                         }
-                    });
-                } else {
-                    Page.doc.delegate('a.more-tags', 'click', function(ev) {
-                        Page.error('You need to be logged for this', true);
-                        return false;
-                    });
-                }
+                    }
+                });
             },
 
 
@@ -508,6 +538,11 @@ $(document).ready(function() {
             ev.stopPropagation();
             ev.stopImmediatePropagation();
             ev.preventDefault();
+
+            if (!Reposio.UserTags) {
+                Page.error('You need to be logged for this', true);
+                return false;
+            }
 
             if ($link.hasClass('selected')) {
                 this.close();

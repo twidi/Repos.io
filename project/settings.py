@@ -140,6 +140,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'django.core.context_processors.static',
     'django.contrib.messages.context_processors.messages',
+    'project.context_processors.include_settings',
     'project.context_processors.design',
     'project.context_processors.caching',
     'project.core.context_processors.backends',
@@ -239,7 +240,7 @@ SOCIAL_AUTH_ASSOCIATE_BY_MAIL = True
 SOCIAL_AUTH_ERROR_KEY = 'social_errors'
 SOCIAL_AUTH_UUID_LENGTH = 2
 
-LOGIN_REDIRECT_URL = '/accounts/manage/'
+LOGIN_REDIRECT_URL = '/accounts/logged/'
 LOGIN_URL = '/accounts/login/'
 LOGIN_ERROR_URL = '/accounts/login/'
 

@@ -17,16 +17,16 @@
         <script src="{{ STATIC_URL }}js/jquery.jgrowl.min-1.2.5.js" type="text/javascript" charset="utf-8"></script>
         <script src="{{ STATIC_URL }}js/classy.js" type="text/javascript" charset="utf-8"></script>
         <script src="{{ STATIC_URL }}js/crc32.js" type="text/javascript" charset="utf-8"></script>
+        <script src="{{ STATIC_URL }}js/jquery.iframe-auto-height.plugin.1.6.0.min.js" type="text/javascript" charset="utf-8"></script>
         <script src="{{ STATIC_URL }}js/reposio.js" type="text/javascript" charset="utf-8"></script>
-        {% if user and user.is_authenticated %}
         <script type="text/javascript" charset="utf-8">
             window.Reposio = window.Reposio || {};
-            Reposio.UserTags = {% all_user_tags_json %};
             Reposio.Token = "{{ csrf_token }}";
             Reposio.section = "{{ section|default:'' }}";
             Reposio.subsection = "{{ subsection|default:'' }}";
+            Reposio.login_url = "{{ LOGIN_URL }}";
+            Reposio.UserTags = {% if user and user.is_authenticated %}{% all_user_tags_json %}{% else %}null{% endif %};
         </script>
-        {% endif %}
         {% block js %}{% endblock %}
     </head>
     <body>
