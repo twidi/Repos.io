@@ -263,6 +263,37 @@ class NotedFilter(_Filter):
         return Q(note__author=self.search.user)
 
 
+class TaggedFilter(_Filter):
+    """
+    An abstract filter for tagged objects
+    """
+    default_sort = 'name'
+
+    @classmethod
+    def parse_filter(cls, query_filter, search):
+        """
+        Test if the filter is exactly "tagged"
+        """
+        if not search.check_user():
+            raise CannotHandleException
+        query_filter = super(TaggedFilter, cls).parse_filter(query_filter, search)
+        if query_filter != 'tagged':
+            raise CannotHandleException
+        return query_filter
+
+    def get_queryset_filter(self):
+        return Q(**{
+            'privatetagged%s__owner' % self.search.model_name: self.search.user,
+        })
+
+    def get_queryset(self):
+        qs = super(TaggedFilter, self).get_queryset()
+        qs = qs.exclude(**{
+                'privatetagged%s__tag__slug__in' % self.search.model_name: ('check-later', 'starred'),
+            })
+        return qs.distinct()
+
+
 class UserObjectListFilter(_Filter):
     """
     A filter for list of a loggued user
@@ -336,7 +367,7 @@ class ObjectRelativesFilter(_Filter):
 
 
 # all valid filter, ordered
-FILTERS = (ObjectRelativesFilter, UserObjectListFilter, NotedFilter, FlagFilter, ProjectFilter, PlaceFilter, SimpleTagFilter, NoFilter)
+FILTERS = (ObjectRelativesFilter, UserObjectListFilter, NotedFilter, TaggedFilter, FlagFilter, ProjectFilter, PlaceFilter, SimpleTagFilter, NoFilter)
 DEFAULT_FILTER = NoFilter
 
 
