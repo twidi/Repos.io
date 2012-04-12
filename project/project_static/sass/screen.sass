@@ -342,6 +342,7 @@ body > header
 
   #main-header
     margin-top: -15px
+    float: left
     h1, h2
       display: inline-block
       font-weight: bold
@@ -364,22 +365,23 @@ body > header
       line-height: 1em
 
 
-  ul
+  > ul#about-links
     +ul_reset
     display: block
     font-weight: bold
     color: #ccc
     font-size: 95%
     text-align: center
+    +text-shadow(rgba(0, 0, 0, 0.9) -1px -1px 0)
+    letter-spacing: 0.2px
+    word-spacing: 2px
     margin-bottom: 30px
+    clear: both
     li
       margin: 0 1ex 5px 0
       display: inline-block
       position: relative
       cursor: help
-      +text-shadow(rgba(0, 0, 0, 0.9) -1px -1px 0)
-      letter-spacing: 0.2px
-      word-spacing: 2px
       &:before, &:last-child:after
         content: "·"
         position: relative
@@ -406,6 +408,44 @@ body > header
 
       &:hover span, &:focus span
         display: block
+
+  > ul#header-links
+    +ul_reset
+    position: absolute
+    top: 1em
+    right: 1em
+    color: #ccc
+    font-weight: bold
+    font-size: 95%
+    +text-shadow(rgba(0, 0, 0, 0.9) -1px -1px 0)
+    letter-spacing: 0.2px
+    word-spacing: 2px
+    li
+      display: inline-block
+      &:first-child:before, &:after
+        content: "·"
+        position: relative
+        top: 2px
+      &:first-child:before
+        padding-right: 1ex
+      &:after
+        padding-left: 1ex
+      a
+        color: #ccc
+
+      &#user-link
+        text-transform: none
+        em
+          font-variant: small-caps
+          letter-spacing: 2px
+
+body:not(.home) > header ul#about-links
+  display: none
+body.home > header > ul#header-links li#about-link
+  display: none
+body.home > header, body:not(.home) > header:target
+  ul#about-links
+    display: block
 
 body > footer
   height: 10px
@@ -466,17 +506,12 @@ nav.endless_container
     display: block
     padding: 1em
 
-article.content
+article.content, article.content-light
   margin: 0 auto
   padding: 13px 13px 5px
   +main_content_background
   position: relative
-  border-top: solid 1px $border
-  border-bottom: solid 1px $border2
   +box-sizing(border-box)
-
-  > .loading, > .close
-    display: none
 
   > figure
     width: 10%
@@ -582,6 +617,13 @@ article.content
               vertical-align: middle
               position: relative
               top: -2px
+
+article.content
+  border-top: solid 1px $border
+  border-bottom: solid 1px $border2
+
+  > .loading, > .close
+    display: none
 
   > section.description
     padding: 0 1% 1%
@@ -1525,25 +1567,57 @@ section.results.with-opened
   width: 100%
   height: 100%
 
-#login
+#login, #manage
   .content_box
+    > h1
+      background: url("../img/navigation.png") repeat scroll 0 0 transparent
+      line-height: 2em
+      padding-left: 2em
+      margin-bottom: 1em
+      border-top: none
+      color: white
+      margin: -13px -13px 26px -13px
+      +box-shadow(0 4px 3px -2px rgba(0, 0, 0, 0.2))
     p
       margin: 1em 0
+      em
+        font-style: italic
       strong
         font-weight: bold
-      &:last-child
-        margin-top: 1.5em
-    ul
+      &.note
+        margin: 2em 5% 1em
+        border-left: solid 5px $article_off
+        padding-left: 5px
+        color: $color2
+    ul.providers
       +ul_reset
       text-align: center
-      margin: 1em 0
+      margin: 1em 0 0
       span
         font-size: smaller
+        margin-left: 1em
       li
         +flag
         padding: 3px 8px 3px 6px
         img
           vertical-align: middle
+
+#manage
+  > h1::last-of-type
+    margin-top: 1.5em
+  section.user-accounts
+    margin-top: -13px
+    margin-bottom: 26px
+    p
+      margin: 26px 0 0 13px
+      font-weight: bold
+  article
+    clear: both
+    > figure
+      width: 30px
+    &:hover
+      background: $article_off
+
 
 @media screen and (max-width: 767px)
   body
@@ -1598,13 +1672,13 @@ section.results.with-opened
 
 @media screen and (max-width: 500px)
   body > header
-    section#main-header
+    #main-header
       text-align: center
       margin-bottom: 20px
       h1, h2
         display: block
         width: auto
-    ul
+    > ul#about-links
       margin-bottom: 20px
   #main_search
     > header h1

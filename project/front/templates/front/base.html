@@ -29,13 +29,21 @@
         </script>
         {% block js %}{% endblock %}
     </head>
-    <body>
-        <header>
-            <section id="main-header">
+    <body class="{{ section }}">
+        <header id="header">
+            <hgroup id="main-header">
                 <h1><a href="/v2/">Repos.io</a></h1>
                 <h2>Search and manage code repositories</h2>
-            </section>
-            <ul>
+            </hgroup>
+            <ul id="header-links">
+                {% if user and user.is_authenticated %}
+                    <li id="user-link"><a href="{% url accounts_manage %}">Your account{{ user_accounts|length|pluralize }} ( <em>{{ user.username }}</em>{% if user_accounts|length > 1 %}...{% endif %} )</a></li>
+                {% else %}
+                    <li id="login-link"><a href="{{ LOGIN_URL }}">Login/Register</a></li>
+                {% endif %}
+                <li id="about-link"><a href="#header">About</a></li>
+            </ul>
+            <ul id="about-links">
                 <li>Full search
                     <span>
                         <em>Need something ?</em>

@@ -272,13 +272,14 @@ class UserObjectListFilter(_Filter):
     # all allowed filters for each model, with the matching queryset main part
     allowed = dict(
         account = dict(
-            following = 'followers',
-            followers = 'following',
+            following = 'followers__user',
+            followers = 'following__user',
+            accounts = 'user',
         ),
         repository = dict(
-            following = 'followers',
-            owned = 'owner',
-            contributed = 'contributors',
+            following = 'followers__user',
+            owned = 'owner__user',
+            contributed = 'contributors__user',
         )
     )
 
@@ -299,7 +300,8 @@ class UserObjectListFilter(_Filter):
         Return a filter on a list for the current user
         """
         part = self.allowed[self.search.model_name][self.query_filter]
-        return Q(**{'%s__user' % part: self.search.user})
+        return Q(**{part: self.search.user})
+
 
 class ObjectRelativesFilter(_Filter):
     """
@@ -331,6 +333,7 @@ class ObjectRelativesFilter(_Filter):
         queryset = getattr(self.search.base, self.query_filter).all()
         #if self.search.base.model_name == 'account' and self.search.model_name == 'repository'
         return queryset
+
 
 # all valid filter, ordered
 FILTERS = (ObjectRelativesFilter, UserObjectListFilter, NotedFilter, FlagFilter, ProjectFilter, PlaceFilter, SimpleTagFilter, NoFilter)

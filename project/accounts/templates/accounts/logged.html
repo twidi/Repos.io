@@ -35,7 +35,13 @@
     </head>
     <body>
 
-        <p class="redirect">{% if user and user.is_authenticated %}You are now logged in.{% else %}YOU ARE NOT LOGGED IN !{% endif %}</p>
+        <p class="redirect">
+            {% if user and user.is_authenticated %}
+                You are now logged in (or your account associated).
+            {% else %}
+                YOU ARE NOT LOGGED IN (or your account is not associated) !
+            {% endif %}
+        </p>
         <p class="redirect"><a href="{{ url_manage }}">Click here if you are not automatically redirected.</a></p>
         {% if user and user.is_authenticated %}
             <p class="close"><a href="#" onclick="window.self.close()">You can close this window/tab, you are now logged in the original Repos.io window/tab</a></p>
@@ -55,8 +61,8 @@
                 body.className = 'close';
                 window.self.close(); // some mobiles dont allow this
             } else {
-                setTimout(function() {
-                    window.location.href = "{{ url_manage }";
+                setTimeout(function() {
+                    window.location.href = "{{ url_manage }}";
                 }, 2000);
             }
         </script>
