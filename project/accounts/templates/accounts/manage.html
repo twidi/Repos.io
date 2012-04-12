@@ -1,59 +1,64 @@
 {# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
-{% extends "accounts/base.html" %}
-{% block title %}Your accounts on {% endblock %}
-{% block accounts_content %}
+{% extends "front/base.html" %}
+{% block title %}Your account{{ user_accounts|pluralize }}{% endblock %}
 
-<div class="row">
+{%block main_content %}
+<section id="manage" class="main_box">
 
-    {% with accounts=user_accounts %}
+    <header class="main_header">
+        <h1>Your account{{ user_accounts|pluralize }}</h1>
+    </header>
 
-        <section class="span5">
+    <section class="content_box">
+        {% with accounts=user_accounts %}
 
-            <h2>Your accounts</h2>
+            <h1>You are linked to these accounts:</h1>
 
             {% if accounts %}
 
-                <p>You are linked to these accounts : </p>
-
-                <table>
-                    <tbody>
-                        {% for account in accounts %}
-                        <tr>
-                            <td>
-                                {% include "core/accounts/minimal_cell.html" %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <section class="user-accounts">
+                    <p><a href="/?type=people&q=&filter=accounts&order=">Click here to view {% if accounts|length > 1 %}these{% else %}this{% endif %} account{{ accounts|length|pluralize }} in details</a></p>
+                    {% for account in accounts %}
+                        <article class="content-light {{ account.backend }}">
+                            <figure>
+                                <a href="{{ account.get_absolute_url }}" title="Go to the `{{ account.slug }}`'s page"><img alt="`{{ account.slug }}`'s avatar" src="{% if account.avatar %}{{ account.avatar }}{% else %}{{ STATIC_URL }}img/avatar_default_{{ repository.backend }}.png{% endif %}" /></a>
+                            </figure>
+                            <header>
+                                <h1><a href="{{ account.get_absolute_url }}" title="Go to the `{{ account.slug }}`'s page">{{ account.slug }}</a></h1>
+                                <h3><a href="{{ account.url }}" title="Link to the `{{ account.slug }}`'s page on {{ account.backend }}">@ {{ account.backend }}</a></h3>
+                                <section class="links">
+                                    <a href="{{ account.url }}" title="Link to the `{{ account.slug }}`'s page on {{ account.backend }}">{{ account.backend }}</a>
+                                    {% if account.homepage %}
+                                        <a href="{{ account.homepage }}" title="Link to the `{{ account.slug }}`'s home page">Home</a>
+                                    {% endif %}
+                                </section>
+                            </header>
+                        </article>
+                    {% endfor %}
+                </section>
 
             {% else %}
 
-                <p>Your account is not linked to any provider, please associate with one <strong style="font-size:larger;">&rarr;</strong></p>
+                <p>Your account is not linked to any provider, please associate with one below.</p>
 
             {% endif %}
+        {% endwith %}
 
-        </section>
+        <h1>Associate more accounts:</h1>
 
-        <section class="span9 offset2">
+        <p>You can associate your account with another provider, you can even associate many accounts from the same provider ! Pick one below.</p>
 
-            <h2>Associate more accounts</h2>
+        <ul class="providers">
+            {% for backend, auth_backend in backends_map.items %}
+                <li><a href="{% url socialauth_associate_begin auth_backend %}"><img alt="{{ backend }}" src="{{ STATIC_URL }}img/favicon_{{ backend }}.png" /> {{ backend }}</a></li>
+            {% endfor %}
+            <span>(more to come)</span>
+        </ul>
 
-            <p>You can associate your account with another provider <em>(if you want to assciate many github accounts, you must disconnect from github and reconnect with the other account you want to associate)</em> :</p>
+        <p class="note">If you want to assciate many accounts of the same provider, you must first disconnect from this provider (not here !) and reconnect with the other account you want to associate</p>
 
-            <p>
-                {% for backend, auth_backend in backends_map.items %}
-                    <a class="btn large" href="{% url socialauth_associate_begin auth_backend %}"><img alt="{{ backend }}" src="{{ STATIC_URL }}img/favicon_{{ backend }}.png" /> {{ backend }}</a>
-                {% endfor %}
-                <span>(more to come)</span>
-            </p>
+        {% include "accounts/include_about.html" %}
 
-            {% include "accounts/include_about.html" %}
-
-        </section>
-
-    {% endwith %}
-
-</div>
-
-{% endblock accounts_content %}
+    </section>
+</section>
+{% endblock %}

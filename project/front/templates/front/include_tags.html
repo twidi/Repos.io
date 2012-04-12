@@ -1,0 +1,12 @@
+{% spaceless %}
+{% with tags=obj.all_public_tags %}
+    <ul class="tags official-tags">
+    {% if tags %}
+            {% for tag in tags %}
+                <li data-slug="{{ tag.slug }}"><a href="/?type={{ obj.search_type }}&amp;q={{ tag.slug }}">{{ tag }}</a></li>
+            {% endfor %}
+    {% endif %}
+    </ul>
+{% endwith %}
+{% endspaceless %}
+

@@ -11,4 +11,5 @@ pip-log.txt
 *.sqlite
 settings_rules.py
 dump*.json
+.sass-cache
 

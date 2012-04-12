@@ -1,0 +1,24 @@
+<section id="login" class="main_box">
+
+    <header class='main_header'>
+        <h1>Login/Register <small>on Repos.io</small></h1>
+    </header>
+
+    <section class="content_box">
+
+        <h1>Please login with one of these providers:</h1>
+
+        <ul class="providers">
+            {% for backend, auth_backend in backends_map.items %}
+                <li><a href="{% url socialauth_begin auth_backend %}"{% if request.REQUEST.iframe %} onclick="window.open(this.href);  return false;"{% endif %}><img alt='{{ backend }}' src="{{ STATIC_URL }}img/favicon_{{ backend }}.png" /> {{ backend }}</a></li>
+            {% endfor %}
+            <span>(more to come)</span>
+        </ul>
+
+        {% include "accounts/include_about.html" %}
+
+        <p class="note">If it's your first login, notice that you will be able to associate more accounts later.</p>
+
+    </section>
+</section>
+

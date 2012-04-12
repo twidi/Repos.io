@@ -1,0 +1,76 @@
+@import compass/css3
+
+.markup
+  font-family: helvetica, arial, freesans, clean, sans-serif
+  color: #333
+  background-color: #fff
+  border: none
+  line-height: 1.5
+  padding: 1em
+  text-align: left
+
+  p
+    margin: 0.5em
+
+  pre
+    background-color: #eee
+    padding: 10px
+    +border-radius(4px)
+    overflow: auto
+    font-family: "Courier New", Courier, monospace
+
+  > pre
+    background: transparent
+    +border-radius(none)
+    padding: 0
+    font-size: 90%
+
+  code
+    background-color: #eee
+    padding: 1px 3px
+    +border-radius(2px)
+    font-family: "Courier New", Courier, monospace
+
+  ol, ul, menu, dir
+    display: block
+    list-style: disc
+    margin: 1em 0
+    padding-left: 40px
+
+  li
+    display: list-item
+    list-style: disc
+    p
+      margin: 0.3em
+
+  a
+    &:link, &:visited
+      font-weight: bold
+      color: #2f5d92
+      text-decoration: none
+    &:hover
+      text-decoration: underline
+
+  h1, h2, h3, h4, h5 h6
+    margin: 1em 0 0.5em
+    color: #444
+    font-weight: bold
+
+  h1
+    font-size: 1.7em
+    margin: 0.67em 0
+
+  h2
+    border-bottom: 1px dotted #aaa
+    margin-bottom: 1em
+    font-size: 1.5em
+    margin: 0.83em 0
+
+  h3
+    font-size: 1.17em
+    margin: 1em 0
+
+  h4, h5, h6
+    font-size: 1.05em
+    margin: 1em 0
+

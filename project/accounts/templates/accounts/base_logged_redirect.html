@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style type="text/css">
+            html {
+                background: url("{{ STATIC_URL }}img/body-background.png") repeat scroll 0 0 #3a3a3a;
+                color: white;
+            }
+            a, a:visited {
+                color: white;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+            p {
+                text-align: center;
+            }
+            p.redirect:first-child, p.close {
+                margin: 3em 0;
+            }
+            p.close {
+                display: none;
+            }
+            body.close p.redirect {
+                display: none;
+            }
+            body.close p.close {
+                display: block;
+            }
+        </style>
+        <noscript>
+            {% block meta_refresh %}
+                <meta id="meta_refresh" http-equiv="refresh" content="2; url=/" />
+            {% endblock %}
+        </noscript>
+    </head>
+    <body>
+
+        <p class="redirect">
+            {% block message %}{% endblock %}
+        </p>
+        <p class="redirect">
+            {% block redirect_link %}
+                <a href="/">Click here if you are not automatically redirected.</a>
+            {% endblock %}
+        </p>
+        {% block close_link_text %}{% endblock %}
+
+        <script type="text/javascript">
+            var win_opener = null;
+            if(window.opener && window.opener.parent  && window.opener.parent.Reposio) {
+                win_opener = window.opener.parent;
+            } else if (window.parent && window.parent.Reposio) {
+                win_opener = window.parent;
+            }
+            if (win_opener) {
+                {% block js_opener %}{% endblock %}
+                var body = document.getElementsByTagName('body')[0];
+                body.className = 'close';
+                window.self.close(); // some mobiles dont allow this
+            } else {
+                {% block js_no_opener %}
+                    setTimeout(function() {
+                        window.location.href = "/";
+                    }, 2000);
+                {% endblock %}
+            }
+        </script>
+    </body>
+</html>

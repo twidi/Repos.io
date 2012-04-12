@@ -1,0 +1,7 @@
+{% load reposio_core %}
+<li rel="{{ type }}"{% if obj.include_details == type or subsection == type %} class="current"{% endif %}>
+    <a href="{% if url %}{{ url }}{% else %}{{ obj|url:type }}{% endif %}">
+        <span>{{ display }}</span>
+        {% if details %}<sup>{{ details }}</sup>{% endif %}
+    </a>
+</li>

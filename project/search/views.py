@@ -235,6 +235,10 @@ class RepositorySearchView(CoreSearchView):
         if is_crawler(self.request.META.get('HTTP_USER_AGENT', '')):
             return
 
+        # do not save if we have a "/" in the request
+        if "/" in self.query:
+            return
+
         # check if this user did this search recently
         filter_user = None
         if self.request.user and self.request.user.is_authenticated():

@@ -1,0 +1,8 @@
+{% load private_tags %}
+{% prepare_private obj %}
+<section rel="{{ subsection }}" class="{{ subsection }} current">
+    <section class="results">
+        {% include obj.get_content_template %}
+    </section>
+</section>
+

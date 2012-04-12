@@ -3,6 +3,7 @@
 from django import template
 from django.core.urlresolvers import reverse
 from django.utils.http import urlquote
+from django.utils import simplejson
 
 from django_globals import globals
 from notes.models import Note
@@ -14,6 +15,7 @@ from utils.model_utils import get_app_and_model
 from utils.views import get_request_param
 from tagging.models import Tag
 from tagging.flags import split_tags_and_flags
+from front.views import get_user_tags
 
 register = template.Library()
 
@@ -86,6 +88,7 @@ def prepare_private(objects, ignore=None):
                 if not getattr(obj, 'current_user_tags', None):
                     continue
                 obj.current_user_tags = split_tags_and_flags(obj.current_user_tags, model_name, tags_are_dict=True)
+                obj.current_user_has_tags = (obj.current_user_tags['places'] or obj.current_user_tags['projects'] or obj.current_user_tags['tags'])
 
 
         if not (ignore and '-related' in ignore):
@@ -127,6 +130,31 @@ def prepare_private(objects, ignore=None):
         return ''
     except:
         return ''
+
+
+class PrepareAllUserTagsNode(template.Node):
+    def render(self, context):
+        result = {}
+
+        if globals.user and globals.user.is_authenticated():
+            result = get_user_tags(globals.request)
+
+        context['all_user_tags'] = result
+
+        return ''
+
+@register.tag
+def prepare_all_user_tags(parser, token):
+    return PrepareAllUserTagsNode()
+
+@register.simple_tag
+def all_user_tags_json():
+    result = {}
+
+    if globals.user and globals.user.is_authenticated():
+        result = get_user_tags(globals.request)
+
+    return simplejson.dumps(result)
 
 
 @register.inclusion_tag('private/edit_private.html')

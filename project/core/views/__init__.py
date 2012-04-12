@@ -1,6 +1,6 @@
 # Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
 
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 from django.http import HttpResponseBadRequest
 from django.contrib import messages
@@ -11,6 +11,8 @@ from core.backends import get_backend
 from core.models import Account, Repository
 from core.exceptions import BackendError, MultipleBackendError
 from core.tokens import AccessTokenManager
+from front.search import Search
+from front.decorators import ajaxable
 
 def default(request, identifier):
     """
@@ -96,3 +98,30 @@ def fetch(request):
         redirect_url = '/'
 
     return redirect(redirect_url)
+
+@ajaxable("front/include_subsection.html", ignore_if=('page', ))
+def base_object_search(request, obj, search_type, search_filter, template=None, search_extra_params=None, extra_context=None):
+    """
+    Base view used to search for objects of type `search_filter`, which are
+    `search_type` (people or repositories) relatives to `obj`.
+    """
+    search_params = {
+            'base': obj,
+            'type': search_type,
+            'filter': search_filter,
+        }
+    if search_extra_params:
+        search_params.update(search_extra_params)
+
+    search_params.update(Search.get_params_from_request(request, search_type, ignore=search_params))
+    search = Search.get_for_params(search_params)
+
+    context = {
+            'search': search,
+            'obj': obj,
+        }
+
+    if extra_context is not None:
+        context.update(extra_context)
+
+    return render(request, template, context)

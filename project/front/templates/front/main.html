@@ -1,0 +1,29 @@
+{% extends "front/base.html" %}
+{% block main_content %}
+    {% if not user or not user.is_authenticated %}{% if not request.COOKIES.hide_welcome %}
+        <article id="welcome">
+            <header>
+                <h1>Welcome on Repos.io</h1>
+                <span class="close" title="By clicking here, this box will be hidden forever, via cookie">X</span>
+            </header>
+            <section>
+                <p>By log in with your Github account (and soon Bitbucket and others), you will be able to tag repositories & people, mark them as <em>favorites</em> or to <em>check later</em>, add descriptive notes...</p>
+                <p>You will also have direct access to all repositories you follow, search through them... The same apply for repositories you own, your contributions, forks (and forks of your own repositories), people you follow, or who follows you... </p>
+                <p>All of this is not restricted to your own accounts, of course, but to all repositories and people you can find on the providers we manage (Github only for now).</p>
+                <ul class="providers">
+                    <span>Click to log in: </span>
+                    {% for backend, auth_backend in backends_map.items %}
+                        <li><a href="{% url socialauth_begin auth_backend %}"><img alt='{{ backend }}' src="{{ STATIC_URL }}img/favicon_{{ backend }}.png" /> {{ backend }}</a></li>
+                    {% endfor %}
+                    <span>(more to come)</span>
+                </ul>
+                <p><strong>PS: </strong>Without account, you will still be able to see all of this, but without tagging, and so on.</p>
+                <noscript>
+                    <p class="nojs">The user experience is much better with javascript activated, but if you don't want, we understand ;)</p>
+                </noscript>
+            </section>
+        </article>
+        {% endif %}{% endif %}
+    {% include "front/search_form.html" %}
+    {% include "front/results.html" %}
+{% endblock %}

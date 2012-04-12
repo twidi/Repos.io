@@ -1,0 +1,48 @@
+{% load reposio_core %}
+{% with account=obj %}
+{% corecache 0 account_content account.pk account.modified %}
+<article class="content account {{ account.backend }}{% if account.deleted %} deleted{% endif %}">
+    <figure>
+        <a href="{{ account.get_absolute_url }}" title="Go to the `{{ account.slug }}`'s page"><img alt="`{{ account.slug }}`'s avatar" src="{% if account.avatar %}{{ account.avatar }}{% else %}{{ STATIC_URL }}img/avatar_default_{{ repository.backend }}.png{% endif %}" /></a>
+    </figure>
+    <header>
+        <h1><a href="{{ account.get_absolute_url }}" title="Go to the `{{ account.slug }}`'s page">{{ account.slug }}</a></h1>
+        <h3><a href="{{ account.url }}" title="Link to the `{{ account.slug }}`'s page on {{ account.backend }}">@ {{ account.backend }}</a></h3>
+        <section class="links">
+            <a href="{{ account.url }}" title="Link to the `{{ account.slug }}`'s page on {{ account.backend }}">{{ account.backend }}</a>
+            {% if account.homepage %}
+                <a href="{{ account.homepage }}" title="Link to the `{{ account.slug }}`'s home page">Home</a>
+            {% endif %}
+        </section>
+    </header>
+    <section class='description'>
+        {% if account.deleted %}
+            <strong>Account deleted</strong>
+        {% endif %}
+        {% if account.name %}
+            <p>{{ account.name }}</p>
+        {% endif %}
+    </section>
+    <section class='date-score'>
+        <ul>
+            <li title="On {{ account.backend }} since...">{{ account.official_created|date:"Y-m-d" }}</li>
+            <li title="Score">{{ account.score|default:"-" }}</li>
+        </ul>
+    </section>
+    <footer>
+        {% include "front/include_tags.html" with obj=account %}
+        {% nocache %}
+            {% with obj=account obj_url=account.get_absolute_url %}
+                {% include "front/include_user_tags.html" %}
+                {% include "front/include_icons.html" %}
+            {% endwith %}
+        {% endnocache %}
+    </footer>
+    {% nocache %}
+        {% if account.include_details %}
+            {% include "front/account_details.html" with obj=account obj_url=account.get_absolute_url %}
+        {% endif %}
+    {% endnocache %}
+</article>
+{% endcorecache %}
+{% endwith %}

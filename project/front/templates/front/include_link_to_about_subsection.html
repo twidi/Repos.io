@@ -1,0 +1,8 @@
+{% if obj.include_details == 'about' or subsection == 'home' or subsection  == 'about' %}
+    {% with subsection='about' %}
+        {% include "front/include_link_to_subsection.html" with type="about" display="About" %}
+    {% endwith %}
+{% else %}
+    {% include "front/include_link_to_subsection.html" with type="about" display="About" %}
+{% endif %}
+
