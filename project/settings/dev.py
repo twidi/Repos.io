@@ -5,7 +5,7 @@
 DEBUG = True
 HAYSTACK_SOLR_URL = 'http://localhost:8080/solr'
 
-if True: #False:
+if False:
     # django debug toolbar
     INSTALLED_APPS = list(INSTALLED_APPS) + [
         'debug_toolbar',
