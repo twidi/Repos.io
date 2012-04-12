@@ -25,7 +25,7 @@ django-include-strip-tag
 -e git+git://github.com/twidi/django-pure-pagination.git#egg=django-pure-pagination
 
 # not on pypi
--e git+git://github.com/twidi/django-template-preprocessor.git#egg=django-template-preprocessor
+#-e git+git://github.com/twidi/django-template-preprocessor.git#egg=django-template-preprocessor
 -e git+git://github.com/twidi/django-metasettings.git#egg=django-metasettings
 -e git+git://github.com/twidi/django-browsecap.git#egg=django-browsecap
 
@@ -40,7 +40,7 @@ pysolr
 beautifulsoup
 
 # for django-template-preprocessor
-termcolor
+#termcolor
 
 ################
 ### backends ###

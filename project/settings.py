@@ -101,22 +101,22 @@ TEMPLATE_LOADERS = (
 )
 
 # django-template-preprocessor
-TEMPLATE_LOADERS = (
-    ('template_preprocessor.template.loaders.PreprocessedLoader',
-        TEMPLATE_LOADERS
-    ),
-)
-MEDIA_CACHE_DIR = os.path.normpath(os.path.join(MEDIA_ROOT, 'cache/'))
-MEDIA_CACHE_URL = os.path.normpath(os.path.join(MEDIA_URL, 'cache/'))
-TEMPLATE_CACHE_DIR = os.path.normpath(os.path.join(PROJECT_PATH, '..', 'templates-cache/'))
-# Enabled modules of the template preprocessor
-TEMPLATE_PREPROCESSOR_OPTIONS = {
-        # Default settings
-        '*': ('html', 'whitespace-compression', ),
-
-        # Override for specific applications
-        ('django.contrib.admin', 'django.contrib.admindocs', 'debug_toolbar'): ('no-html',),
-}
+#TEMPLATE_LOADERS = (
+#    ('template_preprocessor.template.loaders.PreprocessedLoader',
+#        TEMPLATE_LOADERS
+#    ),
+#)
+#MEDIA_CACHE_DIR = os.path.normpath(os.path.join(MEDIA_ROOT, 'cache/'))
+#MEDIA_CACHE_URL = os.path.normpath(os.path.join(MEDIA_URL, 'cache/'))
+#TEMPLATE_CACHE_DIR = os.path.normpath(os.path.join(PROJECT_PATH, '..', 'templates-cache/'))
+## Enabled modules of the template preprocessor
+#TEMPLATE_PREPROCESSOR_OPTIONS = {
+#        # Default settings
+#        '*': ('html', 'whitespace-compression', ),
+#
+#        # Override for specific applications
+#        ('django.contrib.admin', 'django.contrib.admindocs', 'debug_toolbar'): ('no-html',),
+#}
 
 
 
@@ -174,7 +174,7 @@ INSTALLED_APPS = (
     'pure_pagination',
     'notes',
     'taggit',
-    'template_preprocessor',
+    #'template_preprocessor',
     'redisession',
     'endless_pagination',
     'adv_cache_tag',
