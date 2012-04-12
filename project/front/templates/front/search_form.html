@@ -1,6 +1,6 @@
 {% load utils_tags %}
 {% spaceless %}
-<section id="main_search" class="main_box search">
+<section id="main_search" class="main_box search{% if not search.is_default %} opened{% endif %}">
     <header>
     <h1>Search on Github <small>and soon also on Bitbucket, Google code and more</small></h1>
     </header>

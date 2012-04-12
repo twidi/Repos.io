@@ -1,6 +1,6 @@
 {% load utils_tags reposio_core %}
 {% uuid uuid %}
-<section class='search' id="search-{{ uuid }}">
+<section class="search{% if not search.is_default %} opened{% endif %}" id="search-{{ uuid }}">
     <form method="get" action="{{ obj|url:subsection }}">
         <fieldset class="search_main">
             <input type="text" name='q' value="{{ search.query|default:"" }}" placeholder='Filter...' />
