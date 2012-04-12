@@ -238,7 +238,7 @@ body
 body > section > *
   +main_shadow
   position: relative
-  &:first-child
+  &:first-of-type
     +border-radius($main_radius)
 
 small
@@ -1589,18 +1589,19 @@ section.results.with-opened
         border-left: solid 5px $article_off
         padding-left: 5px
         color: $color2
-    ul.providers
-      +ul_reset
-      text-align: center
-      margin: 1em 0 0
-      span
-        font-size: smaller
-        margin-left: 1em
-      li
-        +flag
-        padding: 3px 8px 3px 6px
-        img
-          vertical-align: middle
+
+ul.providers
+  +ul_reset
+  text-align: center
+  margin: 1em 0 0
+  span
+    font-size: smaller
+    margin: 0 1ex
+  li
+    +flag
+    padding: 3px 8px 3px 6px
+    img
+      vertical-align: middle
 
 #manage
   > h1::last-of-type
@@ -1617,6 +1618,43 @@ section.results.with-opened
       width: 30px
     &:hover
       background: $article_off
+
+#welcome
+  color: white
+  letter-spacing: 0.2px
+  word-spacing: 2px
+  line-height: 1.5em
+  background: rgba(255, 255, 255, 0.1)
+  margin-bottom: 30px
+  padding-bottom: 1em
+  p
+    margin: 1em 1ex
+    em
+      font-style: italic
+    strong
+      font-weight: bold
+    &.nojs
+      font-weight: bold
+      text-align: center
+      margin-top: 1.5em
+    &:last-of-type
+      margin-bottom: 0
+  header
+    background: rgba(255, 255, 255, 0.1)
+    +border-radius($main_radius $main_radius 0 0)
+    padding: 5px 10px
+    position: relative
+    h1
+      +text-shadow(rgba(0, 0, 0, 0.2) -1px -1px 0)
+    span.close
+      display: none
+      position: absolute
+      top: 6px
+      right: 4px
+      font-family: "IconicStroke"
+      font-size: 24px
+      cursor: pointer
+      z-index: 1002
 
 
 @media screen and (max-width: 767px)

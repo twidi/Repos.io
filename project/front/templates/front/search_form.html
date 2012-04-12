@@ -12,7 +12,7 @@
         <label for="search_type_repositories" class="search_type" onclick="">Repositories</label>
 
         <fieldset class="search_main">
-            <input type="text" name='q' value="{{ search.query|default:"" }}" autofocus />
+            <input type="text" name='q' value="{{ search.query|default:"" }}" />
             <input type="submit" name="submit" value="f" title="Search !"/>
             <a class="show_search_options" href="#main_search">Show filters and options</a>
         </fieldset>

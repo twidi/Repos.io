@@ -168,6 +168,7 @@ $(document).ready(function() {
             Page.classes = { Article: Article, Section: Section, MainSearch: MainSearch };
 
             Page._init_alerts();
+            Page.show_welcome();
 
             MainSearch.__init__();
             TagManager.__init__();
@@ -200,6 +201,8 @@ $(document).ready(function() {
                 $(this).parents('.search').addClass('opened');
                 return false;
             });
+
+            $('#welcome span.close').click(Page.hide_welcome);
 
             Page.doc.delegate('#login-link a', 'click', Page.ask_for_login);
             Page.doc.delegate('#logout-link a', 'click', Page.ask_for_logout);
@@ -405,6 +408,22 @@ $(document).ready(function() {
         close_iframe: function() {
             $('#iframe_container').remove();
             Page.$overlay.hide();
+        },
+
+        show_welcome: function() {
+            var $welcome = $('#welcome');
+            if (!$welcome.length) { return; }
+            if (Cookies.get('hide_welcome')) {
+                $welcome.hide();
+            } else if (Cookies.test()) {
+                $welcome.find('span.close').show();
+            }
+        },
+
+        hide_welcome: function() {
+            $('#welcome').hide();
+            Cookies.set('hide_welcome', '1', { expiresAt: new Date(2020, 1, 1) });
+            return false;
         },
 
     _void: null}; // Page
