@@ -8,10 +8,6 @@
 
         <h1>Please login with one of these providers:</h1>
 
-        {% if request.REQUEST.iframe %}
-            <p><strong>You need to be logged for this.</strong></p>
-        {% endif %}
-
         <ul class="providers">
             {% for backend, auth_backend in backends_map.items %}
                 <li><a href="{% url socialauth_begin auth_backend %}"{% if request.REQUEST.iframe %} onclick="window.open(this.href);  return false;"{% endif %}><img alt='{{ backend }}' src="{{ STATIC_URL }}img/favicon_{{ backend }}.png" /> {{ backend }}</a></li>

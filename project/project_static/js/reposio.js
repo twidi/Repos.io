@@ -1,7 +1,4 @@
 /* Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license */
-window.onerror = function(message, url, linenumber) {
-      alert("Alpha mode, please send this to s,angel@twidi.com: JS error: " + message + " on line " + linenumber + " for " + url);
-}
 
 $(document).ready(function() {
 
@@ -151,7 +148,6 @@ $(document).ready(function() {
         $overlay: $('#overlay'),
         section: '',
         subsection: '',
-        login_url: '',
         title: '',
         url: document.location.pathname,
         history: window.History,
@@ -167,8 +163,6 @@ $(document).ready(function() {
         init: function() {
             Page.section = Reposio.section;
             Page.subsection = Reposio.subsection;
-            Page.login_url = Reposio.login_url;
-            Page.logout_url = Reposio.logout_url;
             Page.title = Page.doc.find('head').children('title').text();
             Page.body.addClass('js');
             Page.classes = { Article: Article, Section: Section, MainSearch: MainSearch };
@@ -207,8 +201,8 @@ $(document).ready(function() {
                 return false;
             });
 
-            Page.doc.delegate('#login-link', 'click', Page.ask_for_login);
-            Page.doc.delegate('#logout-link', 'click', Page.ask_for_logout);
+            Page.doc.delegate('#login-link a', 'click', Page.ask_for_login);
+            Page.doc.delegate('#logout-link a', 'click', Page.ask_for_logout);
 
             Page.win.scroll(Page._on_window_scroll);
 
@@ -335,13 +329,13 @@ $(document).ready(function() {
 
         ask_for_login: function() {
             Reposio.UserTags = null;
-            Page.open_iframe(Page.login_url + '?iframe=1');
+            Page.open_iframe(Reposio.urls.login + '?iframe=1');
             return false;
         },
 
         ask_for_logout: function() {
             Reposio.UserTags = null;
-            Page.open_iframe(Page.logout_url + '?iframe=1');
+            Page.open_iframe(Reposio.urls.logout + '?iframe=1');
             return false;
         },
 
@@ -350,6 +344,21 @@ $(document).ready(function() {
             Reposio.Token = data.Token;
             Reposio.UserTags = data.UserTags;
             Page.message('You are now logged in !');
+            $('#login-link').remove();
+            var $header_links = $('#header-links'),
+                $logout_link = $('<li />').attr('id', 'logout-link').append(
+                    $('<a />').attr('href', Reposio.urls.logout).text('Logout')
+                ),
+                $user_link = $('<li />').attr('id', 'user-link').append(
+                    $('<a />').attr('href', Reposio.urls.manage).text(
+                        'Your account' + (data.nb_accounts > 1 ? 's' : '') + ' ( '
+                    ).append(
+                        $('<em />').text(data.username)
+                    ).append(
+                        (data.nb_accounts > 1 ? '...' : '') + ' ) '
+                    )
+                );
+            $header_links.prepend($user_link, ' ', $logout_link);
         },
 
         on_not_logged: function() {
@@ -361,6 +370,14 @@ $(document).ready(function() {
             Page.close_iframe();
             Reposio.UserTags = null;
             Page.message('You are now logged out !');
+            $('#user-link').remove();
+            $('#logout-link').remove();
+            var $header_links = $('#header-links'),
+                $login_link = $('<li />').attr('id', 'login-link').append(
+                    $('<a />').attr('href', Reposio.urls.login).text('Login/Register')
+                );
+            $header_links.prepend($login_link);
+
         },
 
         on_not_logged_out: function() {

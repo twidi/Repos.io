@@ -1,8 +1,7 @@
 {% load private_tags %}<!DOCTYPE html>
 <html>
     <head>
-        {% url accounts_login as LOGIN_URL %}
-        {% url accounts_logout as LOGOUT_URL %}
+        {% url accounts_login as LOGIN_URL %}{% url accounts_logout as LOGOUT_URL %}{% url accounts_manage as MANAGE_URL %}
         <title>{% block title %}Home{% endblock %} - Repos.io</title>
         <link href="{{ STATIC_URL }}css/jquery.jgrowl-1.2.5.css" media="screen, projection" rel="stylesheet" type="text/css" />
         <link href="{{ STATIC_URL }}css/screen.css" media="screen, projection" rel="stylesheet" type="text/css" />
@@ -12,6 +11,11 @@
             <link href="{{ STATIC_URL }}/css/ie.css" media="screen, projection" rel="stylesheet" type="text/css" />
         <![endif]-->
         {% block css %}{% endblock %}
+        <script type="text/javascript">
+            window.onerror = function(message, url, linenumber) {
+                  alert("Alpha mode, please send this to s.angel@twidi.com: JS error: " + message + " on line " + linenumber + " for " + url);
+            };
+        </script>
         <script src="{{ STATIC_URL }}js/jquery-1.7.1.min.js" type="text/javascript" charset="utf-8"></script>
         <script src="{{ STATIC_URL }}js/jquery.history.js" type="text/javascript" charset="utf-8"></script>
         <script src="{{ STATIC_URL }}js/jquery.unserialize.js" type="text/javascript" charset="utf-8"></script>
@@ -26,8 +30,11 @@
             Reposio.Token = "{{ csrf_token }}";
             Reposio.section = "{{ section|default:'' }}";
             Reposio.subsection = "{{ subsection|default:'' }}";
-            Reposio.login_url = "{{ LOGIN_URL }}";
-            Reposio.logout_url = "{{ LOGOUT_URL }}";
+            Reposio.urls = {
+                login: "{{ LOGIN_URL }}",
+                logout: "{{ LOGOUT_URL }}",
+                manage: "{{ MANAGE_URL }}"
+            };
             Reposio.UserTags = {% if user and user.is_authenticated %}{% all_user_tags_json %}{% else %}null{% endif %};
         </script>
         {% block js %}{% endblock %}
@@ -40,7 +47,7 @@
             </hgroup>
             <ul id="header-links">
                 {% if user and user.is_authenticated %}
-                    <li id="user-link"><a href="{% url accounts_manage %}">Your account{{ user_accounts|length|pluralize }} ( <em>{{ user.username }}</em>{% if user_accounts|length > 1 %}...{% endif %} )</a></li>
+                <li id="user-link"><a href="{{ MANAGE_URL }}">Your account{{ user_accounts|length|pluralize }} ( <em>{{ user.username }}</em>{% if user_accounts|length > 1 %}...{% endif %} )</a></li>
                     <li id="logout-link"><a href="{{ LOGOUT_URL }}">Logout</a></li>
                 {% else %}
                     <li id="login-link"><a href="{{ LOGIN_URL }}">Login/Register</a></li>

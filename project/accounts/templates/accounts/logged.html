@@ -32,7 +32,9 @@
     {% if user and user.is_authenticated %}
         win_opener.Reposio.Page.on_logged({
             Token: "{{ csrf_token }}",
-            UserTags: {% all_user_tags_json %}
+            UserTags: {% all_user_tags_json %},
+            username: "{{ user.username }}",
+            nb_accounts: {{ user_accounts|length|default:0 }}
         });
     {% else %}
         win_opener.Reposio.Page.on_not_logged();
