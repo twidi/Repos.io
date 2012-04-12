@@ -640,12 +640,13 @@ class Search(object):
         """
         Return True if the Search is in a default status (no filter, options, order, query)
         """
+
         if self.query:
             return False
         if not self.base and self.filter.original_filter():
             return False
         sort_key = self.order.get('key', None)
-        if not sort_key or sort_key != self.filter.default_sort:
+        if sort_key and sort_key != self.filter.default_sort:
             return False
         if any(self.options.values()):
             return False
