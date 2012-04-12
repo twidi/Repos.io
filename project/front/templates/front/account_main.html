@@ -1,0 +1,8 @@
+{% extends "front/base.html" %}
+{% load private_tags %}
+{% block title %}`{{ obj.slug }}` @{{ obj.backend }}{% endblock %}
+{% block main_content %}
+    {% prepare_private obj %}
+    {% include "front/account_content.html" %}
+{% endblock %}
+

@@ -1,5 +1,5 @@
-Repos.io
-======================
+Repos.io (this README is REALLY OLD)
+====================================
 
 The idea
 --------

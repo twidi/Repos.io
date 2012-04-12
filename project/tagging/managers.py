@@ -46,8 +46,7 @@ class _TaggableManager(_BaseTaggableManager):
     @require_instance_manager
     def add(self, tags, **filters):
         """
-        Add a list of tags.
-        We consider the SLUG of each tag
+        Add a LIST of tags.
         Each tag can be :
         - a Tag object, eventually with a weight added field
         - a tuple with a tag and a weight, the tag can be:

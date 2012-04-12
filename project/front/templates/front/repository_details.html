@@ -1,0 +1,44 @@
+{% load reposio_core %}
+{% with repository=obj %}
+<section class="details">
+    <header>
+        {% spaceless %}
+        <ul>
+            {% include "front/include_link_to_about_subsection.html" %}
+
+            {% if repository.backend|supports:"repository_readme" and repository.readme %}
+                {% include "front/include_link_to_subsection.html" with type="readme" display="Readme" %}
+            {% endif %}
+
+            {% if repository.backend|supports:"repository_owner" and repository.owner %}
+                {% include "front/include_link_to_subsection.html" with type="owner" display="Owner" %}
+            {% endif %}
+
+            {% if repository.backend|supports:"repository_followers" and repository.followers_count %}
+                {% include "front/include_link_to_subsection.html" with type="followers" display="Followers" details=repository.followers_count %}
+            {% endif %}
+
+            {% if repository.backend|supports:"repository_contributors" and repository.contributors_count %}
+                {% include "front/include_link_to_subsection.html" with type="contributors" display="Contributors" details=repository.contributors_count %}
+            {% endif %}
+
+            {% if repository.backend|supports:"repository_parent_fork" %}
+                {% if repository.forks_count %}
+                    {% include "front/include_link_to_subsection.html" with type="forks" display="Forks" details=repository.forks_count|add:"+" %}
+                {% endif %}
+                {% if repository.parent_fork %}
+                    {% include "front/include_link_to_subsection.html" with type="parent_fork" display="Parent" %}
+                {% endif %}
+            {% endif %}
+
+        </ul>
+        {% endspaceless %}
+    </header>
+    {# preload about and readme #}
+    {% include "front/include_subsection_about.html" %}
+    {% include "front/include_subsection_readme.html" %}
+    {% if repository.include_details != 'about' and subsection != 'home' and subsection != 'about' and subsection != 'readme' %}
+        {% include "front/include_subsection.html" %}
+    {% endif %}
+</section>
+{% endwith %}

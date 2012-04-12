@@ -70,7 +70,8 @@ class NoteForm(NoteBaseForm):
     Form to add or edit *the* note to an object, by the currently logged user
     """
     class Meta(NoteBaseForm.Meta):
-        fields = ('content', 'markup',) + NoteBaseForm.Meta.fields
+        #fields = ('content', 'markup',) + NoteBaseForm.Meta.fields
+        fields = ('content',) + NoteBaseForm.Meta.fields
 
     def __init__(self, *args, **kwargs):
         """
@@ -82,9 +83,11 @@ class NoteForm(NoteBaseForm):
 
         super(NoteForm, self).__init__(*args, **kwargs)
 
-        # change the help text for markup
-        self.fields['markup'].help_text = self.fields['markup'].help_text\
-            .replace('are using with this model', 'want to use')
+        ## change the help text for markup
+        #self.fields['markup'].help_text = self.fields['markup'].help_text\
+        #    .replace('are using with this model', 'want to use')
+
+        self.fields['content'].label = 'Your private note'
 
     def save(self, commit=True):
         """
@@ -125,21 +128,13 @@ class NoteDeleteForm(NoteBaseForm):
     class Meta(NoteBaseForm.Meta):
         fields = NoteBaseForm.Meta.fields
 
-    def clean(self):
-        """
-        Check if the user can act on this note
-        """
-        cleaned_data = super(NoteBaseForm, self).clean()
-        if not self.get_note_from_content_type():
-            raise forms.ValidationError('This note is not yours or doesn\'t exist')
-
-        return cleaned_data
-
     def save(self, commit=True):
         """
         Override the save to delete the object
         """
-        self.get_note_from_content_type().delete()
+        note = self.get_note_from_content_type()
+        if note:
+            note.delete()
         return None
 
 
@@ -250,6 +245,24 @@ class TagsAddOneForm(TagsBaseForm):
         tagged_object = self.get_related_object()
         tagged_object.private_tags.add(self.cleaned_data['tag'], owner=owner)
 
+class TagsToggleForm(TagsBaseForm):
+    """
+    For toggling a tag
+    """
+    tag = TagField()
+
+    def save(self):
+        owner = globals.user
+        tagged_object = self.get_related_object()
+        tag = self.cleaned_data['tag'][0]
+        is_set = bool(tagged_object.all_private_tags(owner).filter(name=tag).count())
+        if is_set:
+            tagged_object.private_tags.remove(self.cleaned_data['tag'], owner=owner)
+        else:
+            tagged_object.private_tags.add(self.cleaned_data['tag'], owner=owner)
+        return not is_set
+
+
 class TagsRemoveOneForm(TagsBaseForm):
     """
     For removing an existing tag
@@ -260,6 +273,7 @@ class TagsRemoveOneForm(TagsBaseForm):
         owner = globals.user
         tagged_object = self.get_related_object()
         tagged_object.private_tags.remove(self.cleaned_data['tag'], owner=owner)
+
 
 class TagsCreateOneForm(TagsBaseForm):
     """

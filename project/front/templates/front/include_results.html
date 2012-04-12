@@ -1,0 +1,18 @@
+{% load private_tags endless %}
+{% with objects=search.get_results %}
+    {% lazy_paginate objects %}
+    {% if objects %}
+        {% prepare_private objects %}
+        {% for obj in objects %}
+            {% include search.content_template %}
+        {% endfor %}
+        {% show_more "Load more..." "Loading in progress..." %}
+    {% else %}
+        {% if search.query or search.filter.original_filter %}
+            {% show_current_number as current_page %}
+            {% if current_page == 1 %}
+            <p class="empty">No results :(</p>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endwith %}

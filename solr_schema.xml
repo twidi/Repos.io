@@ -104,49 +104,39 @@
     <dynamicField name="*_dt" type="date"    indexed="true"  stored="true"/>
     
 
-    <field name="text" type="text" indexed="true" stored="true" multiValued="false" />
-
-    <field name="renderer_description" type="string" indexed="false" stored="true" multiValued="false" />
-
-    <field name="renderer_links" type="string" indexed="false" stored="true" multiValued="false" />
-
-    <field name="owner_slug_sort" type="text" indexed="true" stored="true" multiValued="false" />
-
-    <field name="get_repositories_url" type="string" indexed="false" stored="true" multiValued="false" />
-
-    <field name="all_public_tags" type="string" indexed="false" stored="true" multiValued="true" />
-
-    <field name="readme" type="text" indexed="true" stored="true" multiValued="false" />
-
-    <field name="owner_id" type="slong" indexed="true" stored="true" multiValued="false" />
-
     <field name="official_modified_sort" type="date" indexed="true" stored="true" multiValued="false" />
-
-    <field name="description" type="text" indexed="true" stored="true" multiValued="false" />
-
-    <field name="get_absolute_url" type="string" indexed="false" stored="true" multiValued="false" />
-
-    <field name="renderer_updated" type="string" indexed="false" stored="true" multiValued="false" />
-
-    <field name="renderer_main" type="string" indexed="false" stored="true" multiValued="false" />
-
-    <field name="is_fork" type="boolean" indexed="true" stored="true" multiValued="false" />
-
-    <field name="slug" type="text" indexed="true" stored="true" multiValued="false" />
 
     <field name="slug_sort" type="text" indexed="true" stored="true" multiValued="false" />
 
     <field name="name" type="text" indexed="true" stored="true" multiValued="false" />
 
+    <field name="text" type="text" indexed="true" stored="true" multiValued="false" />
+
+    <field name="get_absolute_url" type="string" indexed="false" stored="true" multiValued="false" />
+
+    <field name="description" type="text" indexed="true" stored="true" multiValued="false" />
+
     <field name="slug_normalized" type="text" indexed="true" stored="true" multiValued="false" />
 
     <field name="modified" type="date" indexed="true" stored="true" multiValued="false" />
 
-    <field name="internal_score" type="slong" indexed="false" stored="true" multiValued="false" />
+    <field name="internal_score" type="slong" indexed="true" stored="true" multiValued="false" />
 
     <field name="project" type="text" indexed="true" stored="true" multiValued="false" />
 
-    <field name="renderer_owner" type="string" indexed="false" stored="true" multiValued="false" />
+    <field name="all_public_tags" type="text" indexed="true" stored="true" multiValued="false" />
+
+    <field name="owner_internal_score" type="slong" indexed="true" stored="true" multiValued="false" />
+
+    <field name="readme" type="text" indexed="true" stored="true" multiValued="false" />
+
+    <field name="owner_id" type="slong" indexed="true" stored="true" multiValued="false" />
+
+    <field name="is_fork" type="boolean" indexed="true" stored="true" multiValued="false" />
+
+    <field name="slug" type="text" indexed="true" stored="true" multiValued="false" />
+
+    <field name="owner_slug_sort" type="text" indexed="true" stored="true" multiValued="false" />
 
   </fields>
 

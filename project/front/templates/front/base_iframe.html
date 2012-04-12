@@ -1,0 +1,17 @@
+{% load private_tags %}<!DOCTYPE html>
+<html class='iframe'>
+    <head>
+        <title>{% block title %}Inside...{% endblock %} - Repos.io</title>
+        <link href="{{ STATIC_URL }}css/screen.css" media="screen, projection" rel="stylesheet" type="text/css" />
+        <meta name="viewport" content="width=device-width" />
+        {% block css %}{% endblock %}
+        <script src="{{ STATIC_URL }}js/jquery-1.7.1.min.js" type="text/javascript" charset="utf-8"></script>
+        {% block js %}{% endblock %}
+    </head>
+    <body>
+        <section>
+            {% block main_content %}{% endblock %}
+        </section>
+    </body>
+</html>
+

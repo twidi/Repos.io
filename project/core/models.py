@@ -11,6 +11,10 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.utils import simplejson
 from django.core.cache import cache
+from django.template import loader, Context
+from django.utils.hashcompat import md5_constructor
+from django.utils.http import urlquote
+from django.contrib.contenttypes.generic import GenericRelation
 
 from model_utils import Choices
 from model_utils.models import TimeStampedModel
@@ -29,6 +33,7 @@ from core.exceptions import MultipleBackendError, BackendNotFoundError
 from tagging.models import PublicTaggedAccount, PublicTaggedRepository, PrivateTaggedAccount, PrivateTaggedRepository, all_official_tags
 from tagging.words import get_tags_for_repository
 from tagging.managers import TaggableManager
+from notes.models import Note
 
 from utils.model_utils import get_app_and_model, update as model_update
 from utils import now_timestamp, dt2timestamp
@@ -89,6 +94,8 @@ class SyncableModel(TimeStampedModel):
     backend_last_status = models.PositiveIntegerField(default=200)
     backend_same_status = models.PositiveIntegerField(default=0)
     backend_last_message = models.TextField(blank=True, null=True)
+
+    note = GenericRelation(Note)
 
     # Fetch operations
     backend_prefix = ''
@@ -370,18 +377,45 @@ class SyncableModel(TimeStampedModel):
         from private.views import get_user_tags_for_object
         return get_user_tags_for_object(self, user)
 
+    def _compute_score_part(self, value):
+        """
+        Apply a mathematical operation to a value and return the result to
+        be used as a part of a score
+        """
+        return math.sqrt(value)
+
+    def _compute_final_score(self, parts, divider):
+        """
+        Take many parts of the score, a divider, and return a final score
+        """
+        score = sum(parts.values())/divider * 10
+        if score > 0:
+            return score * math.log1p(score) / 10
+        else:
+            return 0
+
+    def prepare_score(self):
+        """
+        Prepare the computation of current score for this object
+        """
+        parts = dict(infos=0.0)
+        divider = 0.0
+
+        if self.name != self.slug:
+            parts['infos'] += 0.3
+        if self.homepage:
+            parts['infos'] += 0.3
+        if self.last_fetch:
+            parts['infos'] += 0.3
+
+        return parts, divider
+
     def compute_score(self):
         """
-        Compute the current score for the object
+        Compute the final score of this object
         """
-        parts = {}
-        if self.homepage:
-            parts['homepage'] = 3
-        if self.last_fetch:
-            parts['last_fetch'] = 5
-
-        #print parts
-        return max(0, int(sum(parts.values())))
+        parts, divider = self.prepare_score()
+        return self._compute_final_score(parts, divider)
 
     def update_score(self, save=True):
         """
@@ -390,7 +424,7 @@ class SyncableModel(TimeStampedModel):
         if self.deleted:
             return
 
-        self.score = self.compute_score()
+        self.score = int(round(self.compute_score()))
         if save:
             self.update(score=self.score)
         if self.score > 100:
@@ -794,6 +828,99 @@ class SyncableModel(TimeStampedModel):
         """
         return REDIS_KEYS[key][self.model_name]
 
+    def get_content_template(self):
+        """
+        Return the name of the template used to display the object
+        """
+        return 'front/%s_content.html' % self.model_name
+
+    def get_anonymous_template_content(self, context=None, regenerate=False, partial=True):
+        """
+        Return the anonymous content template for this object, updating it
+        in cache if needed, with partial caching (parts for authenticated users
+        are not cached)
+        """
+        if not context:
+            context = Context(dict(
+                STATIC_URL = settings.STATIC_URL,
+            ))
+        context.update({
+            'obj': self,
+            '__regenerate__': regenerate,
+            '__partial__': partial,
+        })
+
+        return loader.get_template(self.get_content_template()).render(context)
+
+    def update_cached_template(self, context=None):
+        """
+        Update the cached template
+        """
+        args = md5_constructor(urlquote(self.id))
+        cache_key = 'template.cache.%s_content.%s' % (self.model_name, args.hexdigest())
+        cache.delete(cache_key)
+        self.get_anonymous_template_content(context, regenerate=True, partial=True)
+
+    def _get_url(self, url_type, **kwargs):
+        """
+        Construct the url for a permalink
+        """
+        if not url_type.startswith(self.model_name):
+            url_type = '%s_%s' % (self.model_name, url_type)
+        params = copy(kwargs)
+        if 'backend' not in params:
+            params['backend'] = self.backend
+        return (url_type, (), params)
+
+    def get_absolute_url(self):
+        """
+        Home page url for this object
+        """
+        return self._get_url('home')
+
+    def get_about_url(self):
+        """
+        About page url for this object
+        """
+        return self._get_url('about')
+
+    def get_edit_tags_url(self):
+        """
+        Url to edit tags for this object
+        """
+        return self._get_url('edit_tags')
+
+    def get_edit_note_url(self):
+        """
+        Url to edit the note for this object
+        """
+        return self._get_url('edit_note')
+
+    def count_taggers(self):
+        """
+        Return the number of users with at least one tag on this object
+        """
+        # TODO : must be a better way (group by ?)
+        return len(set(self.private_tags_class.objects.filter(content_object=self).values_list('owner', flat=True)))
+
+    def count_tags(self, tags_type=None):
+        """
+        """
+        queryset = self.private_tags
+        if tags_type == 'places':
+            queryset = queryset.filter(name__startswith='@')
+        elif tags_type == 'projects':
+            queryset = queryset.filter(name__startswith='#')
+        elif tags_type == 'starred':
+            queryset = queryset.filter(slug='starred')
+        elif tags_type == 'check-later':
+            queryset = queryset.filter(slug='check-later')
+        elif tags_type == 'tags':
+            queryset = queryset.exclude(name__startswith='#').exclude(name__startswith='@').exclude(slug='check-later').exclude(slug='starred')
+
+        return queryset.count()
+
+
 class Account(SyncableModel):
     """
     Represent an account from a backend
@@ -801,6 +928,11 @@ class Account(SyncableModel):
         Account.objects.get_or_new(backend, slug)
     """
     model_name = 'account'
+    model_name_plural = 'accounts'
+    search_type = 'people'
+    content_type = settings.CONTENT_TYPES['account']
+    public_tags_class = PublicTaggedAccount
+    private_tags_class = PrivateTaggedAccount
 
     # it's forbidden to fetch if the last fetch is less than...
     MIN_FETCH_DELTA = getattr(settings, 'ACCOUNT_MIN_FETCH_DELTA', SyncableModel.MIN_FETCH_DELTA)
@@ -856,8 +988,8 @@ class Account(SyncableModel):
     for_user_list = OptimForListAccountManager()
 
     # tags
-    public_tags = TaggableManager(through=PublicTaggedAccount, related_name='public_on_accounts')
-    private_tags = TaggableManager(through=PrivateTaggedAccount, related_name='private_on_accounts')
+    public_tags = TaggableManager(through=public_tags_class, related_name='public_on_accounts')
+    private_tags = TaggableManager(through=private_tags_class, related_name='private_on_accounts')
 
     # Fetch operations
     backend_prefix = 'user_'
@@ -982,48 +1114,34 @@ class Account(SyncableModel):
 
         return self.remove_related_repository_entry(repository, 'repositories', 'followers', update_self_count)
 
+    @models.permalink
     def _get_url(self, url_type, **kwargs):
         """
         Construct the url for a permalink
         """
-        if not url_type.startswith('account'):
-            url_type = 'account_%s' % url_type
-        params = copy(kwargs)
-        if 'backend' not in params:
-            params['backend'] = self.backend
-        if 'slug' not in params:
-            params['slug'] = self.slug
-        return (url_type, (), params)
+        (url_type, args, kwargs) = super(Account, self)._get_url(url_type, **kwargs)
+        if 'slug' not in kwargs:
+            kwargs['slug'] = self.slug
+        return (url_type, args, kwargs)
 
-    @models.permalink
-    def get_absolute_url(self):
-        """
-        Home page url for this Account
-        """
-        return self._get_url('home')
-
-    @models.permalink
     def get_followers_url(self):
         """
         Followers page url for this Account
         """
         return self._get_url('followers')
 
-    @models.permalink
     def get_following_url(self):
         """
         Following page url for this Account
         """
         return self._get_url('following')
 
-    @models.permalink
     def get_repositories_url(self):
         """
         Repositories page url for this Account
         """
         return self._get_url('repositories')
 
-    @models.permalink
     def get_contributing_url(self):
         """
         Contributing page url for this Account
@@ -1046,46 +1164,49 @@ class Account(SyncableModel):
             self._followers_ids = self.followers.values_list('id', flat=True)
         return self._followers_ids
 
-    def compute_score(self):
+    def prepare_score(self):
         """
         Compute the current score for this account
         """
-        score = super(Account, self).compute_score()
+        parts, divider = super(Account, self).prepare_score()
+        backend = self.get_backend()
 
-        parts = {}
-        # basic scores
-        if self.name != self.slug:
-            parts['name'] = 3
+        # boost if registered user
         if self.user_id:
-            parts['user'] = 5
-        if self.official_created:
-            parts['life_time'] = ((datetime.now() - self.official_created).days) / 40.0
-        # popularity
-        if self.official_followers_count or self.followers_count:
-            parts['followers'] = min(max(self.official_followers_count, self.followers_count) / 5.0, 100)
-        # contents
-        if self.repositories_count:
-            all_repositories = self.own_repositories.all()
+            parts['user'] = 2
 
-            parts['repositories_score'] = 0
-            nb_own = 0
-            nb_forks = 0
-            if all_repositories:
-                for repository in all_repositories:
-                    nb_own += 1
-                    parts['repositories_score'] += repository.compute_popularity()
-                    if repository.is_fork:
-                        nb_forks += 1
-                parts['repositories_score'] = min(100 * (parts['repositories_score'] / nb_own), 150)
-            nb_real_own = nb_own - nb_forks
-            parts['repositories'] = min((nb_real_own + nb_forks / 4.0) / 4.0, 50)
+        if backend.supports('user_created_date'):
+            now = datetime.now()
+            divider += 0.5
+            if not self.official_created:
+                parts['life_time'] = 0
+            else:
+                parts['life_time'] = self._compute_score_part((now - self.official_created).days / 90.0)
 
-        if self.contributing_count:
-            parts['contributing'] = self.contributing_count / 20.0
+        if backend.supports('user_followers'):
+            divider += 1
+            parts['followers'] = self._compute_score_part(self.official_followers_count or 0)
+
+        if backend.supports('repository_owner'):
+            divider += 1
+            repositories_score = []
+            for repository in self.own_repositories.all():
+                repo_parts, repo_divider = repository.prepare_main_score()
+                repositories_score.append(self._compute_final_score(repo_parts, repo_divider))
+            if repositories_score:
+                min_score = sum(repositories_score) / float(len(repositories_score)) - 0.1
+                repos = [score for score in repositories_score if score >= min_score]
+                avg = sum(repos) / float(len(repos))
+                parts['repositories'] = avg
+
+        if backend.supports('repository_contributors'):
+            divider += 1
+            if self.contributing_count:
+                parts['contributing'] = self._compute_score_part(self.contributing_count)
+
 
         #print parts
-        score += sum(parts.values())
-        return max(0, int(round(score)))
+        return parts, divider
 
     def score_to_boost(self, force_compute=False):
         """
@@ -1129,17 +1250,22 @@ class Account(SyncableModel):
         Else simply returns tags.
         in both cases, sort is by weight (desc) and slug (asc)
         """
-        if with_weight:
-            return self.publictaggedaccount_set.select_related('tag').all()
-        else:
-            cache_key = self.get_redis_key('public_tags') % self.id
-            tags = None
-            if not force_cache:
-                tags = cache.get(cache_key)
-            if tags is None:
-                tags = self.public_tags.order_by('-public_account_tags__weight', 'slug')
-                cache.set(cache_key, tags, 2678400)
-            return tags
+        if not hasattr(self, '_all_public_tags'):
+            self._all_user_tags = {}
+        if with_weight not in self._all_user_tags:
+            if with_weight:
+                result = self.publictaggedaccount_set.select_related('tag').all()
+            else:
+                cache_key = self.get_redis_key('public_tags') % self.id
+                tags = None
+                if not force_cache:
+                    tags = cache.get(cache_key)
+                if tags is None:
+                    tags = self.public_tags.order_by('-public_account_tags__weight', 'slug')
+                    cache.set(cache_key, tags, 2678400)
+                result = tags
+            self._all_user_tags[with_weight] = result
+        return self._all_user_tags[with_weight]
 
     def all_private_tags(self, user):
         """
@@ -1300,6 +1426,11 @@ class Repository(SyncableModel):
         Repository.objects.get_or_new(backend, project_name)
     """
     model_name = 'repository'
+    model_name_plural = 'repositories'
+    search_type = 'repositories'
+    content_type = settings.CONTENT_TYPES['repository']
+    public_tags_class = PublicTaggedRepository
+    private_tags_class = PrivateTaggedRepository
 
     # it's forbidden to fetch if the last fetch is less than...
     MIN_FETCH_DELTA = getattr(settings, 'REPOSITORY_MIN_FETCH_DELTA', SyncableModel.MIN_FETCH_DELTA)
@@ -1375,8 +1506,8 @@ class Repository(SyncableModel):
     for_user_list = OptimForListRepositoryManager()
 
     # tags
-    public_tags = TaggableManager(through=PublicTaggedRepository, related_name='public_on_repositories')
-    private_tags = TaggableManager(through=PrivateTaggedRepository, related_name='private_on_repositories')
+    public_tags = TaggableManager(through=public_tags_class, related_name='public_on_repositories')
+    private_tags = TaggableManager(through=private_tags_class, related_name='private_on_repositories')
 
     # Fetch operations
     backend_prefix = 'repository_'
@@ -1594,46 +1725,51 @@ class Repository(SyncableModel):
         """
         return self.remove_related_account_entry(account, 'contributors', 'contributing', update_self_count)
 
+    @models.permalink
     def _get_url(self, url_type, **kwargs):
         """
         Construct the url for a permalink
         """
-        if not url_type.startswith('repository'):
-            url_type = 'repository_%s' % url_type
-        params = copy(kwargs)
-        if 'backend' not in params:
-            params['backend'] = self.backend
-        if 'project' not in params:
-            params['project'] = self.project
-        return (url_type, (), params)
+        (url_type, args, kwargs) = super(Repository, self)._get_url(url_type, **kwargs)
+        if 'project' not in kwargs:
+            kwargs['project'] = self.project
+        return (url_type, args, kwargs)
 
-    @models.permalink
-    def get_absolute_url(self):
+    def get_owner_url(self):
         """
-        Home page url for this Repository
+        Url to the owner of this Repository
         """
-        return self._get_url('home')
+        return self._get_url('owner')
 
-    @models.permalink
     def get_followers_url(self):
         """
         Followers page url for this Repository
         """
         return self._get_url('followers')
 
-    @models.permalink
     def get_contributors_url(self):
         """
         Contributors page url for this Repository
         """
         return self._get_url('contributors')
 
-    @models.permalink
     def get_forks_url(self):
         """
         Forks page url for this Repository
         """
         return self._get_url('forks')
+
+    def get_parent_fork_url(self):
+        """
+        Url to the parent fork of this Repository
+        """
+        return self._get_url('parent_fork')
+
+    def get_readme_url(self):
+        """
+        Readme page url for this Repository
+        """
+        return self._get_url('readme')
 
     def followers_ids(self):
         """
@@ -1674,57 +1810,68 @@ class Repository(SyncableModel):
         self.save()
         return True
 
-    def compute_popularity(self):
+    def prepare_main_score(self):
         """
         Compute the popularity of the repository, used to compute it's total
         score, and also to compute it's owner's score
         """
-        parts = {}
+        backend = self.get_backend()
 
-        if self.official_followers_count or self.followers_count:
-            parts['followers'] = max(self.official_followers_count, self.followers_count) / 10.0
+        divider = 0.0
+        parts = dict(infos=0)
 
-        if self.official_forks_count:
-            parts['forks'] = self.official_forks_count / 5.0
+        # basic scores
+        if self.name != self.slug:
+            parts['infos'] += 0.3
+        if self.description:
+            parts['infos'] += 0.3
+        if self.readme:
+            parts['infos'] += 0.3
 
-        if self.official_modified:
-            parts['life_time'] = ((self.official_modified - self.official_created).days) / 10.0
-            parts['zombie'] = ((datetime.now() - self.official_modified).days) / -20.0
-            if parts['zombie'] + parts['life_time'] < 0:
-                del parts['life_time']
-                del parts['zombie']
-        else:
-            parts['born_dead'] = -20
+        if backend.supports('repository_created_date'):
+            now = datetime.now()
+            divider += 0.5
+            if not self.official_created:
+                parts['life_time'] = 0
+            else:
+                parts['life_time'] = self._compute_score_part((now - self.official_created).days / 90.0)
+                if backend.supports('repository_modified_date'):
+                    if not self.official_modified or self.official_modified <= self.official_created:
+                        # never updated, or updated before created ? seems to be a forked never touched
+                        del parts['life_time']
+                    else:
+                        parts['zombie'] = - self._compute_score_part((now - self.official_modified).days / 90.0)
+                else:
+                    parts['life_time'] = parts['life_time'] / 2.0
 
-        #print self.project, parts
-        score = sum(parts.values())
+        if backend.supports('repository_followers'):
+            divider += 1
+            parts['followers'] = self._compute_score_part(self.official_followers_count or 0)
+
+        if backend.supports('repository_parent_fork'):
+            divider += 1.0/3
+            parts['forks'] = self._compute_score_part(self.official_forks_count or 0)
+
         if self.is_fork:
-            score = score / 1.5
+            divider = divider * 2
 
-        return min(score, 200)
+        return parts, divider
 
-    def compute_score(self):
+    def prepare_score(self):
         """
         Compute the current score for this repository
         """
-        score = super(Repository, self).compute_score()
-        parts = {}
-        # basic scores
-        divider = 1
-        if self.is_fork:
-            divider = 2.0
-        if self.description:
-            parts['description'] = 5 / divider
-        if self.readme:
-            parts['readme'] = 5 / divider
-        if self.owner_id:
-            parts['owner'] = (self.owner.score or self.owner.compute_score()) / 20.0 / divider
+        parts, divider = self.prepare_main_score()
 
-        parts['popularity'] = self.compute_popularity()
+        backend = self.get_backend()
+        if backend.supports('repository_owner'):
+            divider += 1
+            if self.owner_id:
+                owner_score = self.owner.score or self.owner.compute_score()
+                parts['owner'] = self._compute_score_part(owner_score)
 
         #print parts
-        score += sum(parts.values())
-        return max(0, int(round(score)))
+        return parts, divider
 
     def score_to_boost(self, force_compute=False):
         """

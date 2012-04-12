@@ -20,11 +20,14 @@ class GithubBackend(BaseBackend):
         user_followers = True,
         user_following = True,
         user_repositories = True,
+        user_created_date = True,
         repository_owner = True,
         repository_parent_fork = True,
         repository_followers = True,
         repository_contributors = True,
         repository_readme = True,
+        repository_created_date = True,
+        repository_modified_date = True,
     ))
 
     def __init__(self, *args, **kwargs):

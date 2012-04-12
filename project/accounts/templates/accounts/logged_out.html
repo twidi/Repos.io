@@ -1,0 +1,29 @@
+{% extends "accounts/base_logged_redirect.html" %}
+{% load private_tags %}
+
+{% block message %}
+    {% if user and user.is_authenticated %}
+        YOU ARE NOT LOGGED OUT !
+    {% else %}
+        You are now logged out.
+    {% endif %}
+{% endblock %}
+
+{% block close_link %}
+    {% if not user or not user.is_authenticated %}
+        <p class="close">
+            <a href="#" onclick="window.self.close()">
+                You can close this window/tab, you are now logged out the original Repos.io window/tab
+            </a>
+        </p>
+    {% endif %}
+{% endblock %}
+
+{% block js_opener %}
+    {% if user and user.is_authenticated %}
+        win_opener.Reposio.Page.on_not_logged_out();
+    {% else %}
+        win_opener.Reposio.Page.on_logged_out();
+    {% endif %}
+{% endblock %}
+

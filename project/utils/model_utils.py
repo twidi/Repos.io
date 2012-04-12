@@ -1,6 +1,7 @@
 # Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
 
 from django.db.models.sql.query import get_proxied_model
+from django.db.models.query_utils import DeferredAttribute
 
 from haystack.models import SearchResult
 
@@ -19,6 +20,14 @@ def get_app_and_model(instance):
         app_label, model_name = meta.app_label, meta.module_name
 
     return app_label, model_name
+
+def get_deferred_fields(instance):
+    """
+    Return a list of all deferred field for the given instance.
+    Deferred fields are ones in "deferred" or not in "only" or parts
+    of a queryset
+    """
+    return [field.attname for field in instance._meta.fields if isinstance(instance.__class__.__dict__.get(field.attname), DeferredAttribute)]
 
 
 # BELOW : https://github.com/andymccurdy/django-tips-and-tricks/blob/master/model_update.py

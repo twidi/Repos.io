@@ -31,11 +31,14 @@ class BaseBackend(object):
         user_followers = False,
         user_following = False,
         user_repositories = False,
+        user_created_date = False,
         repository_owner = False,
         repository_parent_fork = False,
         repository_followers = False,
         repository_contributors = False,
         repository_readme = False,
+        repository_created_date = False,
+        repository_modified_date = False,
     )
 
     def __init__(self, *args, **kwargs):

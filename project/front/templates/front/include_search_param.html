@@ -1,0 +1,7 @@
+{% load utils_tags %}
+<li{% if only %} class="{{ only }}_only"{% endif %}>
+<input type="{{ type|default:"radio" }}" id="search_{{ param }}_{{ id }}{% if uuid %}-{{ uuid }}{% endif %}" name="{{ param }}" value="{{ value }}"{{ value|check_if:current }}{{ value|current_class_if:current }} />
+    <label for="search_{{ param }}_{{ id }}{% if uuid %}-{{ uuid }}{% endif %}" onclick="">{{ display }}</label>
+    <button type="submit" name="direct-{{ param }}" value="{{ value }}">4</button>
+</li>
+

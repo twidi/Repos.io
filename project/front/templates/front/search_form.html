@@ -1,0 +1,96 @@
+{% load utils_tags %}
+{% spaceless %}
+<section id="main_search" class="main_box search{% if not search.is_default %} opened{% endif %}">
+    <header>
+    <h1>Search on Github <small>and soon also on Bitbucket, Google code and more</small></h1>
+    </header>
+    <form method="get" class="content_box">
+        <input type="radio" name="type" id="search_type_people" value='people'{{ search.model_name|check_if:"account" }} />
+        <label for="search_type_people" class="search_type" onclick="">People</label>
+
+        <input type="radio" name="type" id="search_type_repositories" value='repositories'{{ search.model_name|check_if:"repository" }} />
+        <label for="search_type_repositories" class="search_type" onclick="">Repositories</label>
+
+        <fieldset class="search_main">
+            <input type="text" name='q' value="{{ search.query|default:"" }}" />
+            <input type="submit" name="submit" value="f" title="Search !"/>
+            <a class="show_search_options" href="#main_search">Show filters and options</a>
+        </fieldset>
+        {% if request.user.is_authenticated %}
+            {% with param="filter" current=search.filter.original_filter %}
+            <fieldset id="search_filter"{% if current %} class="opened"{% endif %}>
+                    <legend>Choose a filter</legend>
+                    <ul>
+                        {% include "front/include_search_param.html" with id="none" value="" display="No filter" %}
+                    </ul>
+                    <a id="show_filters" href="#search_filter">Show your filters</a>
+                    <p class="help">Click on the <span>4</span> icon next to a filter to quickly submit the form with this filter</p>
+                    {% if tags.has.places %}
+                        <fieldset class='tags-type-places'>
+                            <legend>Your places</legend>
+                            <ul>
+                            {% for tag in tags.places %}
+                                {% include "front/include_search_param.html" with id="place_"|add:tag.slug value="tag:"|add:tag.slug display=tag.name %}
+                            {% endfor %}
+                            </ul>
+                        </fieldset>
+                    {% endif %}
+                    {% if tags.has.projects %}
+                        <fieldset class='tags-type-projects'>
+                            <legend>Your projects</legend>
+                            <ul>
+                            {% for tag in tags.projects %}
+                                {% include "front/include_search_param.html" with id="project_"|add:tag.slug value="tag:"|add:tag.slug display=tag.name %}
+                            {% endfor %}
+                            </ul>
+                        </fieldset>
+                    {% endif %}
+                    {% if tags.has.tags %}
+                        <fieldset class="tags-type-tags{% if tags.for_only.tags %} {{ tags.for_only.tags }}_only{% endif %}">
+                            <legend>Your tags</legend>
+                            <ul>
+                            {% for tag in tags.tags %}
+                                {% include "front/include_search_param.html" with only=tag.for_only id="tag_"|add:tag.slug value="tag:"|add:tag.slug display=tag.name %}
+                            {% endfor %}
+                            </ul>
+                        </fieldset>
+                    {% endif %}
+                    <fieldset class="special-filters">
+                        <legend>Special</legend>
+                        <ul>
+                            {% include "front/include_search_param.html" with id="tag_starred" value="tag:starred" display="Starred" %}
+                            {% include "front/include_search_param.html" with id="tag_check-later" value="tag:check-later" display="Check later" %}
+                            {% include "front/include_search_param.html" with id="tagged" value="tagged" display="With tag" %}
+                            {% include "front/include_search_param.html" with id="noted" value="noted" display="With note" %}
+                            {% include "front/include_search_param.html" with id="following" value="following" display="Followed" %}
+                            {% include "front/include_search_param.html" with only="people" id="followers" value="followers" display="Followers" %}
+                            {% include "front/include_search_param.html" with only="people" id="accounts" value="accounts" display="Yours" %}
+                            {% include "front/include_search_param.html" with only="repositories" id="owned" value="owned" display="Owned" %}
+                            {% include "front/include_search_param.html" with only="repositories" id="contributed" value="contributed" display="Contributed" %}
+                        </ul>
+                    </fieldset>
+                </fieldset>
+            {% endwith %}
+        {% endif %}
+        <fieldset id="search_options_repositories" class='search_options'>
+            <legend>Options</legend>
+            <ul>
+                {% include "front/include_search_param.html" with type="checkbox" param="show_forks" current=search.options.show_forks id="show_forks" value="y" display="Show forks ?" %}
+            </ul>
+        </fieldset>
+        <fieldset class="search_order">
+            {% with param="order" current=search.order.key %}
+                <legend>Sort order</legend>
+                <ul>
+                    {% include "front/include_search_param.html" with id="none" value="" display="Default" %}
+                    {% include "front/include_search_param.html" with id="name" value="name" display="Name" %}
+                    {% include "front/include_search_param.html" with id="score" value="score" display="Score" %}
+                    {% include "front/include_search_param.html" with only="repositories" id="updated" value="updated" display="Updated date" %}
+                    {% include "front/include_search_param.html" with only="repositories" id="owner" value="owner" display="Owner" %}
+                    {% include "front/include_search_param.html" with only="repositories" id="owner_score" value="owner_score" display="Owner's score" %}
+                </ul>
+            {% endwith %}
+        </fieldset>
+    </form>
+</section>
+{% endspaceless %}

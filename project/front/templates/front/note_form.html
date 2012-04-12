@@ -1,0 +1,7 @@
+<form action="{% url note_save %}" method="POST" >{% csrf_token %}
+    {{ note_form.as_p }}
+    <input class="btn" type="submit" name="submit" value="Save" />
+    {% if note.content %}<input class="btn" type="submit" name="delete" value="Delete" />{% endif %}
+    <a href="{{ obj.get_absolute_url }}">Cancel</a>
+</form>
+
