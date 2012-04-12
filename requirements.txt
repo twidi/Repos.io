@@ -38,6 +38,7 @@ markdown
 docutils
 pysolr
 beautifulsoup
+lxml
 
 # for django-template-preprocessor
 #termcolor
