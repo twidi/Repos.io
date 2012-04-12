@@ -1,70 +1,46 @@
-{% load private_tags %}<!DOCTYPE html>
-<html>{% url accounts_manage as url_manage %}
-    <head>
-        <style type="text/css">
-            html {
-                background: url("{{ STATIC_URL }}img/body-background.png") repeat scroll 0 0 #3a3a3a;
-                color: white;
-            }
-            a, a:visited {
-                color: white;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-            p {
-                text-align: center;
-            }
-            p.redirect:first-child, p.close {
-                margin: 3em 0;
-            }
-            p.close {
-                display: none;
-            }
-            body.close p.redirect {
-                display: none;
-            }
-            body.close p.close {
-                display: block;
-            }
-        </style>
-        <noscript>
-            <meta id="meta_refresh" http-equiv="refresh" content="2; url={{ url_manage }}" />
-        </noscript>
-    </head>
-    <body>
+{% extends "accounts/base_logged_redirect.html" %}
+{% load private_tags %}
+{% url accounts_manage as url_manage %}
 
-        <p class="redirect">
-            {% if user and user.is_authenticated %}
-                You are now logged in (or your account associated).
-            {% else %}
-                YOU ARE NOT LOGGED IN (or your account is not associated) !
-            {% endif %}
+{% block meta_refresh %}
+    <meta id="meta_refresh" http-equiv="refresh" content="2; url={% url accounts_manage %}" />
+{% endblock %}
+
+{% block message %}
+    {% if user and user.is_authenticated %}
+        You are now logged in (or your account associated).
+    {% else %}
+        YOU ARE NOT LOGGED IN (or your account is not associated) !
+    {% endif %}
+{% endblock %}
+
+{% block redirect_link %}
+    <a href="{% url accounts_manage %}">Click here if you are not automatically redirected.</a>
+{% endblock %}
+
+{% block close_link %}
+    {% if user and user.is_authenticated %}
+        <p class="close">
+            <a href="#" onclick="window.self.close()">
+                You can close this window/tab, you are now logged in the original Repos.io window/tab
+            </a>
         </p>
-        <p class="redirect"><a href="{{ url_manage }}">Click here if you are not automatically redirected.</a></p>
-        {% if user and user.is_authenticated %}
-            <p class="close"><a href="#" onclick="window.self.close()">You can close this window/tab, you are now logged in the original Repos.io window/tab</a></p>
-        {% endif %}
+    {% endif %}
+{% endblock %}
 
-        <script type="text/javascript">
-            if (window.opener && window.opener.parent && window.opener.parent.Reposio) {
-                {% if user and user.is_authenticated %}
-                    window.opener.parent.Reposio.Page.on_logged({
-                        Token: "{{ csrf_token }}",
-                        UserTags: {% all_user_tags_json %}
-                    });
-                {% else %}
-                    window.opener.parent.Reposio.Page.on_not_logged();
-                {% endif %}
-                var body = document.getElementsByTagName('body')[0];
-                body.className = 'close';
-                window.self.close(); // some mobiles dont allow this
-            } else {
-                setTimeout(function() {
-                    window.location.href = "{{ url_manage }}";
-                }, 2000);
-            }
-        </script>
-    </body>
-</html>
+{% block js_opener %}
+    {% if user and user.is_authenticated %}
+        win_opener.Reposio.Page.on_logged({
+            Token: "{{ csrf_token }}",
+            UserTags: {% all_user_tags_json %}
+        });
+    {% else %}
+        win_opener.Reposio.Page.on_not_logged();
+    {% endif %}
+{% endblock %}
+
+{% block js_no_opener %}
+    setTimeout(function() {
+        window.location.href = "{% url accounts_manage %}";
+    }, 2000);
+{% endblock %}

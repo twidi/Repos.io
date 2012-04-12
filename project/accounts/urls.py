@@ -11,6 +11,6 @@ urlpatterns = patterns('',
     url(r'^manage/', login_required(direct_to_template), {'template': 'accounts/manage.html'}, name='accounts_manage'),
     url(r'^login/$', login, name='accounts_login'),
     url(r'^logged/$', direct_to_template, {'template': 'accounts/logged.html'}, name='logged'),
-    url(r'^logout/', login_required(logout), { 'template_name': 'home.html'}, name='accounts_logout'),
+    url(r'^logout/', login_required(logout), { 'template_name': 'accounts/logged_out.html'}, name='accounts_logout'),
     url(r'', include('social_auth.urls')),
 )

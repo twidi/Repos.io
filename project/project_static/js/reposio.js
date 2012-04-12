@@ -168,6 +168,7 @@ $(document).ready(function() {
             Page.section = Reposio.section;
             Page.subsection = Reposio.subsection;
             Page.login_url = Reposio.login_url;
+            Page.logout_url = Reposio.logout_url;
             Page.title = Page.doc.find('head').children('title').text();
             Page.body.addClass('js');
             Page.classes = { Article: Article, Section: Section, MainSearch: MainSearch };
@@ -205,6 +206,9 @@ $(document).ready(function() {
                 $(this).parents('.search').addClass('opened');
                 return false;
             });
+
+            Page.doc.delegate('#login-link', 'click', Page.ask_for_login);
+            Page.doc.delegate('#logout-link', 'click', Page.ask_for_logout);
 
             Page.win.scroll(Page._on_window_scroll);
 
@@ -332,6 +336,13 @@ $(document).ready(function() {
         ask_for_login: function() {
             Reposio.UserTags = null;
             Page.open_iframe(Page.login_url + '?iframe=1');
+            return false;
+        },
+
+        ask_for_logout: function() {
+            Reposio.UserTags = null;
+            Page.open_iframe(Page.logout_url + '?iframe=1');
+            return false;
         },
 
         on_logged: function(data) {
@@ -344,6 +355,17 @@ $(document).ready(function() {
         on_not_logged: function() {
             Page.close_iframe();
             Page.error('We were unable to log you in :(');
+        },
+
+        on_logged_out: function() {
+            Page.close_iframe();
+            Reposio.UserTags = null;
+            Page.message('You are now logged out !');
+        },
+
+        on_not_logged_out: function() {
+            Page.close_iframe();
+            Page.error('We were unable to log you out :(');
         },
 
         open_iframe: function(url) {

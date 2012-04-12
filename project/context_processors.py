@@ -20,15 +20,6 @@ def caching(request):
         private_specific_part = min(300, min_timeout),
     ))
 
-def include_settings(request):
-    """
-    Some settings values
-    """
-    return dict(
-        LOGIN_URL = settings.LOGIN_URL,
-        LOGIN_REDIRECT_URL = settings.LOGIN_REDIRECT_URL,
-    )
-
 def design(request):
     """
     Some tools for design

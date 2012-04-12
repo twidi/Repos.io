@@ -140,7 +140,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'django.core.context_processors.static',
     'django.contrib.messages.context_processors.messages',
-    'project.context_processors.include_settings',
     'project.context_processors.design',
     'project.context_processors.caching',
     'project.core.context_processors.backends',
