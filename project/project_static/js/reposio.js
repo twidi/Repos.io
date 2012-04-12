@@ -1051,7 +1051,7 @@ $(document).ready(function() {
                 } else if (!$tag_container.length && add) {
 
                     attach_tag = true;
-                    var url = '/v2/?type=' + search_type + '&filter=tag:' + tag.slug;
+                    var url = '/?type=' + search_type + '&filter=tag:' + tag.slug;
                     $tag_container = $('<li />')
                         .data('slug', tag.slug)
                         .append($('<a/>').attr('href', url).text(tag.name));

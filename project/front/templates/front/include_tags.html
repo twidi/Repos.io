@@ -3,7 +3,7 @@
     <ul class="tags official-tags">
     {% if tags %}
             {% for tag in tags %}
-                <li data-slug="{{ tag.slug }}"><a href="/v2/?type={{ obj.search_type }}&amp;q={{ tag.slug }}">{{ tag }}</a></li>
+                <li data-slug="{{ tag.slug }}"><a href="/?type={{ obj.search_type }}&amp;q={{ tag.slug }}">{{ tag }}</a></li>
             {% endfor %}
     {% endif %}
     </ul>

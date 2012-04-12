@@ -17,7 +17,7 @@
             {% if accounts %}
 
                 <section class="user-accounts">
-                    <p><a href="/v2/?type=people&q=&filter=accounts&order=">Click here to view {% if accounts|length > 1 %}these{% else %}this{% endif %} account{{ accounts|length|pluralize }} in details</a></p>
+                    <p><a href="/?type=people&q=&filter=accounts&order=">Click here to view {% if accounts|length > 1 %}these{% else %}this{% endif %} account{{ accounts|length|pluralize }} in details</a></p>
                     {% for account in accounts %}
                         <article class="content-light {{ account.backend }}">
                             <figure>

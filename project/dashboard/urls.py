@@ -8,7 +8,7 @@ def redirect_dashboard(request, search_type, search_filter, options=None):
         options = {}
     q = request.REQUEST.get('q', '')
     order = request.REQUEST.get('sort_by', '')
-    url = '/v2/?type=%s&q=%s&filter=%s%s&order=%s' % (
+    url = '/?type=%s&q=%s&filter=%s%s&order=%s' % (
         search_type,
         q,
         search_filter,

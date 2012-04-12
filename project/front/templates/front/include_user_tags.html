@@ -8,7 +8,7 @@
                 <ul>
                     <span>Your places</span>
                     {% for tag in obj.current_user_tags.places %}
-                        <li data-slug="{{ tag.slug }}"><a href="/v2/?type={{ obj.search_type }}&amp;filter=tag:{{ tag.slug }}">{{ tag.name }}</a></li>
+                        <li data-slug="{{ tag.slug }}"><a href="/?type={{ obj.search_type }}&amp;filter=tag:{{ tag.slug }}">{{ tag.name }}</a></li>
                     {% endfor %}
                 </ul>
             </li>
@@ -18,7 +18,7 @@
                 <ul>
                     <span>Your projects</span>
                     {% for tag in obj.current_user_tags.projects %}
-                        <li data-slug="{{ tag.slug }}"><a href="/v2/?type={{ obj.search_type }}&amp;filter=tag:{{ tag.slug }}">{{ tag.name }}</a></li>
+                        <li data-slug="{{ tag.slug }}"><a href="/?type={{ obj.search_type }}&amp;filter=tag:{{ tag.slug }}">{{ tag.name }}</a></li>
                     {% endfor %}
                 </ul>
             </li>
@@ -28,7 +28,7 @@
                 <ul>
                     <span>Your tags</span>
                     {% for tag in obj.current_user_tags.tags %}
-                        <li data-slug="{{ tag.slug }}"><a href="/v2/?type={{ obj.search_type }}&amp;filter=tag:{{ tag.slug }}">{{ tag.name }}</a></li>
+                        <li data-slug="{{ tag.slug }}"><a href="/?type={{ obj.search_type }}&amp;filter=tag:{{ tag.slug }}">{{ tag.name }}</a></li>
                     {% endfor %}
                 </ul>
             </li>

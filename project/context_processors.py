@@ -29,7 +29,7 @@ def design(request):
     subsection = None
 
     # calculate the current section
-    if request.path == '/' or request.path == '/v2/':
+    if request.path == '/':
         section = 'home'
 
     elif request.path.startswith('/search/'):

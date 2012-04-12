@@ -8,7 +8,7 @@ def redirect_search(request, search_type, options=None):
         options = ()
     q = request.REQUEST.get('q', '')
     order = request.REQUEST.get('sort_by', '')
-    url = '/v2/?type=%s&q=%s&filter=%s&order=%s' % (
+    url = '/?type=%s&q=%s&filter=%s&order=%s' % (
         search_type,
         q,
         ''.join(['&%s=%s' % (opt_key.replace('-', '_'), request.REQUEST.get(opt_key)) for opt_key in options]),
