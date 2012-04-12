@@ -3,7 +3,9 @@
 from django.conf.urls.defaults import *
 from django.shortcuts import HttpResponsePermanentRedirect
 
-def redirect_search(request, search_type, options):
+def redirect_search(request, search_type, options=None):
+    if not options:
+        options = ()
     q = request.REQUEST.get('q', '')
     order = request.REQUEST.get('sort_by', '')
     url = '/v2/?type=%s&q=%s&filter=%s&order=%s' % (
@@ -19,7 +21,7 @@ def redirect_search_repositories(request):
     return redirect_search(request, 'repositories', ('show-forks',))
 
 def redirect_search_accounts(request):
-    return redirect_search(request, 'people', ())
+    return redirect_search(request, 'people')
 
 urlpatterns = patterns('',
     url(r'^$', redirect_search_repositories, name='search'),
