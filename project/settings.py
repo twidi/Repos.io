@@ -121,8 +121,8 @@ TEMPLATE_PREPROCESSOR_OPTIONS = {
 
 
 MIDDLEWARE_CLASSES = (
-    'johnny.middleware.LocalStoreClearMiddleware',
-    'johnny.middleware.QueryCacheMiddleware',
+    #'johnny.middleware.LocalStoreClearMiddleware',
+    #'johnny.middleware.QueryCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -271,11 +271,11 @@ CACHES = {
         OPTIONS = dict(
             DB = 1,
         ),
-        JOHNNY_CACHE = True,
+#        JOHNNY_CACHE = True,
     )
 }
-JOHNNY_MIDDLEWARE_SECONDS = 3600 * 24 * 30
-JOHNNY_MIDDLEWARE_KEY_PREFIX='jc_reposio'
+#JOHNNY_MIDDLEWARE_SECONDS = 3600 * 24 * 30
+#JOHNNY_MIDDLEWARE_KEY_PREFIX='jc_reposio'
 
 # redis
 REDIS_PARAMS = dict(
