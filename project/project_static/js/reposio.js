@@ -301,10 +301,9 @@ $(document).ready(function() {
             if (!message || message.length > 200) {
                 message = "An error occurred, preventing us to accomplish you request :(";
             }
+            Page.message(message, true);
             if (login_required) {
                 Page.ask_for_login();
-            } else {
-                Page.message(message, true);
             }
         },
 
@@ -343,7 +342,7 @@ $(document).ready(function() {
             Page.close_iframe();
             Reposio.Token = data.Token;
             Reposio.UserTags = data.UserTags;
-            Page.message('You are now logged in !');
+            Page.message("You are now logged in !<br />If you've tried an action before, please do it again now.");
             $('#login-link').remove();
             var $header_links = $('#header-links'),
                 $logout_link = $('<li />').attr('id', 'logout-link').append(
