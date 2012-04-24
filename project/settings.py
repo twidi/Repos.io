@@ -270,6 +270,7 @@ CACHES = {
         LOCATION = 'localhost:6379',
         OPTIONS = dict(
             DB = 1,
+            PICKLE_VERSION = 2,
         ),
 #        JOHNNY_CACHE = True,
     ),
