@@ -74,13 +74,19 @@ def readme(repository):
     if not repository.readme or not repository.readme.strip():
         return 'No readme :('
 
-    if repository.readme_type == 'markdown':
-        readme = markup.markdown(repository.readme)
-    elif repository.readme_type == 'textile':
-        readme = markup.textile(repository.readme)
-    elif repository.readme_type == 'rest':
-        readme = markup.restructuredtext(repository.readme)
-    else:
+    readme = None
+
+    try:
+        if repository.readme_type == 'markdown':
+            readme = markup.markdown(repository.readme)
+        elif repository.readme_type == 'textile':
+            readme = markup.textile(repository.readme)
+        elif repository.readme_type == 'rest':
+            readme = markup.restructuredtext(repository.readme)
+    except:
+        pass
+
+    if not readme:
         readme = '<pre>%s</pre>' % urlize(repository.readme)
 
     return mark_safe(clean_html(readme))
