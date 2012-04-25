@@ -1336,6 +1336,45 @@ article.content > section.details
 
         dd
           margin-left: 4em
+          &.last-fetch
+            margin-top: 3px
+            label
+              font-weight: bold
+              +simple_text_shadow
+              cursor: default
+            small
+              display: block
+              font-weight: normal
+              font-style: italic
+              color: #aaa
+            form
+              vertical-align: middle
+              white-space: pre
+              margin-right: 2em
+              &:before
+                +iconic('4')
+                font-weight: normal
+                color: #aaa
+                font-size: 100%
+                margin: 0 0.5ex
+                vertical-align: middle
+            button
+              +flag
+              font-size: 100%
+              margin: 0.5em 0
+              line-height: 1.2em
+              padding: 0 3px
+              white-space: normal
+              vertical-align: middle
+              cursor: pointer
+              strong
+                font-weight: bold
+              em
+                font-size: 80%
+                margin-left: 1ex
+                font-style: italic
+                color: #aaa
+                display: inline-block
 
       > ul
         margin-bottom: 1em
@@ -1351,10 +1390,10 @@ article.content > section.details
 
       &.repository
         > dl
-          height: 25em
+          height: 32em
       &.account
         > dl
-          height: 18em
+          height: 25em
 
 
 
