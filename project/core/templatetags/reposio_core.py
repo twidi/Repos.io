@@ -89,7 +89,12 @@ def readme(repository):
     if not readme:
         readme = '<pre>%s</pre>' % urlize(repository.readme)
 
-    return mark_safe(clean_html(readme))
+    try:
+        result = mark_safe(clean_html(readme))
+    except:
+        result = 'Unreadble readme :('
+
+    return result
 readme.is_safe = True
 
 
