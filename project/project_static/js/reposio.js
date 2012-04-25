@@ -977,6 +977,7 @@ $(document).ready(function() {
         _on_post_success: function(article, tag, is_new, data) {
             AjaxCache.clear(true);
             Page.message(data.message);
+            tag.name = tag.name.toLowerCase();
             if (is_new) {
                 tag.slug = data.slug;
                 this._add_tag(tag, true, false, article.search_type);

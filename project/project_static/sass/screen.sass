@@ -990,8 +990,9 @@ article.content
       > a.more-tags
         display: block !important
 
-article.content.github > header > section.links a:first-child
-  background-image: url(../img/favicon_github.png)
+article.content, article.content-light
+  &.github > header > section.links a:first-child
+    background-image: url(../img/favicon_github.png)
 
 body.js
   article.content
@@ -1661,6 +1662,12 @@ ul.providers
   body
     > header, > footer, > section
       width: 98%
+    > header
+      #main-header
+        margin-top: 20px
+      #header-links
+        left: 1em
+        text-align: center
   article.content
     > header
       h1
@@ -1708,7 +1715,7 @@ ul.providers
       > fieldset
         margin-top: 10px
 
-@media screen and (max-width: 500px)
+@media screen and (max-width: 540px)
   body > header
     #main-header
       text-align: center

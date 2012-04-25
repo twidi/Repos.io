@@ -591,7 +591,7 @@ class SyncableModel(TimeStampedModel):
         if save:
             self.save()
 
-    def update_search_index(self):
+    def update_search_index(self, search_index=None):
         """
         Update the search index for the current object
         """
@@ -599,7 +599,9 @@ class SyncableModel(TimeStampedModel):
             return
 
         try:
-            self.get_search_index().update_object(self)
+            if not search_index:
+                search_index = self.get_search_index()
+            search_index.update_object(self)
         except:
             pass
 

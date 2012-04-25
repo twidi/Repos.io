@@ -270,8 +270,17 @@ CACHES = {
         LOCATION = 'localhost:6379',
         OPTIONS = dict(
             DB = 1,
+            PICKLE_VERSION = 2,
         ),
 #        JOHNNY_CACHE = True,
+    ),
+    'templates': dict(
+        BACKEND = 'redis_cache.RedisCache',
+        LOCATION = 'localhost:6379',
+        OPTIONS = dict(
+            DB = 3,
+            PICKLE_VERSION = 2,
+        ),
     )
 }
 #JOHNNY_MIDDLEWARE_SECONDS = 3600 * 24 * 30
@@ -302,6 +311,7 @@ ADV_CACHE_INCLUDE_PK = True
 ADV_CACHE_VERSIONING = True
 ADV_CACHE_COMPRESS = True
 ADV_CACHE_COMPRESS_SPACES = True
+ADV_CACHE_BACKEND = 'templates'
 
 # asynchronous
 WORKER_FETCH_FULL_KEY = 'fetch_full:%d'

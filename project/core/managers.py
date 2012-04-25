@@ -7,6 +7,7 @@ from django.conf import settings
 from django.template import Context
 
 from redisco import connection
+from haystack import site
 
 from utils.model_utils import queryset_iterator
 from core import REDIS_KEYS
@@ -57,8 +58,9 @@ class SyncableModelManager(models.Manager):
             qs = qs.filter(pk__gte=start)
         qs = queryset_iterator(qs)
         context = Context(dict(STATIC_URL=settings.STATIC_URL))
+        search_index = site.get_index(self.model)
         for obj in qs:
-            obj.update_search_index()
+            obj.update_search_index(search_index)
             obj.update_cached_template(context)
             if print_delta and not obj.id % print_delta:
                 print obj.id
