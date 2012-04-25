@@ -990,8 +990,9 @@ article.content
       > a.more-tags
         display: block !important
 
-article.content.github > header > section.links a:first-child
-  background-image: url(../img/favicon_github.png)
+article.content, article.content-light
+  &.github > header > section.links a:first-child
+    background-image: url(../img/favicon_github.png)
 
 body.js
   article.content
