@@ -403,7 +403,7 @@ def tag_save(request):
             if action == 'create':
                 result['slug'] = Tag.objects.filter(**{
                     'private_%s_tags__owner' % tagged_object.model_name: globals.user,
-                    'name': tag_name
+                    'name': tag_name.lower()
                 }).values_list('slug', flat=True)[0]
             return JSONResponse(result)
         messages.success(request, message)
