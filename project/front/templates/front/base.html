@@ -47,8 +47,10 @@
                 <h2>Search and manage code repositories</h2>
             </hgroup>
             <ul id="header-links">
+                <li id="github-link"><a target="_blank" href="http://github.com/twidi/Repos.io/">Our Github</a></li>
+                <li id="twitter-link"><a target="_blank" href="http://twitter.com/repos_io">Our Twitter</a></li>
                 {% if user and user.is_authenticated %}
-                <li id="user-link"><a href="{{ MANAGE_URL }}">Your account{{ user_accounts|length|pluralize }} ( <em>{{ user.username }}</em>{% if user_accounts|length > 1 %}...{% endif %} )</a></li>
+                    <li id="user-link"><a href="{{ MANAGE_URL }}">Your account{{ user_accounts|length|pluralize }} ( <em>{{ user.username }}</em>{% if user_accounts|length > 1 %}...{% endif %} )</a></li>
                     <li id="logout-link"><a href="{{ LOGOUT_URL }}">Logout</a></li>
                 {% else %}
                     <li id="login-link"><a href="{{ LOGIN_URL }}">Login/Register</a></li>
