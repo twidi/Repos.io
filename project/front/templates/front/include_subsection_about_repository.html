@@ -92,6 +92,9 @@
         <dd>{{ obj.official_modified }}</dd>
     {% endif %}
 
+    <dt>Last fetched on</dt>
+    <dd>{{ obj.last_fetch }}</dd>
+
     {% if obj.homepage %}
         <dt>Homepage</dt>
         <dd>{{ obj.homepage|urlizetrunc:30 }}</dd>
