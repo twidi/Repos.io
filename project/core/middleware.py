@@ -15,5 +15,6 @@ class FetchFullCurrentAccounts(object):
                     token = account.get_default_token(),
                     depth = 1,
                     async = True,
-                    async_priority = 1
+                    async_priority = 1,
+                    notify_user = request.user,
                 )
