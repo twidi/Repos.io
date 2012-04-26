@@ -179,6 +179,7 @@ INSTALLED_APPS = (
     'endless_pagination',
     'adv_cache_tag',
     'include_strip_tag',
+    'offline_messages',
 
     # ours
     'utils',
@@ -296,7 +297,7 @@ REDIS_PARAMS = dict(
 # sessions
 SESSION_ENGINE = 'redisession.backend'
 SESSION_SAVE_EVERY_REQUEST = True
-MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
+MESSAGE_STORAGE = 'offline_messages.storage.OfflineStorageEngine'
 # update the redisession default params
 REDIS_SESSION_CONFIG = {
     'SERVER': dict(
