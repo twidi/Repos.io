@@ -29,6 +29,7 @@ from core.managers import (AccountManager, RepositoryManager,
                            OptimForListWithoutDeletedAccountManager, OptimForListWithoutDeletedRepositoryManager)
 from core.core_utils import slugify
 from core.exceptions import MultipleBackendError, BackendNotFoundError
+from core import messages as offline_messages
 
 from tagging.models import PublicTaggedAccount, PublicTaggedRepository, PrivateTaggedAccount, PrivateTaggedRepository, all_official_tags
 from tagging.words import get_tags_for_repository
@@ -458,7 +459,7 @@ class SyncableModel(TimeStampedModel):
         score = self.get_last_full_fetched()
         return not score or score < dt2timestamp(datetime.now() - self.MIN_FETCH_FULL_DELTA)
 
-    def fetch_full(self, token=None, depth=0, async=False, async_priority=None):
+    def fetch_full(self, token=None, depth=0, async=False, async_priority=None, notify_user=None):
         """
         Make a full fetch of the current object : fetch object and related
         """
@@ -493,6 +494,8 @@ class SyncableModel(TimeStampedModel):
                 token = token.uid if token else None,
                 depth = depth,
             )
+            if notify_user:
+                data['notify_user'] = notify_user.id if isinstance(notify_user, User) else notify_user
 
             # add the serialized data to redis
             data_s = simplejson.dumps(data)
@@ -532,6 +535,8 @@ class SyncableModel(TimeStampedModel):
                 fetch_error = e
                 ddf = datetime.now() - df
                 sys.stderr.write("      => ERROR (in %s) : %s\n" % (ddf, e))
+                if notify_user:
+                    offline_messages.error(notify_user, 'The %s "%s" couldn\'t be fetched' % (self.model_name, self), content_object=self, meta=dict(error = fetch_error))
             else:
                 self.set_backend_status(200, 'ok')
                 ddf = datetime.now() - df
@@ -549,9 +554,14 @@ class SyncableModel(TimeStampedModel):
                     ddr = datetime.now() - dr
                     sys.stderr.write("      => ERROR (in %s): %s\n" % (ddr, e))
                     fetch_error = e
+                    if notify_user:
+                        offline_messages.error(notify_user, 'The related of the %s "%s" couldn\'t be fetched' % (self.model_name, self), content_object=self, meta=dict(error = fetch_error))
                 else:
                     ddr = datetime.now() - dr
                     sys.stderr.write("      => OK (%s) in %s [%s]\n" % (nb_fetched, ddr, self.fetch_full_related_message()))
+
+            if notify_user and not fetch_error:
+                offline_messages.success(notify_user, 'The %s "%s" was correctly fetched' % (self.model_name, self), content_object=self)
 
             # finally, perform a fetch full of related
             if not fetch_error and depth > 0:
