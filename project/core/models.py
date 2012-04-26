@@ -536,7 +536,7 @@ class SyncableModel(TimeStampedModel):
                 ddf = datetime.now() - df
                 sys.stderr.write("      => ERROR (in %s) : %s\n" % (ddf, e))
                 if notify_user:
-                    offline_messages.error(notify_user, 'The %s "%s" couldn\'t be fetched' % (self.model_name, self), content_object=self, meta=dict(error = fetch_error))
+                    offline_messages.error(notify_user, '%s couldn\'t be fetched' % self.str_for_user(notify_user).capitalize(), content_object=self, meta=dict(error = fetch_error))
             else:
                 self.set_backend_status(200, 'ok')
                 ddf = datetime.now() - df
@@ -555,13 +555,13 @@ class SyncableModel(TimeStampedModel):
                     sys.stderr.write("      => ERROR (in %s): %s\n" % (ddr, e))
                     fetch_error = e
                     if notify_user:
-                        offline_messages.error(notify_user, 'The related of the %s "%s" couldn\'t be fetched' % (self.model_name, self), content_object=self, meta=dict(error = fetch_error))
+                        offline_messages.error(notify_user, 'The related of %s couldn\'t be fetched' % self.str_for_user(notify_user), content_object=self, meta=dict(error = fetch_error))
                 else:
                     ddr = datetime.now() - dr
                     sys.stderr.write("      => OK (%s) in %s [%s]\n" % (nb_fetched, ddr, self.fetch_full_related_message()))
 
             if notify_user and not fetch_error:
-                offline_messages.success(notify_user, 'The %s "%s" was correctly fetched' % (self.model_name, self), content_object=self)
+                offline_messages.success(notify_user, '%s was correctly fetched' % self.str_for_user(notify_user).capitalize(), content_object=self)
 
             # finally, perform a fetch full of related
             if not fetch_error and depth > 0:
@@ -585,6 +585,13 @@ class SyncableModel(TimeStampedModel):
                 token.release()
 
             return token, fetch_error
+
+    def str_for_user(self, user):
+        """
+        Given a user, try to give a personified str for this object
+        """
+        return 'The %s "%s"' % (self.model_name, self)
+
 
     def set_backend_status(self, code, message, save=True):
         """
@@ -1430,6 +1437,16 @@ class Account(SyncableModel):
         to_update['user'] = None
         super(Account, self).fake_delete(to_update)
 
+    def str_for_user(self, user):
+        """
+        Given a user, try to give a personified str for this account
+        """
+        user = offline_messages.get_user(user)
+        default = super(Account, self).str_for_user(user)
+        if not user or not self.user or self.user != user:
+            return default
+        return 'your account "%s"' % self
+
 
 class Repository(SyncableModel):
     """
@@ -2105,6 +2122,17 @@ class Repository(SyncableModel):
         # final update
         to_update['owner'] = None
         super(Repository, self).fake_delete(to_update)
+
+
+    def str_for_user(self, user):
+        """
+        Given a user, try to give a personified str for this repository
+        """
+        user = offline_messages.get_user(user)
+        default = super(Repository, self).str_for_user(user)
+        if not user or not self.owner.user or self.owner.user != user:
+            return default
+        return 'your repository "%s"' % self.slug
 
 
 def get_object_from_str(object_str):
