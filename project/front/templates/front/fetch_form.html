@@ -12,8 +12,7 @@
             {% endif %}
             <input type="hidden" name="next" value="{{ request.get_full_path }}" />
             <button type='submit' name='submit' value='submit' title="It will fetch fresh data from {{ obj.backend }}">
-                <strong>Fetch {{ fetch_type }} now</strong>
-                <em>(Can take many minutes !)</em>
+                Fetch {{ fetch_type }} now
             </button>
         </form>
     {% endif %}

@@ -2076,9 +2076,12 @@ $(document).ready(function() {
 
         _on_fetch_form_submit: function($form) {
             var that = this;
+            if ($form.hasClass('loading')) { return false; }
+            $form.addClass('loading');
             $.post($form.attr('action'), $form.serialize())
                 .success(function(data) {
                     if (data.error) {
+                        $form.removeClass('loading');
                         Page.error(data.error, data.login_required);
                     } else {
                         that.run_for_all_nodes(function() {
@@ -2089,6 +2092,7 @@ $(document).ready(function() {
                     AjaxCache.clear(true);
                 })
                 .error(function(xhr) {
+                    $form.removeClass('loading');
                     Page.error(xhr.responseText);
                 });
             return false;

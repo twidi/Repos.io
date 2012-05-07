@@ -1346,23 +1346,20 @@ article.content > section.details
               vertical-align: middle
               white-space: pre
               margin-right: 2em
-            button
-              +flag
-              font-size: 100%
-              margin: 0.5em 0
-              line-height: 1.2em
-              padding: 0 3px
-              white-space: normal
-              vertical-align: middle
-              cursor: pointer
-              strong
+              button
+                +flag
+                font-size: 100%
+                margin: 0.5em 0
+                line-height: 1.2em
+                padding: 0.5ex
+                white-space: normal
+                vertical-align: middle
+                cursor: pointer
                 font-weight: bold
-              em
-                font-size: 80%
-                margin-left: 1ex
-                font-style: italic
-                color: #aaa
-                display: inline-block
+              &.loading
+                button:after
+                  +loading
+                  font-size: 100%
 
       > ul
         margin-bottom: 1em
