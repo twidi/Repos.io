@@ -593,7 +593,7 @@ class SyncableModel(TimeStampedModel):
         """
         Given a user, try to give a personified str for this object
         """
-        return 'The %s "%s"' % (self.model_name, self)
+        return 'the %s "%s"' % (self.model_name, self)
 
 
     def set_backend_status(self, code, message, save=True):

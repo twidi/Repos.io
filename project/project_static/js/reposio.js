@@ -1958,7 +1958,7 @@ $(document).ready(function() {
                     }
                     AjaxCache.clear(true);
                 })
-                .error(function() {
+                .error(function(xhr) {
                     Page.error(xhr.responseText);
                     that.run_for_all_nodes(reset);
                 });
@@ -2074,6 +2074,26 @@ $(document).ready(function() {
             }
         },
 
+        _on_fetch_form_submit: function($form) {
+            var that = this;
+            $.post($form.attr('action'), $form.serialize())
+                .success(function(data) {
+                    if (data.error) {
+                        Page.error(data.error, data.login_required);
+                    } else {
+                        that.run_for_all_nodes(function() {
+                            $(this).find('> section.details > section.about form.fetch-form').hide();
+                        })
+                        Page.message(data.message);
+                    }
+                    AjaxCache.clear(true);
+                })
+                .error(function(xhr) {
+                    Page.error(xhr.responseText);
+                });
+            return false;
+        },
+
     _void: null}); // Article
 
 
@@ -2090,6 +2110,9 @@ $(document).ready(function() {
                 Page.doc.delegate('section.details > section > section.results', 'page_loaded', function(ev, page) {
                     return Section._on_page_loaded(this, ev, page);
                 });
+                Page.doc.delegate('section.details > section.about.current form.fetch-form', 'submit', function(ev) {
+                    return Section._on_fetch_form_submit(this, ev);
+                })
             },
 
             __init__: function() {
@@ -2109,6 +2132,12 @@ $(document).ready(function() {
                 var $form = $(node),
                     section = Section.get_by_node($form);
                 return section._on_filter_submit($form);
+            },
+
+            _on_fetch_form_submit: function(node, ev) {
+                var $form = $(node),
+                    article = Article.get_by_node($form);
+                return article._on_fetch_form_submit($form);
             },
 
             _on_filter_button_click: function(node, ev) {

@@ -57,11 +57,11 @@ class SyncableModelManager(models.Manager):
         if start:
             qs = qs.filter(pk__gte=start)
         qs = queryset_iterator(qs)
-        context = Context(dict(STATIC_URL=settings.STATIC_URL))
+        #context = Context(dict(STATIC_URL=settings.STATIC_URL))
         search_index = site.get_index(self.model)
         for obj in qs:
             obj.update_search_index(search_index)
-            obj.update_cached_template(context)
+            #obj.update_cached_template(context)
             if print_delta and not obj.id % print_delta:
                 print obj.id
 
