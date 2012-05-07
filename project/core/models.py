@@ -452,20 +452,23 @@ class SyncableModel(TimeStampedModel):
         """
         return SortedSet(self.get_redis_key('last_fetched')).score(self.id)
 
-    def fetch_full_allowed(self):
+    def fetch_full_allowed(self, delta=None):
         """
         Return True if a fetch_full can be done, respecting a delay
         """
+        if delta is None:
+            delta = self.MIN_FETCH_FULL_DELTA
         score = self.get_last_full_fetched()
-        return not score or score < dt2timestamp(datetime.now() - self.MIN_FETCH_FULL_DELTA)
+        return not score or score < dt2timestamp(datetime.now() - delta)
 
-    def fetch_full(self, token=None, depth=0, async=False, async_priority=None, notify_user=None):
+    def fetch_full(self, token=None, depth=0, async=False, async_priority=None, 
+                   notify_user=None, allowed_interval=None):
         """
         Make a full fetch of the current object : fetch object and related
         """
 
         # check if not done too recently
-        if not self.fetch_full_allowed():
+        if not self.fetch_full_allowed(allowed_interval):
             return token, None
 
         # init

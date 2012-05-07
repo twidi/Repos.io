@@ -99,17 +99,13 @@
 
     <dt>Last fetches</dt>
     <dd class="last-fetch">
-        <label>Repository: </label> {{ obj.last_fetch }}
-        {% if not obj.deleted and request.user and request.user.is_authenticated %}
-            {% include "core/repositories/fetch_form.html" with repository=obj %}
-        {% endif %}
+        <label>Repository: </label> {{ obj.last_fetch|default:"never fetched" }}
     </dd>
     <dd class="last-fetch">
-        <label>Related: </label>{{ obj.last_fetch_related }}
-        <small>(followers, contributors, forks and readme)</small>
-        {% if not obj.deleted and request.user and request.user.is_authenticated %}
-            {% include "core/repositories/fetch_form.html" with repository=obj for_related=1 %}
-        {% endif %}
+        <label>Related: </label>{{ obj.last_fetch_related|default:"never fetched" }}
+    </dd>
+    <dd class="last-fetch">
+        {% include "front/fetch_form.html" with fetch_type="repository" %}
     </dd>
 
 </dl>
