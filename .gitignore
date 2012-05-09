@@ -7,8 +7,10 @@ pip-log.txt
 /include
 /lib
 /src
+/local
 *.vim
 *.sqlite
+*.sublime-*
 settings_rules.py
 dump*.json
 .sass-cache
