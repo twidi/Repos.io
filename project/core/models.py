@@ -1667,7 +1667,8 @@ class Repository(SyncableModel):
             owner = self.owner
 
         if owner.fetch_needed():
-            owner.fetch(token=token)
+            #owner.fetch(token=token)
+            owner.fetch_full(token=token, async=True, async_priority=3, depth=0, allowed_interval=owner.MIN_FETCH_DELTA)
             fetched = True
 
         if save_needed:
@@ -1705,7 +1706,8 @@ class Repository(SyncableModel):
         if parent_fork.fetch_needed():
             if parent_fork.is_new():
                 parent_fork.forks_count = 1
-            parent_fork.fetch(token=token)
+            #parent_fork.fetch(token=token)
+            parent_fork.fetch_full(token=token, async=True, async_priority=3, depth=0, allowed_interval=parent_fork.MIN_FETCH_DELTA)
             fetched = True
 
         if save_needed:
