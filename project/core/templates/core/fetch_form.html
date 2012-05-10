@@ -16,21 +16,8 @@
             {% endif %}
             <button class="btn{% if for_related and not obj.last_fetch_related or not for_related and not obj.last_fetch or not for_related and fetch_type == 'repository' and is_fork and not obj.fork %} primary{% endif %}" type='submit' name='submit' value='submit' title="It will fetch {% if for_related %}followers, {% if fetch_type == 'account' %}following and repositories{% else %}contributors and readme{% endif %}{% else %}fresh data{% endif %} from {{ obj.backend }}">
                 <strong>Fetch {% if for_related %}related{% else %}{{ fetch_type }}{% endif %} now</strong>
-                <em>(
-                {% if for_related %}
-                    Can take many minutes !
-                {% else %}
-                    Can take a few seconds
-                {% endif %}
-                )</em>
-                <span>Last fetch : {% if for_related %}{{ obj.last_fetch_related|default:'never' }}{% else %}{{ obj.last_fetch|default:'never' }}{% endif %}</span>
+                <em>(Can take {% if for_related %}many minutes !{% else %}a few seconds{% endif %})</em>
             </button>
         </form>
-    {% else %}
-        {% if for_related and not obj.last_fetch %}
-            <em>A first fetch is needed before fetching related</em>
-        {% else %}
-            {% if not for_related or obj.last_fetch %}<em class='fetch-date'>Last fetch{% if for_related %} of related{% endif %} on {% if for_related %}{{ obj.last_fetch_related|default:'never' }}{% else %}{{ obj.last_fetch|default:'never' }}{% endif %}</em>{% endif %}
-        {% endif %}
     {% endif %}
 {% endif %}

@@ -29,6 +29,7 @@ from core.managers import (AccountManager, RepositoryManager,
                            OptimForListWithoutDeletedAccountManager, OptimForListWithoutDeletedRepositoryManager)
 from core.core_utils import slugify
 from core.exceptions import MultipleBackendError, BackendNotFoundError
+from core import messages as offline_messages
 
 from tagging.models import PublicTaggedAccount, PublicTaggedRepository, PrivateTaggedAccount, PrivateTaggedRepository, all_official_tags
 from tagging.words import get_tags_for_repository
@@ -451,20 +452,23 @@ class SyncableModel(TimeStampedModel):
         """
         return SortedSet(self.get_redis_key('last_fetched')).score(self.id)
 
-    def fetch_full_allowed(self):
+    def fetch_full_allowed(self, delta=None):
         """
         Return True if a fetch_full can be done, respecting a delay
         """
+        if delta is None:
+            delta = self.MIN_FETCH_FULL_DELTA
         score = self.get_last_full_fetched()
-        return not score or score < dt2timestamp(datetime.now() - self.MIN_FETCH_FULL_DELTA)
+        return not score or score < dt2timestamp(datetime.now() - delta)
 
-    def fetch_full(self, token=None, depth=0, async=False, async_priority=None):
+    def fetch_full(self, token=None, depth=0, async=False, async_priority=None, 
+                   notify_user=None, allowed_interval=None):
         """
         Make a full fetch of the current object : fetch object and related
         """
 
         # check if not done too recently
-        if not self.fetch_full_allowed():
+        if not self.fetch_full_allowed(allowed_interval):
             return token, None
 
         # init
@@ -493,6 +497,8 @@ class SyncableModel(TimeStampedModel):
                 token = token.uid if token else None,
                 depth = depth,
             )
+            if notify_user:
+                data['notify_user'] = notify_user.id if isinstance(notify_user, User) else notify_user
 
             # add the serialized data to redis
             data_s = simplejson.dumps(data)
@@ -532,6 +538,8 @@ class SyncableModel(TimeStampedModel):
                 fetch_error = e
                 ddf = datetime.now() - df
                 sys.stderr.write("      => ERROR (in %s) : %s\n" % (ddf, e))
+                if notify_user:
+                    offline_messages.error(notify_user, '%s couldn\'t be fetched' % self.str_for_user(notify_user).capitalize(), content_object=self, meta=dict(error = fetch_error))
             else:
                 self.set_backend_status(200, 'ok')
                 ddf = datetime.now() - df
@@ -549,9 +557,14 @@ class SyncableModel(TimeStampedModel):
                     ddr = datetime.now() - dr
                     sys.stderr.write("      => ERROR (in %s): %s\n" % (ddr, e))
                     fetch_error = e
+                    if notify_user:
+                        offline_messages.error(notify_user, 'The related of %s couldn\'t be fetched' % self.str_for_user(notify_user), content_object=self, meta=dict(error = fetch_error))
                 else:
                     ddr = datetime.now() - dr
                     sys.stderr.write("      => OK (%s) in %s [%s]\n" % (nb_fetched, ddr, self.fetch_full_related_message()))
+
+            if notify_user and not fetch_error:
+                offline_messages.success(notify_user, '%s was correctly fetched' % self.str_for_user(notify_user).capitalize(), content_object=self)
 
             # finally, perform a fetch full of related
             if not fetch_error and depth > 0:
@@ -575,6 +588,13 @@ class SyncableModel(TimeStampedModel):
                 token.release()
 
             return token, fetch_error
+
+    def str_for_user(self, user):
+        """
+        Given a user, try to give a personified str for this object
+        """
+        return 'the %s "%s"' % (self.model_name, self)
+
 
     def set_backend_status(self, code, message, save=True):
         """
@@ -1420,6 +1440,16 @@ class Account(SyncableModel):
         to_update['user'] = None
         super(Account, self).fake_delete(to_update)
 
+    def str_for_user(self, user):
+        """
+        Given a user, try to give a personified str for this account
+        """
+        user = offline_messages.get_user(user)
+        default = super(Account, self).str_for_user(user)
+        if not user or not self.user or self.user != user:
+            return default
+        return 'your account "%s"' % self
+
 
 class Repository(SyncableModel):
     """
@@ -1637,7 +1667,8 @@ class Repository(SyncableModel):
             owner = self.owner
 
         if owner.fetch_needed():
-            owner.fetch(token=token)
+            #owner.fetch(token=token)
+            owner.fetch_full(token=token, async=True, async_priority=3, depth=0, allowed_interval=owner.MIN_FETCH_DELTA)
             fetched = True
 
         if save_needed:
@@ -1675,7 +1706,8 @@ class Repository(SyncableModel):
         if parent_fork.fetch_needed():
             if parent_fork.is_new():
                 parent_fork.forks_count = 1
-            parent_fork.fetch(token=token)
+            #parent_fork.fetch(token=token)
+            parent_fork.fetch_full(token=token, async=True, async_priority=3, depth=0, allowed_interval=parent_fork.MIN_FETCH_DELTA)
             fetched = True
 
         if save_needed:
@@ -2095,6 +2127,17 @@ class Repository(SyncableModel):
         # final update
         to_update['owner'] = None
         super(Repository, self).fake_delete(to_update)
+
+
+    def str_for_user(self, user):
+        """
+        Given a user, try to give a personified str for this repository
+        """
+        user = offline_messages.get_user(user)
+        default = super(Repository, self).str_for_user(user)
+        if not user or not self.owner.user or self.owner.user != user:
+            return default
+        return 'your repository "%s"' % self.slug
 
 
 def get_object_from_str(object_str):

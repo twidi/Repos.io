@@ -1,0 +1,19 @@
+{# Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license #}
+{% if not obj.deleted and request.user and request.user.is_authenticated %}
+    {% if obj.fetch_allowed %}
+        <form class='fetch-form' action="{% url fetch %}" method="post">{% csrf_token %}
+            <input type="hidden" name="type" value="{{ fetch_type }}" />
+            <input type="hidden" name="id" value="{{ obj.id }}" />
+            <input type="hidden" name="backend" value="{{ obj.backend }}" />
+            {% if fetch_type == 'account' %}
+                <input type="hidden" name="slug" value="{{ obj.slug }}" />
+            {% else %}
+                <input type="hidden" name="project" value="{{ obj.project }}" />
+            {% endif %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+            <button type='submit' name='submit' value='submit' title="It will fetch fresh data from {{ obj.backend }}">
+                Fetch {{ fetch_type }} now
+            </button>
+        </form>
+    {% endif %}
+{% endif %}

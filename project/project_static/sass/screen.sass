@@ -1336,6 +1336,30 @@ article.content > section.details
 
         dd
           margin-left: 4em
+          &.last-fetch
+            margin-top: 3px
+            label
+              font-weight: bold
+              +simple_text_shadow
+              cursor: default
+            form
+              vertical-align: middle
+              white-space: pre
+              margin-right: 2em
+              button
+                +flag
+                font-size: 100%
+                margin: 0.5em 0
+                line-height: 1.2em
+                padding: 0.5ex
+                white-space: normal
+                vertical-align: middle
+                cursor: pointer
+                font-weight: bold
+              &.loading
+                button:after
+                  +loading
+                  font-size: 100%
 
       > ul
         margin-bottom: 1em
@@ -1351,10 +1375,10 @@ article.content > section.details
 
       &.repository
         > dl
-          height: 25em
+          height: 32em
       &.account
         > dl
-          height: 18em
+          height: 25em
 
 
 

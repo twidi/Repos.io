@@ -66,6 +66,9 @@ def parse_json(json, priority):
     # which depth...
     result['depth'] = data.get('depth', 0) or 0
 
+    # maybe a user to notity
+    result['notify_user'] = data.get('notify_user', None)
+
     return result
 
 def main():
@@ -107,11 +110,17 @@ def main():
 
             else:
                 # we're good
-                _, error = data['object'].fetch_full(
+
+                params = dict(
                     token = data['token'],
                     depth = data['depth'],
                     async = False
                 )
+                if data.get('notify_user', None):
+                    params['notify_user'] = data['notify_user']
+
+                _, error = data['object'].fetch_full(**params)
+
                 if error and isinstance(error, (DatabaseError, IntegrityError)):
                     # stop the process if integrityerror to start a new transaction
                     run_ok = False

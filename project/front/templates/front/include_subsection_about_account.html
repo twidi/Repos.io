@@ -64,6 +64,18 @@
         <dt>Homepage</dt>
         <dd>{{ obj.homepage|urlizetrunc:30 }}</dd>
     {% endif %}
+
+    <dt>Last fetches</dt>
+    <dd class="last-fetch">
+        <label>Account: </label> {{ obj.last_fetch|default:"never fetched" }}
+    </dd>
+    <dd class="last-fetch">
+        <label>Related: </label>{{ obj.last_fetch_related|default:"never fetched" }}
+    </dd>
+    <dd class="last-fetch">
+        {% include "front/fetch_form.html" with fetch_type="account" %}
+    </dd>
+
 </dl>
 
 <dl class="usage">

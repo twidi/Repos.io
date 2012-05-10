@@ -179,6 +179,7 @@ INSTALLED_APPS = (
     'endless_pagination',
     'adv_cache_tag',
     'include_strip_tag',
+    'offline_messages',
 
     # ours
     'utils',
@@ -241,7 +242,7 @@ SOCIAL_AUTH_UUID_LENGTH = 2
 
 LOGIN_REDIRECT_URL = '/accounts/logged/'
 LOGIN_URL = '/accounts/login/'
-LOGIN_ERROR_URL = '/accounts/login/'
+LOGIN_ERROR_URL = '/accounts/login/?error'
 
 # enabled site backends
 CORE_ENABLED_BACKENDS = ('github', )
@@ -294,8 +295,9 @@ REDIS_PARAMS = dict(
 )
 
 # sessions
-SESSION_ENGINE='redisession.backend'
-MESSAGE_STORAGE = 'django.contrib.messages.storage.fallback.FallbackStorage'
+SESSION_ENGINE = 'redisession.backend'
+SESSION_SAVE_EVERY_REQUEST = True
+MESSAGE_STORAGE = 'offline_messages.storage.OfflineStorageEngine'
 # update the redisession default params
 REDIS_SESSION_CONFIG = {
     'SERVER': dict(

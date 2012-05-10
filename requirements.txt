@@ -13,6 +13,7 @@ django-redisession
 django-endless-pagination==1.1
 django-adv-cache-tag
 django-include-strip-tag
+jsonfield
 
 #django-redis-cache # waiting for my pull requests to be integrated
 -e git+git://github.com/twidi/django-redis-cache.git@my-work#egg=django-redis-cache
@@ -33,6 +34,9 @@ django-include-strip-tag
 
 # django-haystack # my patched version (with "only")
 -e git+git://github.com/twidi/haystack-with-only.git#egg=django-haystack
+
+# django-offline-messages, last version not on pipy
+-e git+git://github.com/twidi/django-offline-messages#egg=django-offline-messages
 
 
 ####################
