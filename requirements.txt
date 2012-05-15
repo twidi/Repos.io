@@ -49,6 +49,7 @@ docutils
 pysolr
 beautifulsoup
 lxml
+raven
 
 # for django-template-preprocessor
 #termcolor

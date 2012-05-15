@@ -85,3 +85,8 @@ def design(request):
         subsection = subsection,
         current_request = request.get_full_path(),
     )
+
+def context_settings(request):
+    return dict(
+        SENTRY_DSN = settings.SENTRY_PUBLIC_DSN
+    )

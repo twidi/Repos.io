@@ -3,6 +3,7 @@
 #Settings used for development
 
 DEBUG = True
+SENTRY_DEBUG = True
 HAYSTACK_SOLR_URL = 'http://localhost:8080/solr'
 
 if False:

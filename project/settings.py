@@ -140,6 +140,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'django.core.context_processors.static',
     'django.contrib.messages.context_processors.messages',
+    'project.context_processors.context_settings',
     'project.context_processors.design',
     'project.context_processors.caching',
     'project.core.context_processors.backends',
@@ -166,6 +167,7 @@ INSTALLED_APPS = (
     'django.contrib.markup',
 
     # apps
+    'raven.contrib.django',
     'django_extensions',
     'social_auth',
     'django_globals',
@@ -326,6 +328,9 @@ WORKER_UPDATE_RELATED_DATA_SET_KEY = 'update_related_data_set'
 
 WORKER_UPDATE_COUNT_KEY = 'update_count'
 
+# sentry
+SENTRY_DSN = None
+SENTRY_PUBLIC_DSN = None
 
 # metasettings
 try:
