@@ -33,6 +33,9 @@ Yes of course, the source code of this project is on our `GitHub repository`_, y
 The site is coded using django (1.3), django-social-auth (for authentication) and python-github2 (for access to the github api).
 For the client site we use the `Twitter boostrap`_, some javascript with jQuery_ and of course some addtional CSS (soon via Sass_)
 
+To have a working project, check https://github.com/twidi/Repos.io/issues/60#issuecomment-5677558
+
+
 Is that all ?
 -------------
 
