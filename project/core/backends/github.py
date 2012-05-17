@@ -4,7 +4,7 @@ from copy import copy
 import base64
 
 from pygithub3 import Github
-from pygithub3.services.repos import Repo
+from pygithub3.resources.repos import Repo
 from pygithub3.exceptions import NotFound
 from requests.exceptions import HTTPError
 
