@@ -81,7 +81,7 @@ def main():
         nb += 1
         len_to_update = redis_instance.llen(settings.WORKER_UPDATE_COUNT_KEY)
 
-        d = datetime.now()
+        d = datetime.utcnow()
 
         try:
             data = parse_json(json)
@@ -100,7 +100,7 @@ def main():
                 count = getattr(data['object'], '%s_count' % data['count_type'])
             except:
                 count = 'ERROR'
-            sys.stderr.write(" in %s (%s)\n" % (datetime.now()-d, count))
+            sys.stderr.write(" in %s (%s)\n" % (datetime.utcnow()-d, count))
 
         if nb >= max_nb:
             run_ok = False

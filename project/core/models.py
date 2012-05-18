@@ -163,7 +163,7 @@ class SyncableModel(TimeStampedModel):
             return self.STATUS.creating
 
         # Never fetched of fetched "long" time ago => fetch needed
-        if not self.last_fetch or self.last_fetch < datetime.now() - self.MIN_FETCH_DELTA_NEEDED:
+        if not self.last_fetch or self.last_fetch < datetime.utcnow() - self.MIN_FETCH_DELTA_NEEDED:
             return self.STATUS.fetch_needed
 
         # Work on each related field
@@ -176,7 +176,7 @@ class SyncableModel(TimeStampedModel):
             if with_modified:
                 # modified date never updated or too old => fetch of related needed
                 date = getattr(self, '%s_modified' % name)
-                if not date or date < datetime.now() - self.MIN_FETCH_RELATED_DELTA_NEEDED:
+                if not date or date < datetime.utcnow() - self.MIN_FETCH_RELATED_DELTA_NEEDED:
                     return self.STATUS.need_related
 
         # else, default ok
@@ -224,7 +224,7 @@ class SyncableModel(TimeStampedModel):
         """
         if self.deleted:
             return False
-        return bool(not self.last_fetch or self.last_fetch < datetime.now() - self.MIN_FETCH_DELTA)
+        return bool(not self.last_fetch or self.last_fetch < datetime.utcnow() - self.MIN_FETCH_DELTA)
 
     def fetch(self, token=None, log_stderr=False):
         """
@@ -288,7 +288,7 @@ class SyncableModel(TimeStampedModel):
         if not self.get_backend().supports(self.backend_prefix + operation):
             return False
         date = getattr(self, '%s_modified' % operation)
-        if not date or date < datetime.now() - self.MIN_FETCH_RELATED_DELTA:
+        if not date or date < datetime.utcnow() - self.MIN_FETCH_RELATED_DELTA:
             return True
 
         return False
@@ -459,7 +459,7 @@ class SyncableModel(TimeStampedModel):
         if delta is None:
             delta = self.MIN_FETCH_FULL_DELTA
         score = self.get_last_full_fetched()
-        return not score or score < dt2timestamp(datetime.now() - delta)
+        return not score or score < dt2timestamp(datetime.utcnow() - delta)
 
     def fetch_full(self, token=None, depth=0, async=False, async_priority=None, 
                    notify_user=None, allowed_interval=None):
@@ -512,7 +512,7 @@ class SyncableModel(TimeStampedModel):
             del redis_hash[self_str]
 
         # ok, GO
-        dmain = datetime.now()
+        dmain = datetime.utcnow()
         fetch_error = None
         try:
 
@@ -525,7 +525,7 @@ class SyncableModel(TimeStampedModel):
 
             # start try to update the object
             try:
-                df = datetime.now()
+                df = datetime.utcnow()
                 sys.stderr.write("  - fetch object (%s)\n" % self)
                 fetched = self.fetch(token=token, log_stderr=True)
             except Exception, e:
@@ -536,31 +536,31 @@ class SyncableModel(TimeStampedModel):
                         elif e.code == 404:
                             self.set_backend_status(e.code, str(e))
                 fetch_error = e
-                ddf = datetime.now() - df
+                ddf = datetime.utcnow() - df
                 sys.stderr.write("      => ERROR (in %s) : %s\n" % (ddf, e))
                 if notify_user:
                     offline_messages.error(notify_user, '%s couldn\'t be fetched' % self.str_for_user(notify_user).capitalize(), content_object=self, meta=dict(error = fetch_error))
             else:
                 self.set_backend_status(200, 'ok')
-                ddf = datetime.now() - df
+                ddf = datetime.utcnow() - df
                 sys.stderr.write("      => OK (%s) in %s [%s]\n" % (fetched, ddf, self.fetch_full_self_message()))
 
                 # then fetch related
                 try:
-                    dr = datetime.now()
+                    dr = datetime.utcnow()
                     sys.stderr.write("  - fetch related (%s)\n" % self)
                     nb_fetched = self.fetch_related(token=token, log_stderr=True)
                 except Exception, e:
                     if isinstance(e, BackendError):
                         if e.code and e.code in (401, 403):
                             token.set_status(e.code, str(e))
-                    ddr = datetime.now() - dr
+                    ddr = datetime.utcnow() - dr
                     sys.stderr.write("      => ERROR (in %s): %s\n" % (ddr, e))
                     fetch_error = e
                     if notify_user:
                         offline_messages.error(notify_user, 'The related of %s couldn\'t be fetched' % self.str_for_user(notify_user), content_object=self, meta=dict(error = fetch_error))
                 else:
-                    ddr = datetime.now() - dr
+                    ddr = datetime.utcnow() - dr
                     sys.stderr.write("      => OK (%s) in %s [%s]\n" % (nb_fetched, ddr, self.fetch_full_related_message()))
 
             if notify_user and not fetch_error:
@@ -581,7 +581,7 @@ class SyncableModel(TimeStampedModel):
                 sys.stderr.write("====================================================================\n")
 
         finally:
-            ddmain = datetime.now() - dmain
+            ddmain = datetime.utcnow() - dmain
             sys.stderr.write("END OF FETCH FULL %s in %s (depth=%d)\n" % (self, ddmain, depth))
 
             if token:
@@ -669,7 +669,7 @@ class SyncableModel(TimeStampedModel):
 
         official_count_field = 'official_%s_count' % entries_name
         if hasattr(self, official_count_field) and not getattr(self, official_count_field) and (
-            not self.last_fetch or self.last_fetch > datetime.now()-timedelta(hours=1)):
+            not self.last_fetch or self.last_fetch > datetime.utcnow()-timedelta(hours=1)):
                 return False
 
         method_add_entry = getattr(self, 'add_%s' % entry_name)
@@ -702,7 +702,7 @@ class SyncableModel(TimeStampedModel):
             for key_ in removed:
                 method_rem_entry(old_entries[key_], False)
 
-        setattr(self, '%s_modified' % entries_name, datetime.now())
+        setattr(self, '%s_modified' % entries_name, datetime.utcnow())
         self.update_count(entries_name, use_count=count, async=True)
 
         return True
@@ -836,7 +836,7 @@ class SyncableModel(TimeStampedModel):
         """
         to_update.update(dict(
             deleted = True,
-            last_fetch = datetime.now(),
+            last_fetch = datetime.utcnow(),
             score = 0,
         ))
         self.update(**to_update)
@@ -1044,7 +1044,7 @@ class Account(SyncableModel):
         else:
             self.deleted = False
 
-        self.last_fetch = datetime.now()
+        self.last_fetch = datetime.utcnow()
 
         if not self.official_following_count:
             self.following_modified = self.last_fetch
@@ -1198,7 +1198,7 @@ class Account(SyncableModel):
             parts['user'] = 2
 
         if backend.supports('user_created_date'):
-            now = datetime.now()
+            now = datetime.utcnow()
             divider += 0.5
             if not self.official_created:
                 parts['life_time'] = 0
@@ -1392,7 +1392,7 @@ class Account(SyncableModel):
         lists (not from ones created by users : tags, notes...)
         """
         to_update = {}
-        now = datetime.now()
+        now = datetime.utcnow()
 
         # manage following
         for account in self.following.all():
@@ -1602,7 +1602,7 @@ class Repository(SyncableModel):
         else:
             self.deleted = False
 
-        self.last_fetch = datetime.now()
+        self.last_fetch = datetime.utcnow()
 
         if not self.official_followers_count:
             self.followers_modified = self.last_fetch
@@ -1840,7 +1840,7 @@ class Repository(SyncableModel):
             self.readme = readme
             self.readme_type = readme_type
 
-        self.readme_modified = datetime.now()
+        self.readme_modified = datetime.utcnow()
         self.save()
         return True
 
@@ -1863,7 +1863,7 @@ class Repository(SyncableModel):
             parts['infos'] += 0.3
 
         if backend.supports('repository_created_date'):
-            now = datetime.now()
+            now = datetime.utcnow()
             divider += 0.5
             if not self.official_created:
                 parts['life_time'] = 0
@@ -2084,7 +2084,7 @@ class Repository(SyncableModel):
         lists (not from ones created by users : tags, notes...)
         """
         to_update = {}
-        now = datetime.now()
+        now = datetime.utcnow()
 
         # manage contributors
         for account in self.contributors.all():

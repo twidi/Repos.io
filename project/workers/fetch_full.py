@@ -92,7 +92,7 @@ def main():
         nb += 1
         len_list = redis_instance.llen(list_name)
 
-        sys.stderr.write("\n[%s  #%d | left(%s) : %d] %s\n" % (datetime.now(), nb, list_name, len_list, RE_IGNORE_IMPORT.sub('', json)))
+        sys.stderr.write("\n[%s  #%d | left(%s) : %d] %s\n" % (datetime.utcnow(), nb, list_name, len_list, RE_IGNORE_IMPORT.sub('', json)))
 
         try:
             # unserialize

@@ -249,7 +249,7 @@ class RepositorySearchView(CoreSearchView):
                 collapsed = False,
             ).filter(
                     user_query = self.query,
-                    created__gt = datetime.now()-timedelta(minutes=15)
+                    created__gt = datetime.utcnow()-timedelta(minutes=15)
                 ).count()
         if count_recent:
             return
