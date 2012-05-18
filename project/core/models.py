@@ -634,17 +634,16 @@ class SyncableModel(TimeStampedModel):
         except:
             pass
 
-    def update_count(self, name, save=True, use_count=None, async=False):
+    def update_count(self, name, save=True, async=False):
 
         """
         Update a saved count
         """
-        if async and save:
+        if async:
             # async : we serialize the params and put them into redis for future use
             data = dict(
                 object = self.simple_str(),
                 count_type = name,
-                use_count = use_count
             )
             # add the serialized data to redis
             data_s = simplejson.dumps(data)
@@ -652,7 +651,7 @@ class SyncableModel(TimeStampedModel):
             return
 
         field = '%s_count' % name
-        count = use_count if use_count is not None else getattr(self, name).count()
+        count = getattr(self, name).count()
         if save:
             self.update(**{field: count})
         else:
@@ -683,16 +682,13 @@ class SyncableModel(TimeStampedModel):
 
         # get and save new entries
         entries_list = getattr(self.get_backend(), functionality)(self, token=token)
-        count = 0
         for gobj in entries_list:
             if check_diff and gobj[key] in old_entries:
-                count += 1
                 if check_diff:
                     new_entries.add(gobj[key])
             else:
                 obj = method_add_entry(gobj, False)
                 if obj:
-                    count += 1
                     if check_diff:
                         new_entries.add(getattr(obj, key))
 
@@ -703,7 +699,7 @@ class SyncableModel(TimeStampedModel):
                 method_rem_entry(old_entries[key_], False)
 
         setattr(self, '%s_modified' % entries_name, datetime.utcnow())
-        self.update_count(entries_name, use_count=count, async=True)
+        self.update_count(entries_name, async=True)
 
         return True
 
@@ -777,7 +773,7 @@ class SyncableModel(TimeStampedModel):
 
         # update the count if we can
         if update_self_count:
-            self.update_count(self_entries_name)
+            self.update_count(self_entries_name, async=True)
 
         # update the reverse count for the other object
         if not is_new:
@@ -822,10 +818,10 @@ class SyncableModel(TimeStampedModel):
 
         # update the count if we can
         if update_self_count:
-            self.update_count(self_entries_name)
+            self.update_count(self_entries_name, async=True)
 
         # update the reverse count for the other object
-        obj.update_count(reverse_entries_name)
+        obj.update_count(reverse_entries_name, async=True)
 
         return obj
 
