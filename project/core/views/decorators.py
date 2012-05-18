@@ -24,14 +24,25 @@ def check_account(function=None):
                 if account.deleted and view_func.__name__ != 'home':
                     messages.error(request, 'This page is useless since the account has been deleted')
 
+                save_counts = set()
                 if account.followers_count is None and account.get_backend().supports('user_followers'):
-                    account.update_count('followers')
+                    account.update_count('followers', save=False)
+                    save_counts.add('followers')
                 if account.following_count is None and account.get_backend().supports('user_following'):
-                    account.update_count('following')
+                    account.update_count('following', save=False)
+                    save_counts.add('following')
                 if account.repositories_count is None and account.get_backend().supports('user_repositories'):
-                    account.update_count('repositories')
+                    account.update_count('repositories', save=False)
+                    save_counts.add('repositories')
                 if account.contributing_count is None and account.get_backend().supports('user_repositories'):
-                    account.update_count('contributing')
+                    account.update_count('contributing', save=False)
+                    save_counts.add('contributing')
+                if save_counts:
+                    # update the object in DB, via an update, not a save
+                    # if counts is "followers", add `followers_count=account.followers_count`
+                    account.update(
+                        **dict(('%s_count' % name, getattr(account, '%s_count' % name)) for name in save_counts)
+                    )
 
                 account.include_details = True
                 kwargs['account'] = account
@@ -59,13 +70,22 @@ def check_repository(function=None):
                 if repository.deleted and view_func.__name__ != 'home':
                     messages.error(request, 'This page is useless since the project has been deleted')
 
+                save_counts = set()
                 if repository.followers_count is None and repository.get_backend().supports('repository_followers'):
-                    repository.update_count('followers')
+                    repository.update_count('followers', save=False)
+                    save_counts.add('followers')
                 if repository.contributors_count is None and repository.get_backend().supports('repository_contributors'):
-                    repository.update_count('contributors')
+                    repository.update_count('contributors', save=False)
+                    save_counts.add('contributors')
                 if repository.forks_count is None and repository.get_backend().supports('repository_parent_fork'):
-                    repository.update_count('forks')
-
+                    repository.update_count('forks', save=False)
+                    save_counts.add('forks')
+                if save_counts:
+                    # update the object in DB, via an update, not a save
+                    # if counts is "followers", add `followers_count=repository.followers_count`
+                    repository.update(
+                        **dict(('%s_count' % name, getattr(repository, '%s_count' % name)) for name in save_counts)
+                    )
 
                 repository.include_details = True
                 kwargs['repository'] = repository
