@@ -461,7 +461,7 @@ class SyncableModel(TimeStampedModel):
         score = self.get_last_full_fetched()
         return not score or score < dt2timestamp(datetime.utcnow() - delta)
 
-    def fetch_full(self, token=None, depth=0, async=False, async_priority=None, 
+    def fetch_full(self, token=None, depth=0, async=False, async_priority=None,
                    notify_user=None, allowed_interval=None):
         """
         Make a full fetch of the current object : fetch object and related
@@ -1589,6 +1589,8 @@ class Repository(SyncableModel):
         if not super(Repository, self).fetch(token, log_stderr):
             return False
 
+        old_official_modified = self.official_modified
+
         try:
             self.get_backend().repository_fetch(self, token=token)
         except BackendNotFoundError, e:
@@ -1607,10 +1609,9 @@ class Repository(SyncableModel):
                 for follower in self.followers.all():
                     self.remove_follower(follower, False)
 
-        if not self.modified:
-            self.readme_modified = self.last_fetch
-
         self.save()
+
+        self._modified = old_official_modified < self.official_modified
 
         return True
 
@@ -1822,6 +1823,9 @@ class Repository(SyncableModel):
         Try to get a readme in the repository
         """
         if not self.get_backend().supports('repository_readme'):
+            return False
+
+        if not getattr(self, '_modified', True):
             return False
 
         readme = self.get_backend().repository_readme(self, token=token)
