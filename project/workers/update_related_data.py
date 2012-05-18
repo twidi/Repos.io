@@ -58,7 +58,7 @@ def main():
         nb += 1
         len_to_update = redis_instance.scard(settings.WORKER_UPDATE_RELATED_DATA_SET_KEY)
 
-        d = datetime.now()
+        d = datetime.utcnow()
         sys.stderr.write("[%s  #%d | left : %d] %s" % (d, nb, len_to_update, obj_str))
 
         try:
@@ -84,7 +84,7 @@ def main():
             sys.stderr.write("====================================================================\n")
 
         else:
-            sys.stderr.write(" in %s =>  score=%d, tags=(%s)\n" % (datetime.now()-d, obj.score, ', '.join(obj.all_public_tags().values_list('slug', flat=True))))
+            sys.stderr.write(" in %s =>  score=%d, tags=(%s)\n" % (datetime.utcnow()-d, obj.score, ', '.join(obj.all_public_tags().values_list('slug', flat=True))))
 
         if nb >= max_nb:
             run_ok = False

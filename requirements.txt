@@ -58,8 +58,9 @@ raven
 ### backends ###
 ################
 
-#github2 : commit 234e9066b5 created by ask after my issue #62 is not in 0.5.2
--e git+git://github.com/twidi/python-github2.git#egg=python-github2
+
+#pygithub3
+-e git+git://github.com/copitux/python-github3.git@develop#egg=pygithub3
 
 ###################
 ### django apps ###

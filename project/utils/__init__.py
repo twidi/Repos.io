@@ -7,4 +7,4 @@ def dt2timestamp(dt):
     return int(mktime(dt.timetuple()))
 
 def now_timestamp():
-    return dt2timestamp(datetime.now())
+    return dt2timestamp(datetime.utcnow())
