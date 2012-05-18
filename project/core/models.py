@@ -639,7 +639,7 @@ class SyncableModel(TimeStampedModel):
         """
         Update a saved count
         """
-        if async and save:
+        if async:
             # async : we serialize the params and put them into redis for future use
             data = dict(
                 object = self.simple_str(),
@@ -773,7 +773,7 @@ class SyncableModel(TimeStampedModel):
 
         # update the count if we can
         if update_self_count:
-            self.update_count(self_entries_name)
+            self.update_count(self_entries_name, async=True)
 
         # update the reverse count for the other object
         if not is_new:
@@ -818,10 +818,10 @@ class SyncableModel(TimeStampedModel):
 
         # update the count if we can
         if update_self_count:
-            self.update_count(self_entries_name)
+            self.update_count(self_entries_name, async=True)
 
         # update the reverse count for the other object
-        obj.update_count(reverse_entries_name)
+        obj.update_count(reverse_entries_name, async=True)
 
         return obj
 
