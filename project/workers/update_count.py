@@ -48,7 +48,7 @@ def parse_json(json):
     return data
 
 @transaction.commit_manually
-def run_one(obj, count_type, use_count):
+def run_one(obj, count_type):
     """
     Update counts for `obj`, in its own transaction
     """
@@ -56,7 +56,6 @@ def run_one(obj, count_type, use_count):
         obj.update_count(
             name = count_type,
             save = True,
-            use_count = use_count,
             async = False
         )
     except (IntegrityError, DatabaseError), e:
@@ -87,7 +86,7 @@ def main():
             data = parse_json(json)
             sys.stderr.write("[%s  #%d | left : %d] %s.%s (%s)" % (d, nb, len_to_update, data['object_str'], data['count_type'], data['object']))
 
-            run_one(data['object'], data['count_type'], data['use_count'])
+            run_one(data['object'], data['count_type'])
 
         except Exception, e:
             sys.stderr.write(" => ERROR : %s (see below)\n" % e)
