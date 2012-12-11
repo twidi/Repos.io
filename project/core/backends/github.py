@@ -176,9 +176,19 @@ class GithubBackend(BaseBackend):
 
         # get repositories data from github
         result = []
+        found = {}
         try:
             for grepo in github.repos.watchers.list_repos(account.slug).iterator():
-                result.append(self.repository_map(grepo))
+                repo = self.repository_map(grepo)
+                if repo['project'] not in found:
+                    result.append(repo)
+                    found[repo['project']] = True
+            for grepo in github.repos.list(account.slug).iterator():
+                repo = self.repository_map(grepo)
+                if repo['project'] not in found:
+                    result.append(repo)
+                    found[repo['project']] = True
+
         except Exception, e:
             raise self._get_exception(e, '%s\'s repositories' % account.slug)
 
