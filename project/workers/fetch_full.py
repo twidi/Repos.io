@@ -81,7 +81,7 @@ def main():
     redis_instance = redis.Redis(**settings.REDIS_PARAMS)
 
     nb = 0
-    max_nb = 500
+    max_nb = 50
     while run_ok:
 
         # wait for new data
