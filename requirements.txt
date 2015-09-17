@@ -7,49 +7,53 @@ django>=1.3.1,<=1.3.99
 ### django tools ###
 ####################
 
-django-model-utils
+django-model-utils==1.3.1
 #johnny-cache
-django-redisession
-django-endless-pagination==1.1
-django-adv-cache-tag
-django-include-strip-tag
-jsonfield
+django-redisession==0.3.1
+django-adv-cache-tag==0.1.1
+django-globals==0.2.1
+django-include-strip-tag==0.1.0
+jsonfield==0.9
+
+#django-endless-pagination==1.1 # not available on pypi anymore
+-e git+git://github.com/twidi/django-endless-pagination.git@ec8b34190a79ddef000094b75cc833db3462f3a7#egg=django-endless-pagination
 
 #django-redis-cache # waiting for my pull requests to be integrated
--e git+git://github.com/twidi/django-redis-cache.git@my-work#egg=django-redis-cache
+-e git+git://github.com/twidi/django-redis-cache.git@b8233f9b072f4c478889fc753e1cadf6ad4e4892#egg=django-redis-cache
 
 #django-extensions # too old, without static files from django 1.3
--e git+git://github.com/twidi/django-extensions.git#egg=django-extensions
-
-#django-globals # my pull-request was integrated but pypi not up to date
--e git+git://github.com/twidi/django-globals.git#egg=django-globals
+-e git+git://github.com/twidi/django-extensions.git@b775ce22ae4e8f5ee77504e9d9fc82de92150647#egg=django-extensions
 
 #django-pure-pagination ( bug if % in querystring : https://github.com/jamespacileo/django-pure-pagination/pull/6)
--e git+git://github.com/twidi/django-pure-pagination.git#egg=django-pure-pagination
+-e git+git://github.com/twidi/django-pure-pagination.git@a28ccdc4c91fef963415f9ec28febd89c9edd01f#egg=django-pure-pagination
 
 # not on pypi
 #-e git+git://github.com/twidi/django-template-preprocessor.git#egg=django-template-preprocessor
--e git+git://github.com/twidi/django-metasettings.git#egg=django-metasettings
--e git+git://github.com/twidi/django-browsecap.git#egg=django-browsecap
+-e git+git://github.com/twidi/django-metasettings.git@2e1cb1ded419455c13f21d5ab1f951ba3feb5b76#egg=django-metasettings
+-e git+git://github.com/twidi/django-browsecap.git@c15753a7cded2ea1eb045326311963a935be60c2#egg=django-browsecap
 
 # django-haystack # my patched version (with "only")
--e git+git://github.com/twidi/haystack-with-only.git#egg=django-haystack
+-e git+git://github.com/twidi/haystack-with-only.git@df2aabd172b0aa0c08256248121f1665169d15dc#egg=django-haystack
 
 # django-offline-messages, last version not on pipy
--e git+git://github.com/twidi/django-offline-messages#egg=django-offline-messages
+-e git+git://github.com/twidi/django-offline-messages@67f9875b2aa01293c5b60499dea9547375802668#egg=django-offline-messages
 
 
 ####################
 ### python tools ###
 ####################
-debug
-textile
-markdown
-docutils
-pysolr
-beautifulsoup
-lxml
-raven
+# psycopg needs libpq-dev python-dev
+psycopg2==2.5
+debug==0.2.1
+textile==2.1.5
+markdown==2.3.1
+docutils==0.10
+pysolr==3.0.6
+beautifulsoup==3.2.1
+wsgiproxy==0.2.2
+# lxml needs libxml2-dev libxslt1-dev python-dev
+lxml==3.1.2
+raven==3.3.3
 
 # for django-template-preprocessor
 #termcolor
@@ -60,25 +64,25 @@ raven
 
 
 #pygithub3
--e git+git://github.com/copitux/python-github3.git@develop#egg=pygithub3
+-e git+git://github.com/copitux/python-github3.git@f85c7b1692667dab82c2894db86d0582e72b2df0#egg=pygithub3
 
 ###################
 ### django apps ###
 ###################
 
 django-social-auth>=0.6,<=0.6.99
-django-markup-mixin
-django-notes
-django-taggit
+django-markup-mixin==0.1.0
+django-notes==0.2.2
+django-taggit==0.10a1
 
 #saved_searches (we need more recent version than the one on pypi)
--e git+git://github.com/twidi/saved_searches.git#egg=saved_searches
+-e git+git://github.com/twidi/saved_searches.git@44b910aeb8016e7d4d40c1e5b57cd4b5c9b62dd4#egg=saved_searches
 
 ############################
 ### background and redis ###
 ############################
 
-hiredis
-redis
--e git+git://github.com/twidi/redisco.git#egg=redisco
+hiredis==0.1.1
+redis==2.7.2
+-e git+git://github.com/twidi/redisco.git@9a4bab68cc5e9ce47ba8f44b8580077a981050b3#egg=redisco
 
