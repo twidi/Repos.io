@@ -53,6 +53,7 @@ beautifulsoup==3.2.1
 wsgiproxy==0.2.2
 # lxml needs libxml2-dev libxslt1-dev python-dev
 lxml==3.1.2
+cssselect==0.9.1
 raven==3.3.3
 
 # for django-template-preprocessor
