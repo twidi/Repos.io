@@ -529,12 +529,11 @@ class SyncableModel(TimeStampedModel):
                 sys.stderr.write("  - fetch object (%s)\n" % self)
                 fetched = self.fetch(token=token, log_stderr=True)
             except Exception, e:
-                if isinstance(e, BackendError):
-                    if e.code:
-                        if e.code in (401, 403):
-                            token.set_status(e.code, str(e))
-                        elif e.code == 404:
-                            self.set_backend_status(e.code, str(e))
+                if isinstance(e, BackendError) and e.code:
+                    if e.code == 401:
+                        token.set_status(e.code, str(e))
+                    elif e.code in (403, 404):
+                        self.set_backend_status(e.code, str(e))
                 fetch_error = e
                 ddf = datetime.utcnow() - df
                 sys.stderr.write("      => ERROR (in %s) : %s\n" % (ddf, e))
@@ -551,9 +550,11 @@ class SyncableModel(TimeStampedModel):
                     sys.stderr.write("  - fetch related (%s)\n" % self)
                     nb_fetched = self.fetch_related(token=token, log_stderr=True)
                 except Exception, e:
-                    if isinstance(e, BackendError):
-                        if e.code and e.code in (401, 403):
+                    if isinstance(e, BackendError) and e.code:
+                        if e.code == 401:
                             token.set_status(e.code, str(e))
+                        elif e.code in (403, 404):
+                            self.set_backend_status(e.code, str(e))
                     ddr = datetime.utcnow() - dr
                     sys.stderr.write("      => ERROR (in %s): %s\n" % (ddr, e))
                     fetch_error = e
@@ -622,8 +623,8 @@ class SyncableModel(TimeStampedModel):
             if not search_index:
                 search_index = self.get_search_index()
             search_index.backend.update(search_index, [self], commit=False)
-        except:
-            pass
+        except Exception, e:
+            sys.stderr.write('ERROR in update_search_index for %s : %s' % (self.simple_str(), e))
 
     def remove_from_search_index(self):
         """
@@ -1355,7 +1356,7 @@ class Account(SyncableModel):
                 token, rep_fetch_error = repository.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                if rep_fetch_error and rep_fetch_error.code == 401:
                     token = None
 
             # do fetch for all followers
@@ -1364,7 +1365,7 @@ class Account(SyncableModel):
                 token, rep_fetch_error = account.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                if rep_fetch_error and rep_fetch_error.code == 401:
                     token = None
 
             # do fetch for all following
@@ -1373,7 +1374,7 @@ class Account(SyncableModel):
                 token, rep_fetch_error = account.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                if rep_fetch_error and rep_fetch_error.code == 401:
                     token = None
 
     def get_search_index(self):
@@ -2033,7 +2034,7 @@ class Repository(SyncableModel):
                 token, rep_fetch_error = account.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                if rep_fetch_error and rep_fetch_error.code == 401:
                     token = None
 
             # do fetch for owner
@@ -2042,7 +2043,7 @@ class Repository(SyncableModel):
                 token, rep_fetch_error = self.owner.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                if rep_fetch_error and rep_fetch_error.code == 401:
                     token = None
 
             # do fetch for parent fork
@@ -2051,7 +2052,7 @@ class Repository(SyncableModel):
                 token, rep_fetch_error = self.parent_fork.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                if rep_fetch_error and rep_fetch_error.code == 401:
                     token = None
 
             # do fetch full for all forks
@@ -2060,7 +2061,7 @@ class Repository(SyncableModel):
                 token, rep_fetch_error = repository.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                if rep_fetch_error and rep_fetch_error.code == 401:
                     token = None
 
             # do fetch for all contributors
@@ -2069,7 +2070,7 @@ class Repository(SyncableModel):
                 token, rep_fetch_error = account.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code in (401, 403):
+                if rep_fetch_error and rep_fetch_error.code == 401:
                     token = None
 
     def get_search_index(self):
