@@ -621,7 +621,7 @@ class SyncableModel(TimeStampedModel):
         try:
             if not search_index:
                 search_index = self.get_search_index()
-            search_index.update_object(self)
+            search_index.backend.update(search_index, [self], commit=False)
         except:
             pass
 
@@ -630,7 +630,7 @@ class SyncableModel(TimeStampedModel):
         Remove the current object from the search index
         """
         try:
-            self.get_search_index().remove_object(self)
+            self.get_search_index().backend.remove(self, commit=False)
         except:
             pass
 
