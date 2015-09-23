@@ -2,8 +2,10 @@
 
 from httplib import responses
 
+
 class CoreException(Exception):
     pass
+
 
 class InvalidIdentifiersForProject(CoreException):
     def __init__(self, backend, message=None):
@@ -15,6 +17,7 @@ class InvalidIdentifiersForProject(CoreException):
             )
         )
 
+
 class OriginalProviderLoginMissing(CoreException):
     def __init__(self, user, backend_name, message=None):
         super(OriginalProviderLoginMissing, self).__init__(
@@ -24,6 +27,7 @@ class OriginalProviderLoginMissing(CoreException):
                 user
             )
         )
+
 
 class BackendError(CoreException):
     def __init__(self, message=None, code=None):
@@ -37,54 +41,59 @@ class BackendError(CoreException):
         self.code = code
 
     @staticmethod
-    def make_for(backend_name, code=None, what=None):
+    def make_for(backend_name, code=None, what=None, message=None):
 
         if code == 401:
-            return BackendUnauthorizedError(backend_name, what)
+            return BackendUnauthorizedError(backend_name, what, message)
 
         if code == 403:
-            return BackendForbiddenError(backend_name, what)
+            return BackendForbiddenError(backend_name, what, message)
 
         if code == 404:
             return BackendNotFoundError(backend_name, what)
 
-        elif code >= 400 and code < 500:
-            return BackendAccessError(code, backend_name, what)
+        elif 400 <= code < 500:
+            return BackendAccessError(backend_name, what, code, message)
 
         elif code >= 500:
-            return BackendInternalError(code, backend_name, what)
+            return BackendInternalError(backend_name, what, code, message)
 
-        return BackendError(message=None, code=None)
+        return BackendError(message, code)
+
 
 class MultipleBackendError(BackendError):
     def __init__(self, messages):
         super(MultipleBackendError, self).__init__(
-            'Many errors occured : ' + ', '.join(messages))
+            'Many errors occurred : ' + ', '.join(messages))
         self.messages = messages
+
 
 class BackendNotFoundError(BackendError):
     def __init__(self, backend_name, what):
         super(BackendNotFoundError, self).__init__(
             '%s cannot be found on %s' % (what, backend_name), 404)
 
+
 class BackendAccessError(BackendError):
-    def __init__(self, code, message, backend_name, what):
+    def __init__(self, backend_name, what, code, message=None):
         super(BackendAccessError, self).__init__(
             '%s cannot be accessed on %s: %s' % (what, backend_name, message), code)
 
+
 class BackendForbiddenError(BackendAccessError):
-    def __init__(self, backend_name, what):
+    def __init__(self, backend_name, what, message=None):
         super(BackendForbiddenError, self).__init__(
-                403, 'access forbidden', backend_name, what)
+            backend_name, what, 403, message or 'access forbidden')
 
 
 class BackendUnauthorizedError(BackendAccessError):
-    def __init__(self, backend_name, what):
+    def __init__(self, backend_name, what, message=None):
         super(BackendUnauthorizedError, self).__init__(
-                401, 'unauthorized access', backend_name, what)
+            backend_name, what, 401, message or 'unauthorized access')
+
 
 class BackendInternalError(BackendError):
-    def __init__(self, code, backend_name, what):
+    def __init__(self, backend_name, what, code, message=None):
         super(BackendError, self).__init__(
-            '%s cannot be accessed because %s encountered an internal error' % (what, backend_name), code)
-
+            '%s cannot be accessed because %s encountered an internal error: %s' % (
+                what, backend_name, message or '(no more info)'), code)

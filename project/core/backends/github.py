@@ -47,7 +47,7 @@ class GithubBackend(BaseBackend):
         """
         return all(hasattr(settings, name) for name in ('GITHUB_APP_ID', 'GITHUB_API_SECRET'))
 
-    def _get_exception(self, exception, what, token=None):
+    def _get_exception(self, exception, what):
         """
         Return an internal exception (BackendError)
         """
@@ -56,7 +56,11 @@ class GithubBackend(BaseBackend):
             code = exception.response.status_code
         elif isinstance(exception, NotFound):
             code = 404
-        return self.get_exception(code, what)
+        try:
+            message = exception.response.content
+        except Exception:
+            message = None
+        return self.get_exception(code, what, message)
 
     def create_github_instance(self, *args, **kwargs):
         """
