@@ -28,7 +28,7 @@ from core.managers import (AccountManager, RepositoryManager,
                            OptimForListAccountManager, OptimForListRepositoryManager,
                            OptimForListWithoutDeletedAccountManager, OptimForListWithoutDeletedRepositoryManager)
 from core.core_utils import slugify
-from core.exceptions import MultipleBackendError, BackendNotFoundError
+from core.exceptions import BackendError, BackendNotFoundError, BackendSuspendedTokenError, MultipleBackendError
 from core import messages as offline_messages
 
 from tagging.models import PublicTaggedAccount, PublicTaggedRepository, PrivateTaggedAccount, PrivateTaggedRepository, all_official_tags
@@ -332,7 +332,7 @@ class SyncableModel(TimeStampedModel):
             if len(exceptions) == 1:
                 raise exceptions[0]
             else:
-                raise MultipleBackendError([str(e) for e in exceptions])
+                raise MultipleBackendError(exceptions)
 
         return done
 
@@ -461,6 +461,10 @@ class SyncableModel(TimeStampedModel):
         score = self.get_last_full_fetched()
         return not score or score < dt2timestamp(datetime.utcnow() - delta)
 
+    def should_stop_use_token(self, fetch_error):
+        return fetch_error and (getattr(fetch_error, 'code', None) == 401
+                                or isinstance(fetch_error, BackendSuspendedTokenError))
+
     def fetch_full(self, token=None, depth=0, async=False, async_priority=None,
                    notify_user=None, allowed_interval=None):
         """
@@ -529,11 +533,15 @@ class SyncableModel(TimeStampedModel):
                 sys.stderr.write("  - fetch object (%s)\n" % self)
                 fetched = self.fetch(token=token, log_stderr=True)
             except Exception, e:
-                if isinstance(e, BackendError) and e.code:
+
+                if isinstance(e, BackendSuspendedTokenError):
+                    token.suspend(e.extra.get('suspended_until'), str(e))
+                elif isinstance(e, BackendError) and e.code:
                     if e.code == 401:
                         token.set_status(e.code, str(e))
                     elif e.code in (403, 404):
                         self.set_backend_status(e.code, str(e))
+
                 fetch_error = e
                 ddf = datetime.utcnow() - df
                 sys.stderr.write("      => ERROR (in %s) : %s\n" % (ddf, e))
@@ -550,11 +558,20 @@ class SyncableModel(TimeStampedModel):
                     sys.stderr.write("  - fetch related (%s)\n" % self)
                     nb_fetched = self.fetch_related(token=token, log_stderr=True)
                 except Exception, e:
-                    if isinstance(e, BackendError) and e.code:
-                        if e.code == 401:
-                            token.set_status(e.code, str(e))
-                        elif e.code in (403, 404):
-                            self.set_backend_status(e.code, str(e))
+
+                    exceptions = [e]
+                    if isinstance(e, MultipleBackendError):
+                        exceptions = e.exceptions
+
+                    for ex in exceptions:
+                        if isinstance(ex, BackendSuspendedTokenError):
+                            token.suspend(ex.extra.get('suspended_until'), str(ex))
+                        elif isinstance(ex, BackendError) and ex.code:
+                            if ex.code == 401:
+                                token.set_status(ex.code, str(ex))
+                            elif ex.code in (403, 404):
+                                self.set_backend_status(ex.code, str(ex))
+
                     ddr = datetime.utcnow() - dr
                     sys.stderr.write("      => ERROR (in %s): %s\n" % (ddr, e))
                     fetch_error = e
@@ -1356,7 +1373,7 @@ class Account(SyncableModel):
                 token, rep_fetch_error = repository.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code == 401:
+                if self.should_stop_use_token(rep_fetch_error):
                     token = None
 
             # do fetch for all followers
@@ -1365,7 +1382,7 @@ class Account(SyncableModel):
                 token, rep_fetch_error = account.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code == 401:
+                if self.should_stop_use_token(rep_fetch_error):
                     token = None
 
             # do fetch for all following
@@ -1374,7 +1391,7 @@ class Account(SyncableModel):
                 token, rep_fetch_error = account.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code == 401:
+                if self.should_stop_use_token(rep_fetch_error):
                     token = None
 
     def get_search_index(self):
@@ -2034,7 +2051,7 @@ class Repository(SyncableModel):
                 token, rep_fetch_error = account.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code == 401:
+                if self.should_stop_use_token(rep_fetch_error):
                     token = None
 
             # do fetch for owner
@@ -2043,7 +2060,7 @@ class Repository(SyncableModel):
                 token, rep_fetch_error = self.owner.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code == 401:
+                if self.should_stop_use_token(rep_fetch_error):
                     token = None
 
             # do fetch for parent fork
@@ -2052,7 +2069,7 @@ class Repository(SyncableModel):
                 token, rep_fetch_error = self.parent_fork.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code == 401:
+                if self.should_stop_use_token(rep_fetch_error):
                     token = None
 
             # do fetch full for all forks
@@ -2061,7 +2078,7 @@ class Repository(SyncableModel):
                 token, rep_fetch_error = repository.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code == 401:
+                if self.should_stop_use_token(rep_fetch_error):
                     token = None
 
             # do fetch for all contributors
@@ -2070,7 +2087,7 @@ class Repository(SyncableModel):
                 token, rep_fetch_error = account.fetch_full(depth=depth, token=token, async=async)
 
                 # access token invalidated, get a new one
-                if rep_fetch_error and rep_fetch_error.code == 401:
+                if self.should_stop_use_token(rep_fetch_error):
                     token = None
 
     def get_search_index(self):

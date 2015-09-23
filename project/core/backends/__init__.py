@@ -69,11 +69,11 @@ class BaseBackend(object):
         """
         return self.support.get(functionnality, False)
 
-    def get_exception(self, code, what, message=None):
+    def get_exception(self, code, what, message=None, extra=None):
         """
         Return an internal exception (BackendError)
         """
-        return BackendError.make_for(self.name, code, what, message)
+        return BackendError.make_for(self.name, code, what, message, extra)
 
     def user_map(self, user):
         """

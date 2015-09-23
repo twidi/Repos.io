@@ -11,6 +11,7 @@ from requests.exceptions import HTTPError
 from django.conf import settings
 
 from core.backends import BaseBackend, README_NAMES, README_TYPES
+from core.exceptions import SPECIFIC_ERROR_CODES
 
 
 class GithubBackend(BaseBackend):
@@ -52,15 +53,23 @@ class GithubBackend(BaseBackend):
         Return an internal exception (BackendError)
         """
         code = None
+        extra = {}
         if isinstance(exception, HTTPError):
             code = exception.response.status_code
+            try:
+                headers = exception.response.headers
+                if code == 403 and int(headers['x-ratelimit-remaining']) == 0:
+                    code = SPECIFIC_ERROR_CODES ['SUSPENDED']
+                    extra['suspended_until'] = headers.get('x-ratelimit-reset', 0)
+            except Exception:
+                code = exception.response.status_code
         elif isinstance(exception, NotFound):
             code = 404
         try:
             message = exception.response.content
         except Exception:
             message = None
-        return self.get_exception(code, what, message)
+        return self.get_exception(code, what, message, extra)
 
     def create_github_instance(self, *args, **kwargs):
         """
