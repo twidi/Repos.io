@@ -1406,6 +1406,7 @@ article.content > footer > section > ul.actions > li.action-note > blockquote te
 /* line 899, ../sass/screen.sass */
 article.content > footer > section > ul.actions > li.action-note > form {
   padding: 1ex;
+  z-index: 1001;
 }
 /* line 901, ../sass/screen.sass */
 article.content > footer > section > ul.actions > li.action-note > form textarea {
