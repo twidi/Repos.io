@@ -3,12 +3,23 @@
 from os import walk
 from os.path import basename
 
+from dateutil import tz
+
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.utils.functional import memoize
 
 from core.exceptions import InvalidIdentifiersForProject, BackendError
 from core.tokens import AccessTokenManager
+
+
+UTC = tz.gettz('UTC')
+
+NO_CACHE_HEADERS = {
+    'if-modified-since': None,
+    'if-none-match': None,
+}
+
 
 #https://github.com/github/markup/
 README_NAMES = ('README', 'readme',)
@@ -204,6 +215,23 @@ class BaseBackend(object):
                 links[link['rel']] = link
 
         return links
+
+    @staticmethod
+    def convert_date_for_header(datetime_object):
+        """Convert a datetime object to the string representation to use in http headers
+
+        Parameters
+        ----------
+        datetime_object : datetime
+            The datetime object to convert. It's expected to be UTC
+
+        Returns
+        -------
+        str
+            The string reprensetation of the given datetime object
+
+        """
+        return datetime_object.replace(tzinfo=UTC).strftime('%a, %d %b %Y %H:%M:%S GMT')
 
 def get_backends():
     """

@@ -72,6 +72,11 @@ except ImportError:
     from urllib.parse import quote as urlquote
     from io import StringIO
 
+from redisco.containers import Hash
+
+LAST_MODIFIED = Hash('urls:last-modified')
+ETAG = Hash('urls:etag')
+
 
 LOGGER_NAME = 'github'
 logger = logging.getLogger(LOGGER_NAME)
@@ -107,7 +112,7 @@ def _encode_params(kw):
     Encode parameters.
     """
     args = []
-    for k, v in kw.items():
+    for k, v in sorted(kw.items()):
         try:
             # Python 2
             qv = v.encode('utf-8') if isinstance(v, unicode) else str(v)
@@ -268,7 +273,7 @@ class GitHub(object):
         return _Callable(self, '/%s' % attr)
 
     def _http(self, method, path,
-              request_headers=None, response_headers=None, json_post=True,timeout=None,
+              request_headers=None, response_headers=None, json_post=True, timeout=None,
               kw=None):
         if kw is None:
             kw = {}
@@ -289,6 +294,22 @@ class GitHub(object):
         else:
             final_headers = request_headers
 
+        if method == 'GET':
+            if final_headers:
+                keys = set(key.lower() for key in final_headers)
+            else:
+                final_headers = {}
+                keys = set()
+
+            if 'if-modified-since' in keys and not final_headers['if-modified-since']:
+                del final_headers['if-modified-since']
+            elif 'if-modified-since' not in keys and path in LAST_MODIFIED:
+                final_headers['if-modified-since'] = LAST_MODIFIED[path]
+            if 'if-none-match' in keys and not final_headers['if-none-match']:
+                del final_headers['if-none-match']
+            elif 'if-none-match' not in keys and path in ETAG:
+                final_headers['if-none-match'] = ETAG[path]
+
         url = '%s%s' % (_URL, path)
         if logger.level > logging.DEBUG:
             logger.info('REQUEST %s %s %s', method, url, final_headers)
@@ -303,6 +324,14 @@ class GitHub(object):
             request.add_header('Content-Type', 'application/x-www-form-urlencoded')
         try:
             response = opener.open(request, timeout=timeout or TIMEOUT)
+
+            if method == 'GET':
+                keys = {key.lower(): key for key in response.headers}
+                if 'last-modified' in keys:
+                    LAST_MODIFIED[path] = response.headers[keys['last-modified']]
+                if 'etag' in keys:
+                    ETAG[path] = response.headers[keys['etag']]
+
             is_json = self._process_resp(response.headers)
             if isinstance(response_headers, dict):
                 response_headers.update(response.headers.dict.copy())
@@ -328,6 +357,8 @@ class GitHub(object):
             _json = _parse_json(content) if is_json else None
             req = JsonObject(method=method, url=url, headers=final_headers)
             resp = JsonObject(code=e.code, json=_json, content=content, headers=response_headers)
+            if e.code == 304:
+                raise RequestNotModified(url, req, resp)
             if e.code == 404:
                 raise ApiNotFoundError(url, req, resp)
             raise ApiError(url, req, resp)
@@ -388,6 +419,10 @@ class ApiAuthError(ApiError):
 
 
 class ApiNotFoundError(ApiError):
+    pass
+
+
+class RequestNotModified(ApiError):
     pass
 
 

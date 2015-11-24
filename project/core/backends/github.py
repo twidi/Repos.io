@@ -3,11 +3,11 @@
 from copy import copy
 from datetime import datetime
 
-from libgithub import ApiError, GitHub, JsonObject
+from libgithub import ApiError, GitHub, JsonObject, RequestNotModified
 
 from django.conf import settings
 
-from core.backends import BaseBackend
+from core.backends import BaseBackend, NO_CACHE_HEADERS
 from core.exceptions import SPECIFIC_ERROR_CODES
 
 
@@ -144,7 +144,7 @@ class GithubBackend(BaseBackend):
 
         return result
 
-    def iterate_pages(self, callable, start_page=1, per_page=100, **kwargs):
+    def iterate_pages(self, callable, start_page=1, per_page=100, request_headers=None, **kwargs):
         """"Iterate on each result for the githubpy callable, for each page
 
         Parameters
@@ -170,6 +170,9 @@ class GithubBackend(BaseBackend):
 
         """
 
+        if not request_headers:
+            request_headers = {}
+
         page = start_page
         while True:
             call_kwargs = {
@@ -178,13 +181,20 @@ class GithubBackend(BaseBackend):
             }
             call_kwargs.update(kwargs)
 
+            if page > 1:
+                request_headers.update(NO_CACHE_HEADERS)
+
             response_headers = {}
             try:
-                for entry in callable.get(response_headers=response_headers, **call_kwargs):
+                for entry in callable.get(request_headers=request_headers,
+                                          response_headers=response_headers, **call_kwargs):
                     yield entry
             except ApiError as e:
+                # If the n page is a 404, we don't have this page, so we stop
                 if page > 1 and e.code == 404:
                     break
+                # Other exception, we raise it
+                raise
 
             if 'link' not in response_headers:
                 break
@@ -194,8 +204,6 @@ class GithubBackend(BaseBackend):
                 break
 
             page += 1
-
-
 
     def user_following(self, account, token=None):
         """
@@ -241,40 +249,69 @@ class GithubBackend(BaseBackend):
         # get repositories data from github
         result = []
         found = {}
-        try:
+
+        request_headers = {}
+
+        starred_modified = None
+        owned_modified = None
+
+        while True:
 
             # Starred repositories
-            for grepo in self.iterate_pages(github.users(account.slug).starred):
-                repo = self.repository_map(grepo)
-                if repo['project'] not in found:
-                    result.append(repo)
-                    found[repo['project']] = True
+            if not starred_modified:
+                try:
+                    for grepo in self.iterate_pages(github.users(account.slug).starred,
+                                                    request_headers=request_headers):
+                        repo = self.repository_map(grepo)
+                        if repo['project'] not in found:
+                            result.append(repo)
+                            found[repo['project']] = True
+                except RequestNotModified as e:
+                    starred_modified = False
+                except Exception as e:
+                    raise self._get_exception(e, '%s\'s starred repositories' % account.slug)
+                else:
+                    starred_modified = True
 
             # Owned repositories
-            for grepo in self.iterate_pages(github.users(account.slug).repos):
-                repo = self.repository_map(grepo)
-                if repo['project'] not in found:
-                    result.append(repo)
-                    found[repo['project']] = True
+            if not owned_modified:
+                try:
+                    for grepo in self.iterate_pages(github.users(account.slug).repos,
+                                                    request_headers=request_headers):
+                        repo = self.repository_map(grepo)
+                        if repo['project'] not in found:
+                            result.append(repo)
+                            found[repo['project']] = True
+                except RequestNotModified as e:
+                    owned_modified = False
+                except Exception as e:
+                    raise self._get_exception(e, '%s\'s owned repositories' % account.slug)
+                else:
+                    owned_modified = True
 
-        except Exception, e:
-            raise self._get_exception(e, '%s\'s repositories' % account.slug)
+            # Both were modified, we can continue
+            if starred_modified and owned_modified:
+                return result
 
-        return result
+            # Both were not modified, we raise the BackendRequestNotModified exception
+            if starred_modified is False and owned_modified is False:
+                raise self._get_exception(e, '%s\'s owned repositories' % account.slug)
+
+            # One was modified, but not the other: we restart without cache-control headers
+            request_headers = NO_CACHE_HEADERS.copy()
 
     def repository_project(self, repository):
         """
         Return a project name the provider can use
         """
-        if isinstance(repository, dict):
-            if 'official_owner' in repository:
-                # a mapped dict
-                owner = repository['official_owner']
-                slug = repository['slug']
-        elif isinstance(repository, JsonObject):
+        if isinstance(repository, JsonObject):
             # a repository from githubpy
             owner = repository.owner.login
             slug = repository.name
+        elif isinstance(repository, dict):
+            # a mapped dict
+            owner = repository['official_owner']
+            slug = repository['slug']
         else:
             # a Repository object (from core.models)
             if repository.owner_id:
@@ -415,15 +452,16 @@ class GithubBackend(BaseBackend):
         project_parts = self.parse_project(project)
 
         try:
-            html = github.repos(project_parts['official_owner'])(project_parts['slug']).readme.get(
-                request_headers={'Accept': 'application/vnd.3.html'}
+            raw = github.repos(project_parts['official_owner'])(project_parts['slug']).readme.get(
+                request_headers={'Accept': 'application/vnd.github.3.raw'}
             )
         except Exception, e:
             raise self._get_exception(e, '%s\'s readme file' % repository.project)
 
         try:
-            raw = github.repos(project_parts['official_owner'])(project_parts['slug']).readme.get(
-                request_headers={'Accept': 'application/vnd.3.raw'}
+            # no cache control here. If the raw was updated, we force the retrieval of the html
+            html = github.repos(project_parts['official_owner'])(project_parts['slug']).readme.get(
+                request_headers=dict(NO_CACHE_HEADERS, Accept='application/vnd.github.3.html')
             )
         except Exception, e:
             raise self._get_exception(e, '%s\'s readme file' % repository.project)
