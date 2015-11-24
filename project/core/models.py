@@ -633,6 +633,10 @@ class SyncableModel(TimeStampedModel):
         """
         Update the search index for the current object
         """
+
+        if not settings.INDEX_ACTIVATED:
+            return
+
         if self.deleted:
             return
 
@@ -647,6 +651,10 @@ class SyncableModel(TimeStampedModel):
         """
         Remove the current object from the search index
         """
+
+        if not settings.INDEX_ACTIVATED:
+            return
+
         try:
             self.get_search_index().backend.remove(self, commit=False)
         except:
