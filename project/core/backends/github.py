@@ -1,17 +1,17 @@
 # Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
 
 from copy import copy
-import base64
+from datetime import datetime
 
-from pygithub3 import Github
-from pygithub3.resources.repos import Repo
-from pygithub3.exceptions import NotFound
-from requests.exceptions import HTTPError
+from libgithub import ApiError, GitHub, JsonObject
 
 from django.conf import settings
 
-from core.backends import BaseBackend, README_NAMES, README_TYPES
+from core.backends import BaseBackend
 from core.exceptions import SPECIFIC_ERROR_CODES
+
+
+GITHUB_DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
 
 class GithubBackend(BaseBackend):
@@ -54,31 +54,27 @@ class GithubBackend(BaseBackend):
         """
         code = None
         extra = {}
-        if isinstance(exception, HTTPError):
-            code = exception.response.status_code
+        if isinstance(exception, ApiError):
+            code = exception.response.code
             try:
                 headers = exception.response.headers
                 if code == 403 and int(headers['x-ratelimit-remaining']) == 0:
                     code = SPECIFIC_ERROR_CODES ['SUSPENDED']
                     extra['suspended_until'] = headers.get('x-ratelimit-reset', 0)
             except Exception:
-                code = exception.response.status_code
-        elif isinstance(exception, NotFound):
-            code = 404
+                code = exception.response.code
         try:
             message = exception.response.content
         except Exception:
             message = None
         return self.get_exception(code, what, message, extra)
 
-    def create_github_instance(self, *args, **kwargs):
+    @classmethod
+    def create_github_instance(cls, token, **default_headers):
         """
         Create a Github instance from the given parameters.
-        Add, if not provided, the `requests_per_second` and `cache` ones.
         """
-        if 'per_page' not in kwargs:
-            kwargs['per_page'] = 100
-        return Github(*args, **kwargs)
+        return GitHub(access_token=token, default_headers=default_headers)
 
     def github(self, token=None):
         """
@@ -89,10 +85,8 @@ class GithubBackend(BaseBackend):
         token = token or None
         str_token = str(token)
         if str_token not in self._github_instances:
-            params = {}
-            if token:
-                params['token'] = token.token
-            self._github_instances[str_token] = self.create_github_instance(**params)
+            access_token = token.token if token else None
+            self._github_instances[str_token] = self.create_github_instance(access_token)
         return self._github_instances[str_token]
 
     def user_fetch(self, account, token=None):
@@ -104,7 +98,7 @@ class GithubBackend(BaseBackend):
 
         # get user data fromgithub
         try:
-            guser = github.users.get(account.slug)
+            guser = github.users(account.slug).get()
         except Exception, e:
             raise self._get_exception(e, '%s' % account.slug)
 
@@ -131,11 +125,15 @@ class GithubBackend(BaseBackend):
             url = 'html_url',
         )
 
+        date_fields = ('official_created', )
+
         result = {}
 
         for internal_key, backend_key in simple_mapping.items():
             value = getattr(user, backend_key, None)
             if value is not None:
+                if internal_key in date_fields:
+                    value = datetime.strptime(value, GITHUB_DATE_FORMAT)
                 result[internal_key] = value
 
         if 'avatar' not in result and getattr(user, 'gravatar_id', None):
@@ -145,6 +143,59 @@ class GithubBackend(BaseBackend):
             result['url'] = 'https://github.com/%s/' % user.login
 
         return result
+
+    def iterate_pages(self, callable, start_page=1, per_page=100, **kwargs):
+        """"Iterate on each result for the githubpy callable, for each page
+
+        Parameters
+        ----------
+        callable : libgithub._Callable
+            The callable to execute for each page, for example ``github.users(slug).followers``
+        start_page : int
+            Default to 1, the number of page to start the page iteration
+        per_page : int
+            Default to 100 (the max), the number of results to ask Github for each page
+        kwargs : dict
+            Arguments to add on the query string for each page
+
+        Returns
+        -------
+        generator
+            A generator that will yield all entries from all pages, one by one
+
+        Yields
+        ------
+        Account or Repository
+            Depending on the caller, this generator will yield accounts or repositories
+
+        """
+
+        page = start_page
+        while True:
+            call_kwargs = {
+                'page': page,
+                'per_page': per_page,
+            }
+            call_kwargs.update(kwargs)
+
+            response_headers = {}
+            try:
+                for entry in callable.get(response_headers=response_headers, **call_kwargs):
+                    yield entry
+            except ApiError as e:
+                if page > 1 and e.code == 404:
+                    break
+
+            if 'link' not in response_headers:
+                break
+
+            links = self.parse_header_links(response_headers['link'])
+            if 'next' not in links:
+                break
+
+            page += 1
+
+
 
     def user_following(self, account, token=None):
         """
@@ -156,7 +207,7 @@ class GithubBackend(BaseBackend):
         # get users data from github
         result = []
         try:
-            for guser in github.users.followers.list_following(account.slug).iterator():
+            for guser in self.iterate_pages(github.users(account.slug).following):
                 result.append(self.user_map(guser))
         except Exception, e:
             raise self._get_exception(e, '%s\'s following' % account.slug)
@@ -173,7 +224,7 @@ class GithubBackend(BaseBackend):
         # get users data from github
         result = []
         try:
-            for guser in github.users.followers.list(account.slug).iterator():
+            for guser in self.iterate_pages(github.users(account.slug).followers):
                 result.append(self.user_map(guser))
         except Exception, e:
             raise self._get_exception(e, '%s\'s followers' % account.slug)
@@ -191,12 +242,16 @@ class GithubBackend(BaseBackend):
         result = []
         found = {}
         try:
-            for grepo in github.repos.watchers.list_repos(account.slug).iterator():
+
+            # Starred repositories
+            for grepo in self.iterate_pages(github.users(account.slug).starred):
                 repo = self.repository_map(grepo)
                 if repo['project'] not in found:
                     result.append(repo)
                     found[repo['project']] = True
-            for grepo in github.repos.list(account.slug).iterator():
+
+            # Owned repositories
+            for grepo in self.iterate_pages(github.users(account.slug).repos):
                 repo = self.repository_map(grepo)
                 if repo['project'] not in found:
                     result.append(repo)
@@ -216,8 +271,8 @@ class GithubBackend(BaseBackend):
                 # a mapped dict
                 owner = repository['official_owner']
                 slug = repository['slug']
-        elif isinstance(repository, Repo):
-            # a repository from pygithub3
+        elif isinstance(repository, JsonObject):
+            # a repository from githubpy
             owner = repository.owner.login
             slug = repository.name
         else:
@@ -244,11 +299,11 @@ class GithubBackend(BaseBackend):
         # get/create the github instance
         github = self.github(token)
 
-        # get repository data fromgithub
+        # get repository data from github
         project = repository.get_project()
         project_parts = self.parse_project(project)
         try:
-            grepo = github.repos.get(project_parts['official_owner'], project_parts['slug'])
+            grepo = github.repos(project_parts['official_owner'])(project_parts['slug']).get()
         except Exception, e:
             raise self._get_exception(e, '%s' % project)
 
@@ -282,11 +337,15 @@ class GithubBackend(BaseBackend):
             default_branch = 'master_branch',
         )
 
+        date_fields = ('official_created', 'official_modified', )
+
         result = {}
 
         for internal_key, backend_key in simple_mapping.items():
             value = getattr(repository, backend_key, None)
             if value is not None:
+                if internal_key in date_fields:
+                    value = datetime.strptime(value, GITHUB_DATE_FORMAT)
                 result[internal_key] = value
 
         if 'official_owner' in result:
@@ -310,7 +369,9 @@ class GithubBackend(BaseBackend):
         project_parts = self.parse_project(project)
         result = []
         try:
-            for guser in github.repos.watchers.list(project_parts['official_owner'], project_parts['slug']).iterator():
+            for guser in self.iterate_pages(
+                github.repos(project_parts['official_owner'])(project_parts['slug']).stargazers
+            ):
                 result.append(self.user_map(guser))
         except Exception, e:
             raise self._get_exception(e, '%s\'s followers' % project)
@@ -331,13 +392,15 @@ class GithubBackend(BaseBackend):
         project_parts = self.parse_project(project)
         result = []
         try:
-            for guser in github.repos.list_contributors(project_parts['official_owner'], project_parts['slug']).iterator():
+            for guser in self.iterate_pages(
+                github.repos(project_parts['official_owner'])(project_parts['slug']).contributors
+            ):
                 account_dict = self.user_map(guser)
                 # TODO : nb of contributions not used yet but later...
                 account_dict.setdefault('__extra__', {})['contributions'] = guser.contributions
                 result.append(account_dict)
         except Exception, e:
-            raise self._get_exception(e, '%s\'s followers' % project)
+            raise self._get_exception(e, '%s\'s contributors' % project)
 
         return result
 
@@ -351,70 +414,21 @@ class GithubBackend(BaseBackend):
         project = repository.get_project()
         project_parts = self.parse_project(project)
 
-        empty_readme = ('', None)
-
-        # get all files at the root of the project
         try:
-            tree = github.git_data.trees.get(
-                sha = repository.default_branch or 'master',
-                recursive = None,
-                user = project_parts['official_owner'],
-                repo = project_parts['slug'],
+            html = github.repos(project_parts['official_owner'])(project_parts['slug']).readme.get(
+                request_headers={'Accept': 'application/vnd.3.html'}
             )
-        except NotFound:
-            return empty_readme
         except Exception, e:
-            raise self._get_exception(e, '%s\'s readme' % project)
+            raise self._get_exception(e, '%s\'s readme file' % repository.project)
 
-        # filter readme files
-        files = [f for f in tree.tree if f.get('type', None) == 'blob'
-            and 'path' in f and any(f['path'].startswith(n) for n in README_NAMES)]
-
-        # not readme file found, exit
-        if not files:
-            return empty_readme
-
-        # get contents for all these files
-        contents = []
-        for fil in files:
-            filename = fil['path']
-            try:
-                blob = github.git_data.blobs.get(
-                    sha = fil['sha'],
-                    user = project_parts['official_owner'],
-                    repo = project_parts['slug'],
-                )
-            except NotFound:
-                continue
-            except Exception, e:
-                raise self._get_exception(e, '%s\'s readme file' % repository.project)
-            else:
-                try:
-                    content = blob.content
-                    if blob.encoding == 'base64':
-                        content = base64.decodestring(content)
-                    contents.append((filename, content))
-                except:
-                    return empty_readme
-
-        if not contents:
-            return empty_readme
-
-        # keep the biggest
-        filename, content = sorted(contents, key=len)[-1]
-
-        # find the type
-        filetype = 'txt'
         try:
-            extension = filename.split('.')[-1]
-            for ftype, extensions in README_TYPES:
-                if extension in extensions:
-                    filetype = ftype
-                    break
-        except:
-            pass
+            raw = github.repos(project_parts['official_owner'])(project_parts['slug']).readme.get(
+                request_headers={'Accept': 'application/vnd.3.raw'}
+            )
+        except Exception, e:
+            raise self._get_exception(e, '%s\'s readme file' % repository.project)
 
-        return content, filetype
+        return raw, html
 
 
 BACKENDS = {'github': GithubBackend, }

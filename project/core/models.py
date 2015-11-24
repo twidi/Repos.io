@@ -1551,6 +1551,7 @@ class Repository(SyncableModel):
     # more about the content of the reopsitory
     default_branch = models.CharField(max_length=255, blank=True, null=True)
     readme = models.TextField(blank=True, null=True)
+    readme_html = models.TextField(blank=True, null=True)
     readme_type = models.CharField(max_length=10, blank=True, null=True)
     readme_modified = models.DateTimeField(blank=True, null=True)
 
@@ -1854,17 +1855,11 @@ class Repository(SyncableModel):
         if not getattr(self, '_modified', True):
             return False
 
-        readme = self.get_backend().repository_readme(self, token=token)
+        raw, html = self.get_backend().repository_readme(self, token=token)
 
-        if readme is not None:
-            if isinstance(readme, (list, tuple)):
-                readme_type = readme[1]
-                readme = readme[0]
-            else:
-                readme_type = 'txt'
-
-            self.readme = readme
-            self.readme_type = readme_type
+        self.readme = raw
+        self.readme_html = html
+        self.readme_type = 'html'
 
         self.readme_modified = datetime.utcnow()
         self.save()

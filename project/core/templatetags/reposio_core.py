@@ -77,7 +77,9 @@ def readme(repository):
     readme = None
 
     try:
-        if repository.readme_type == 'markdown':
+        if repository.readme_type == 'html':
+            readme = repository.readme_html
+        elif repository.readme_type == 'markdown':
             readme = markup.markdown(repository.readme)
         elif repository.readme_type == 'textile':
             readme = markup.textile(repository.readme)

@@ -68,9 +68,7 @@ pyasn1==0.1.8
 ### backends ###
 ################
 
-
-#pygithub3
--e git+git://github.com/copitux/python-github3.git@f85c7b1692667dab82c2894db86d0582e72b2df0#egg=pygithub3
+# githubpy is in the project in libgithub.py
 
 ###################
 ### django apps ###
