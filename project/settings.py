@@ -250,6 +250,7 @@ LOGIN_ERROR_URL = '/accounts/login/?error'
 CORE_ENABLED_BACKENDS = ('github', )
 
 # haystack
+INDEX_ACTIVATED = True
 HAYSTACK_SITECONF = 'project.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'solr'
 HAYSTACK_SEARCH_RESULTS_PER_PAGE = 20

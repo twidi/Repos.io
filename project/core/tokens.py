@@ -1,8 +1,11 @@
 # Repos.io / Copyright Stephane Angel / Creative Commons BY-NC-SA license
 
+from datetime import datetime
 import time
 
 from redisco import models, connection
+
+from utils import now_timestamp
 
 AVAILABLE_LIST_KEY = 'available_tokens'
 
@@ -16,8 +19,9 @@ class AccessToken(models.Model):
     token = models.Attribute(required=True, indexed=True)
     backend = models.Attribute(required=True, indexed=True)
     status = models.IntegerField(required=True, indexed=True, default=200)
-    last_use = models.DateTimeField(auto_now_add=True, auto_now=True)
+    last_use = models.DateTimeField()
     last_message = models.Attribute()
+    suspended_until = models.DateTimeField()
 
     def __unicode__(self):
         return str(self)
@@ -27,14 +31,15 @@ class AccessToken(models.Model):
 
     def save(self):
         is_new = self.is_new()
+        self.last_use = datetime.utcnow()
         result = super(AccessToken, self).save()
-        if result == True and is_new:
+        if result is True and is_new:
             self.release()
         return result
 
     def is_valid(self):
         """
-        Overrive the default method to save the uid, which is unique (by
+        Override the default method to save the uid, which is unique (by
         concatenating backend and token)
         """
         self.uid = '%s:%s:%s' % (self.backend, self.login, self.token)
@@ -59,6 +64,22 @@ class AccessToken(models.Model):
         self.status = code
         self.last_message = message
         self.save()
+
+    def suspend(self, suspended_until=None, message=None):
+        """
+        Suspend the token until the given utc timestamp
+        """
+        if suspended_until:
+            self.suspended_until = datetime.utcfromtimestamp(suspended_until)
+        else:
+            self.suspended_until = None
+        self.last_message = message
+        self.save()
+
+        if suspended_until:
+            # We make the `suspended_until` key auto expire
+            key = self.key('suspended_until')
+            connection.expire(key, round(suspended_until - now_timestamp()) + 1)
 
 
 class AccessTokenManager(object):
@@ -88,14 +109,14 @@ class AccessTokenManager(object):
         """
         if default_token:
             default_token = self.get_by_uid(default_token.uid)
-            if default_token and default_token.status == 200:
+            if default_token and default_token.status == 200 and not default_token.suspended_until:
                 if default_token.lock():
                     return default_token
 
         while True:
             uid = connection.spop(AVAILABLE_LIST_KEY)
             token = self.get_by_uid(uid)
-            if token and token.status == 200:
+            if token and token.status == 200 and not token.suspended_until:
                 return token
 
             if not wait:

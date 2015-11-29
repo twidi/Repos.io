@@ -9,10 +9,11 @@ from django.core.urlresolvers import reverse
 
 from core.backends import get_backend
 from core.models import Account, Repository
-from core.exceptions import BackendError, MultipleBackendError
+from core.exceptions import BackendError, BackendSuspendedTokenError, MultipleBackendError
 from core.tokens import AccessTokenManager
 from front.search import Search
 from front.decorators import ajaxable
+
 
 def default(request, identifier):
     """
@@ -69,13 +70,24 @@ def fetch(request):
             if obj.fetch_related_allowed():
                 try:
                     obj.fetch_related(token=token)
-                except MultipleBackendError, e:
-                    for message in e.messages:
-                        messages.error(request, message)
                 except BackendError, e:
-                    messages.error(request, e.message)
+                    messages.error(request, 'Fetch of related failed :(')
+
+                    exceptions = [e]
+                    if isinstance(e, MultipleBackendError):
+                        exceptions = e.exceptions
+
+                    for ex in exceptions:
+                        if isinstance(ex, BackendSuspendedTokenError):
+                            token.suspend(ex.extra.get('suspended_until'), str(ex))
+                        elif isinstance(ex, BackendError) and ex.code:
+                            if ex.code == 401:
+                                token.set_status(ex.code, str(ex))
+                            elif ex.code in (403, 404):
+                                obj.set_backend_status(ex.code, str(ex))
+
                 else:
-                    messages.success(request, 'Fetch of related is successfull !')
+                    messages.success(request, 'Fetch of related is successful!')
             else:
                 messages.error(request, 'Fetch of related is not allowed (maybe the last one is too recent)')
 
@@ -84,9 +96,18 @@ def fetch(request):
                 try:
                     obj.fetch(token=token)
                 except BackendError, e:
-                    messages.error(request, e.message)
+                    messages.error(request, 'Fetch of this %s failed :(' % otype)
+
+                    if isinstance(e, BackendSuspendedTokenError):
+                        token.suspend(e.extra.get('suspended_until'), str(e))
+                    elif isinstance(e, BackendError) and e.code:
+                        if e.code == 401:
+                            token.set_status(e.code, str(e))
+                        elif e.code in (403, 404):
+                            obj.set_backend_status(e.code, str(e))
+
                 else:
-                    messages.success(request, 'Fetch of this %s is successfull !' % otype)
+                    messages.success(request, 'Fetch of this %s is successful!' % otype)
             else:
                 messages.error(request, 'Fetch is not allowed (maybe the last one is too recent)')
 

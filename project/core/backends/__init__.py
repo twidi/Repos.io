@@ -3,12 +3,23 @@
 from os import walk
 from os.path import basename
 
+from dateutil import tz
+
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.utils.functional import memoize
 
 from core.exceptions import InvalidIdentifiersForProject, BackendError
 from core.tokens import AccessTokenManager
+
+
+UTC = tz.gettz('UTC')
+
+NO_CACHE_HEADERS = {
+    'if-modified-since': None,
+    'if-none-match': None,
+}
+
 
 #https://github.com/github/markup/
 README_NAMES = ('README', 'readme',)
@@ -20,6 +31,7 @@ README_TYPES = (
     ('rdoc', ('rdoc',)),
     ('org', ('org',)),
     ('mediawiki', ('mediawiki', 'wiki',)),
+    ('html', ('html', )),
 )
 
 class BaseBackend(object):
@@ -69,11 +81,11 @@ class BaseBackend(object):
         """
         return self.support.get(functionnality, False)
 
-    def get_exception(self, code, what):
+    def get_exception(self, code, what, message=None, extra=None):
         """
         Return an internal exception (BackendError)
         """
-        return BackendError.make_for(self.name, code, what)
+        return BackendError.make_for(self.name, code, what, message, extra)
 
     def user_map(self, user):
         """
@@ -169,6 +181,57 @@ class BaseBackend(object):
         """
         return False
 
+    @staticmethod
+    def parse_header_links(value):
+        """
+        Based on kennethreitz/requests stuff
+        Return a dict of parsed link headers proxies.
+        i.e. Link: <http:/.../front.jpeg>; rel=front; type="image/jpeg",<http://.../back.jpeg>; rel=back;type="image/jpeg"
+        """
+
+        links = {}
+
+        replace_chars = " '\""
+
+        for val in value.split(","):
+            try:
+                url, params = val.split(";", 1)
+            except ValueError:
+                url, params = val, ''
+
+            link = {}
+
+            link["url"] = url.strip("<> '\"")
+
+            for param in params.split(";"):
+                try:
+                    key, value = param.split("=")
+                except ValueError:
+                    break
+
+                link[key.strip(replace_chars)] = value.strip(replace_chars)
+
+            if 'rel' in link:
+                links[link['rel']] = link
+
+        return links
+
+    @staticmethod
+    def convert_date_for_header(datetime_object):
+        """Convert a datetime object to the string representation to use in http headers
+
+        Parameters
+        ----------
+        datetime_object : datetime
+            The datetime object to convert. It's expected to be UTC
+
+        Returns
+        -------
+        str
+            The string reprensetation of the given datetime object
+
+        """
+        return datetime_object.replace(tzinfo=UTC).strftime('%a, %d %b %Y %H:%M:%S GMT')
 
 def get_backends():
     """

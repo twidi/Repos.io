@@ -2,8 +2,14 @@
 
 from httplib import responses
 
+
+SPECIFIC_ERROR_CODES = {
+    'SUSPENDED': 99403,
+}
+
 class CoreException(Exception):
     pass
+
 
 class InvalidIdentifiersForProject(CoreException):
     def __init__(self, backend, message=None):
@@ -15,6 +21,7 @@ class InvalidIdentifiersForProject(CoreException):
             )
         )
 
+
 class OriginalProviderLoginMissing(CoreException):
     def __init__(self, user, backend_name, message=None):
         super(OriginalProviderLoginMissing, self).__init__(
@@ -25,8 +32,9 @@ class OriginalProviderLoginMissing(CoreException):
             )
         )
 
+
 class BackendError(CoreException):
-    def __init__(self, message=None, code=None):
+    def __init__(self, message=None, code=None, extra=None):
         if not message:
             if code and code in responses:
                 message = 'An error prevent us to accomplish your request : %s' % responses[code]
@@ -35,56 +43,81 @@ class BackendError(CoreException):
         super(BackendError, self).__init__(message)
         self.message = message
         self.code = code
+        self.extra = extra or {}
 
     @staticmethod
-    def make_for(backend_name, code=None, what=None):
+    def make_for(backend_name, code=None, what=None, message=None, extra=None):
+
+        if code == SPECIFIC_ERROR_CODES['SUSPENDED']:
+            return BackendSuspendedTokenError(backend_name, what, message, extra)
+
+        if code == 304:
+            return BackendRequestNotModified(backend_name, what, extra)
 
         if code == 401:
-            return BackendUnauthorizedError(backend_name, what)
+            return BackendUnauthorizedError(backend_name, what, message, extra)
 
         if code == 403:
-            return BackendForbiddenError(backend_name, what)
+            return BackendForbiddenError(backend_name, what, message, extra)
 
         if code == 404:
-            return BackendNotFoundError(backend_name, what)
+            return BackendNotFoundError(backend_name, what, extra)
 
-        elif code >= 400 and code < 500:
-            return BackendAccessError(code, backend_name, what)
+        elif 400 <= code < 500:
+            return BackendAccessError(backend_name, what, code, message, extra)
 
         elif code >= 500:
-            return BackendInternalError(code, backend_name, what)
+            return BackendInternalError(backend_name, what, code, message, extra)
 
-        return BackendError(message=None, code=None)
+        return BackendError(message, code, extra)
+
 
 class MultipleBackendError(BackendError):
-    def __init__(self, messages):
+    def __init__(self, exceptions):
         super(MultipleBackendError, self).__init__(
-            'Many errors occured : ' + ', '.join(messages))
-        self.messages = messages
+            'Many errors occurred : ' + ', '.join([str(e) for e in exceptions]))
+        self.exceptions = exceptions
+
+
+class BackendRequestNotModified(BackendError):
+    def __init__(self, backend_name, what, extra=None):
+        super(BackendRequestNotModified, self).__init__(
+            '%s was not modified on %s' % (what, backend_name), 304, extra)
+
 
 class BackendNotFoundError(BackendError):
-    def __init__(self, backend_name, what):
+    def __init__(self, backend_name, what, extra=None):
         super(BackendNotFoundError, self).__init__(
-            '%s cannot be found on %s' % (what, backend_name), 404)
+            '%s cannot be found on %s' % (what, backend_name), 404, extra)
+
 
 class BackendAccessError(BackendError):
-    def __init__(self, code, message, backend_name, what):
+    def __init__(self, backend_name, what, code, message=None, extra=None):
         super(BackendAccessError, self).__init__(
-            '%s cannot be accessed on %s: %s' % (what, backend_name, message), code)
+            '%s cannot be accessed on %s: %s' % (what, backend_name, message), code, extra)
+
 
 class BackendForbiddenError(BackendAccessError):
-    def __init__(self, backend_name, what):
+    def __init__(self, backend_name, what, message=None, extra=None):
         super(BackendForbiddenError, self).__init__(
-                403, 'access forbidden', backend_name, what)
+            backend_name, what, 403, message or 'access forbidden', extra)
 
 
 class BackendUnauthorizedError(BackendAccessError):
-    def __init__(self, backend_name, what):
+    def __init__(self, backend_name, what, message=None, extra=None):
         super(BackendUnauthorizedError, self).__init__(
-                401, 'unauthorized access', backend_name, what)
+            backend_name, what, 401, message or 'unauthorized access', extra)
+
 
 class BackendInternalError(BackendError):
-    def __init__(self, code, backend_name, what):
-        super(BackendError, self).__init__(
-            '%s cannot be accessed because %s encountered an internal error' % (what, backend_name), code)
+    def __init__(self, backend_name, what, code, message=None, extra=None):
+        super(BackendInternalError, self).__init__(
+            '%s cannot be accessed because %s encountered an internal error: %s' % (
+                what, backend_name, message or '(no more info)'), code, extra)
 
+
+class BackendSuspendedTokenError(BackendError):
+    def __init__(self, backend_name, what, code, message=None, extra=None):
+        super(BackendSuspendedTokenError, self).__init__(
+            '%s cannot be accessed on %s because token is suspended: %s' % (
+                what, backend_name, message or '(no more info)'), 403, extra)

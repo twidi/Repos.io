@@ -646,6 +646,10 @@ class Search(object):
         """
         Return the final page of results
         """
+
+        if not settings.INDEX_ACTIVATED:
+            return EmptySearchQuerySet()
+
         if force_update or self.results is None:
             self.update_results()
         return self.results
