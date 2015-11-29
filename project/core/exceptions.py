@@ -51,6 +51,9 @@ class BackendError(CoreException):
         if code == SPECIFIC_ERROR_CODES['SUSPENDED']:
             return BackendSuspendedTokenError(backend_name, what, message, extra)
 
+        if code == 304:
+            return BackendRequestNotModified(backend_name, what, extra)
+
         if code == 401:
             return BackendUnauthorizedError(backend_name, what, message, extra)
 
@@ -74,6 +77,12 @@ class MultipleBackendError(BackendError):
         super(MultipleBackendError, self).__init__(
             'Many errors occurred : ' + ', '.join([str(e) for e in exceptions]))
         self.exceptions = exceptions
+
+
+class BackendRequestNotModified(BackendError):
+    def __init__(self, backend_name, what, extra=None):
+        super(BackendRequestNotModified, self).__init__(
+            '%s was not modified on %s' % (what, backend_name), 304, extra)
 
 
 class BackendNotFoundError(BackendError):

@@ -28,7 +28,7 @@ from core.managers import (AccountManager, RepositoryManager,
                            OptimForListAccountManager, OptimForListRepositoryManager,
                            OptimForListWithoutDeletedAccountManager, OptimForListWithoutDeletedRepositoryManager)
 from core.core_utils import slugify
-from core.exceptions import BackendError, BackendNotFoundError, BackendSuspendedTokenError, MultipleBackendError
+from core.exceptions import BackendNotFoundError, BackendRequestNotModified, BackendSuspendedTokenError, MultipleBackendError
 from core import messages as offline_messages
 
 from tagging.models import PublicTaggedAccount, PublicTaggedRepository, PrivateTaggedAccount, PrivateTaggedRepository, all_official_tags
@@ -296,7 +296,7 @@ class SyncableModel(TimeStampedModel):
     def fetch_related(self, limit=None, token=None, ignore=None, log_stderr=False):
         """
         If the object has some related content that need to be fetched, do
-        it, but limit the fetch to the given limit (default 1)
+        it, but limit the fetch to the given limit
         Returns the number of operations done
         """
         done = 0
@@ -317,6 +317,9 @@ class SyncableModel(TimeStampedModel):
             try:
                 if action(token=token):
                     done += 1
+            except BackendRequestNotModified:
+                sys.stderr.write("          => NOT MODIFIED\n")
+                pass
             except Exception, e:
                 if log_stderr:
                     sys.stderr.write("          => ERROR : %s\n" % e)
@@ -528,10 +531,16 @@ class SyncableModel(TimeStampedModel):
             sys.stderr.write("FETCH FULL %s #%d (depth=%d, token=%s)\n" % (self, self.pk, depth, token))
 
             # start try to update the object
+            continue_fetching = True
             try:
                 df = datetime.utcnow()
                 sys.stderr.write("  - fetch object (%s)\n" % self)
                 fetched = self.fetch(token=token, log_stderr=True)
+
+            except BackendRequestNotModified:
+                fetched = 'NOT MODIFIED'
+                self.set_backend_status(304, 'not modified')
+
             except Exception, e:
 
                 if isinstance(e, BackendSuspendedTokenError):
@@ -542,6 +551,7 @@ class SyncableModel(TimeStampedModel):
                     elif e.code in (403, 404):
                         self.set_backend_status(e.code, str(e))
 
+                continue_fetching = False
                 fetch_error = e
                 ddf = datetime.utcnow() - df
                 sys.stderr.write("      => ERROR (in %s) : %s\n" % (ddf, e))
@@ -549,6 +559,8 @@ class SyncableModel(TimeStampedModel):
                     offline_messages.error(notify_user, '%s couldn\'t be fetched' % self.str_for_user(notify_user).capitalize(), content_object=self, meta=dict(error = fetch_error))
             else:
                 self.set_backend_status(200, 'ok')
+
+            if continue_fetching:
                 ddf = datetime.utcnow() - df
                 sys.stderr.write("      => OK (%s) in %s [%s]\n" % (fetched, ddf, self.fetch_full_self_message()))
 
@@ -633,6 +645,10 @@ class SyncableModel(TimeStampedModel):
         """
         Update the search index for the current object
         """
+
+        if not settings.INDEX_ACTIVATED:
+            return
+
         if self.deleted:
             return
 
@@ -647,6 +663,10 @@ class SyncableModel(TimeStampedModel):
         """
         Remove the current object from the search index
         """
+
+        if not settings.INDEX_ACTIVATED:
+            return
+
         try:
             self.get_search_index().backend.remove(self, commit=False)
         except:
@@ -686,7 +706,7 @@ class SyncableModel(TimeStampedModel):
 
         official_count_field = 'official_%s_count' % entries_name
         if hasattr(self, official_count_field) and not getattr(self, official_count_field) and (
-            not self.last_fetch or self.last_fetch > datetime.utcnow()-timedelta(hours=1)):
+            not self.last_fetch or self.last_fetch > datetime.utcnow() - self.MIN_FETCH_DELTA):
                 return False
 
         method_add_entry = getattr(self, 'add_%s' % entry_name)
@@ -700,6 +720,7 @@ class SyncableModel(TimeStampedModel):
 
         # get and save new entries
         entries_list = getattr(self.get_backend(), functionality)(self, token=token)
+
         for gobj in entries_list:
             if check_diff and gobj[key] in old_entries:
                 if check_diff:
@@ -1543,6 +1564,7 @@ class Repository(SyncableModel):
     # more about the content of the reopsitory
     default_branch = models.CharField(max_length=255, blank=True, null=True)
     readme = models.TextField(blank=True, null=True)
+    readme_html = models.TextField(blank=True, null=True)
     readme_type = models.CharField(max_length=10, blank=True, null=True)
     readme_modified = models.DateTimeField(blank=True, null=True)
 
@@ -1846,17 +1868,11 @@ class Repository(SyncableModel):
         if not getattr(self, '_modified', True):
             return False
 
-        readme = self.get_backend().repository_readme(self, token=token)
+        raw, html = self.get_backend().repository_readme(self, token=token)
 
-        if readme is not None:
-            if isinstance(readme, (list, tuple)):
-                readme_type = readme[1]
-                readme = readme[0]
-            else:
-                readme_type = 'txt'
-
-            self.readme = readme
-            self.readme_type = readme_type
+        self.readme = raw
+        self.readme_html = html
+        self.readme_type = 'html'
 
         self.readme_modified = datetime.utcnow()
         self.save()
