@@ -58,7 +58,7 @@ cssselect==0.9.1
 raven==3.3.3
 
 # For urllib3 with python < 2.7.9. Needs libffi-dev libssl-dev
-pyOpenSSL==0.15.1
+pyOpenSSL==17.5.0
 ndg-httpsclient==0.4.0
 pyasn1==0.1.8
 
